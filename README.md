@@ -4,6 +4,9 @@
 ニコニコ動画の動画タイトルをIDとともに保存するJavascript。  
 公式のマイリストではできないマイリスト内検索など、面白い機能や便利なツールを自由に追加できる(ようにしていきたい)  
 
+### デモページ
+[jar.oiran.org](http://jar.oiran.org/app/nicolist/)
+
 ### 基本的な使い方
 1. index.htmlをGoogle Chromeなどで開く
 2. 動画のURLとタイトルをコピーまたはドラッグ&ドロップ(以降D&Dと記す)
