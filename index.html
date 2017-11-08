@@ -1,0 +1,1270 @@
+<!DOCTYPE html>
+<html>
+<head>
+<title>nicol;st</title>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+<link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0-beta/css/bootstrap.min.css" integrity="sha384-/Y6pD6FV/Vv2HJnA6t+vslU6fwYXjCFtcEpHbNJ0lyAFsXTsjBbfaDjzALeQsN6M" crossorigin="anonymous">
+<style type="text/css">
+*{font-size: 13px}
+button.close span{font-size: 16px !important}
+.dragging{border :1px solid #0B85A1 !important;background-color: #d4edda !important}
+.is-invalid{background-color: #f8d7da}
+button, label {cursor: pointer;}
+.removevideo {cursor: pointer;color: #aaa}
+.videolist{padding: .5em 0}
+.list-group-item, .pointer{cursor: pointer;transition: background-color 0.1s ease-in-out 0s;}
+.selected, .list-group-item:hover{background-color: #f1f1f1;}
+#menu {display: none;position: absolute;}
+.form-inline *{margin-right: 5px}
+#sr, #random{display: none;border:1px solid #ddd;border-radius: 5px}
+#sr h5{margin-top: 1em}
+#history, #registry {position: absolute;margin: 0;border-top: none;border-radius: 0 0 5px 5px}
+.undo{text-decoration: underline;cursor: pointer;margin-left: 1em}
+#button:disabled{cursor: initial;}
+.bold{font-weight: bold;}
+.list_thumb{max-width: 91px}
+
+div.tdftdiv{
+    padding:3px;
+    line-height:16px;
+}
+ul.tdftad{
+    margin:0;
+    padding:0;
+}
+ul.tdftad li{
+    display:inline;
+    background-position:left center;
+    background-repeat:no-repeat;
+    padding:0 4px 0 8px;
+    font-size:13px;
+}
+ul.tdftad li.tdftpr{
+    padding-left:20px;
+}
+ul.tdftad li.tdftlink{
+    padding-left:25px;
+}
+ul.tdftad li a:hover{
+    text-decoration:none;
+}
+</style>
+</head>
+
+<body onload="init()" onunload="unload()">
+
+<div class="container">
+<h1>nicol;st</h1>
+
+<!-- ALERT -->
+<div id="alert">
+</div>
+<!-- ALERT ends -->
+
+<div class="form-group input-group">
+<span class="input-group-addon" id="basic-addon1">url</span>
+<input type="text" class="form-control" id="url" aria-describedby="basic-addon1">
+<span class="input-group-addon" id="basic-addon2">title</span>
+<input type="text" class="form-control" id="title" aria-describedby="basic-addon2">
+</div>
+<div class="form-group">
+    <select class="form-control" role="genre" id="genre"></select>
+    </select>
+</div>
+<div class="form-group form-inline">
+    <button type="submit" class="btn btn-primary" id="button" disabled="">Submit</button>
+    <button type="submit" class="btn btn-outline-primary" data-toggle="modal" data-target="#genreModal">Add Genre</button>
+    <input class="form-control mb-2 mt-2" type="text" placeholder="Search" aria-label="Search" id="searchQuery">
+    <button class="btn btn-outline-success mb-2 mt-2" type="submit" id="search">Search</button>
+    <button class="btn btn-outline-secondary mb-2 mt-2" type="submit" onclick="random()">Random</button>
+</div>
+
+<div id="random" class="alert"></div>
+<div id="sr" class="alert"></div>
+
+<div class="row" style="margin: 2em 0">
+<ul class="list-group col-sm-3 mb-4" style="display: inline-block;" id="left">
+</ul>
+<div class="col" style="display: inline-block;padding:0;" id="right">
+
+</div>
+</div>
+
+<div>
+<label class="custom-control custom-checkbox">
+    <input type="checkbox" class="custom-control-input" id="nicolist_del">
+    <span class="custom-control-indicator"></span>
+    <span class="custom-control-description">confirmを非表示</span>
+</label>
+</div>
+
+<div>
+<label class="custom-control custom-checkbox">
+    <input type="checkbox" class="custom-control-input" id="nicolist_thumb" onchange="refresh('v')">
+    <span class="custom-control-indicator"></span>
+    <span class="custom-control-description">一覧でthumbnailを表示</span>
+</label>
+</div>
+
+<div>
+<label class="custom-control custom-checkbox">
+    <input type="checkbox" class="custom-control-input" id="nicolist_thumb_2" checked="">
+    <span class="custom-control-indicator"></span>
+    <span class="custom-control-description">検索結果・Randomでthumbnailを表示</span>
+</label>
+</div>
+
+<div>
+<label class="custom-control custom-checkbox">
+    <input type="checkbox" class="custom-control-input" id="nicolist_rand" checked="">
+    <span class="custom-control-indicator"></span>
+    <span class="custom-control-description">Randomは1項目のみ表示</span>
+</label>
+</div>
+
+<div class="mb-4 form-inline">
+    <input type="number" name="" style="max-width: 5em" id="nicolist_historyCount" value="7" class="form-control" size="">個まで検索履歴を表示
+</div>
+
+<p>raw output</p>
+<div class="form-group">
+<textarea class="form-control" id="out" rows="3" onclick="this.focus();this.select()" readonly="readonly"></textarea>
+</div>
+<p>from raw output</p>
+<div class="form-group">
+<textarea class="form-control" id="raw" rows="3"></textarea>
+
+</div>
+<button type="submit" class="btn btn-outline-primary" id="loadRaw">Add from Raw Output</button>
+
+</div>
+
+<footer style="margin-top: 3em">&copy; 2017 fine_diary, all rights reserved.</footer>
+
+<!-- ADD GENRE MODAL -->
+<div class="modal fade" id="genreModal" tabindex="-1" role="dialog" aria-labelledby="genreModalLabel" aria-hidden="true">
+  <div class="modal-dialog" role="document">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title">ADD GENRE</h5>
+        <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+          <span aria-hidden="true">&times;</span>
+        </button>
+      </div>
+      <div class="modal-body">
+
+          <div id="alert-genre">
+          </div>
+          <div class="form-group">
+            <input type="text" class="form-control" id="genrename" placeholder="genre name">
+          </div>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-primary" id="addgenre">Add Genre</button>
+        <button type="button" class="btn btn-secondary" data-dismiss="modal">Cancel</button>
+      </div>
+    </div>
+  </div>
+</div>
+<!-- ADD GENRE MODAL ends -->
+
+<!-- EDIT VIDEO MODAL -->
+<div class="modal fade" id="editModal" tabindex="-1" role="dialog" aria-labelledby="editModalLabel" aria-hidden="true">
+  <div class="modal-dialog" role="document">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title">EDIT</h5>
+        <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+          <span aria-hidden="true">&times;</span>
+        </button>
+      </div>
+      <div class="modal-body">
+        <div>
+            <div style="display: inline-grid;" class="mr-4">
+              <img src="" alt="" id="editThumb" class="img-thumbnail">
+            </div>
+            <div style="display: inline-block;">
+              <div class="form-group">
+                <a href="" target="_blank">
+                    <button class="btn btn-secondary" id="editUrl"></button>
+                </a>
+              </div>
+              <div class="form-group">
+                <input type="text" class="form-control" id="editTitle">
+              </div>
+              <div class="form-group">
+                <select class="form-control" role="genre" id="editGenre"></select>
+                </select>
+              </div>
+          </div>
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-primary" id="saveEdit">Save Changes</button>
+        <button type="button" class="btn btn-secondary" data-dismiss="modal">Cancel</button>
+      </div>
+    </div>
+  </div>
+</div>
+<!-- EDIT VIDEO MODAL ends -->
+
+
+<!-- CONFIRM MODAL -->
+<div class="modal fade" id="confModal" tabindex="-1" role="dialog">
+  <div class="modal-dialog" role="document">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title">CONFIRM</h5>
+        <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+          <span aria-hidden="true">&times;</span>
+        </button>
+      </div>
+      <div class="modal-body">
+        <span id="confDialog"></span>
+      </div>
+      <div class="modal-footer">
+        <span id="confOK">はい</span>
+        <button type="button" class="btn btn-secondary" data-dismiss="modal">キャンセル</button>
+      </div>
+    </div>
+  </div>
+</div>
+<!-- CONFIRM MODAL ends -->
+
+<!-- VIDEO LINK CONTEXT MENU -->
+<div class="dropdown-menu" id="menu">
+  <a class="dropdown-item" role="title"></a>
+  <div class="dropdown-divider"></div>
+  <a class="dropdown-item pointer" role="open">新しいタブで開く</a>
+  <a class="dropdown-item pointer" role="edit">編集する</a>
+  <a class="dropdown-item pointer" role="remove">削除する</a>
+</div>
+<!-- VIDEO LINK CONTEXT MENU ends -->
+<!-- SEARCH HISTORY -->
+<div class="dropdown-menu" id="history">
+</div>
+<!-- SEARCH HISTORY ends -->
+<!-- VIDEO ALREADY REGISTERED OR NOT -->
+<div class="dropdown-menu" id="registry">
+</div>
+<!-- VIDEO ALREADY REGISTERED OR NOT ends -->
+
+
+<script src="https://code.jquery.com/jquery-3.2.1.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.11.0/umd/popper.min.js" integrity="sha384-b/U6ypiBEHpOf/4+1nzFpr53nxSS+GLCkfwBdFNTxtclqqenISfwAzpKaMNFNmj4" crossorigin="anonymous"></script>
+<script src="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0-beta/js/bootstrap.min.js" integrity="sha384-h0AbiXch4ZDo7tp9hKZ4TsHbi047NrKGLO3SEJAg45jXxnGIfYzk4Si90RDIqNm1" crossorigin="anonymous"></script>
+<script type="text/javascript">
+const MESSAGE_TYPES = ['primary', 'secondary', 'success', 'danger', 'warning', 'info', 'light', 'dark'];
+const UNDO_HTML_TEMPLATE = '<span class="undo" onclick="undo()">[UNDO]</span>';
+
+var y = {"とりあえず":[]};
+var prevy = {"とりあえず":[]};
+var searchHistory = [];
+var selectedGenre = '';
+var showingMenu = false;
+
+$('input[type=checkbox]').on('change', function(){
+    var id = $(this).attr('id');
+    if (typeof id != 'undefined'){
+        window.localStorage.setItem(id, $(this).prop('checked'));
+    }
+});
+$('body').on('dragenter', function (e) {
+    e.stopPropagation();
+    e.preventDefault();
+    if ($('html,body').scrollTop() > 100){
+        $('html,body').animate({scrollTop: 0}, 500, 'swing');
+    }
+})
+$('body').on('dragover', function (e)
+{
+    e.stopPropagation();
+    e.preventDefault();
+    if (e.pageX > $('body').outerWidth(true)/2) {
+        $('#title').addClass('dragging');
+        if ($('#url').hasClass('dragging')) $('#url').removeClass('dragging');
+    } else {
+        $('#url').addClass('dragging');
+        if ($('#title').hasClass('dragging')) $('#title').removeClass('dragging');
+    }
+});
+$('body').on('dragleave', function (e){
+    e.stopPropagation();
+    e.preventDefault();
+    if ($('#url, #title').hasClass('dragging')){
+        $('#url, #title').removeClass('dragging');
+    }
+})
+$('body').on('drop', function (e){
+    e.stopPropagation();
+    e.preventDefault();
+    var sel = '#url';
+    if (e.pageX > $('body').outerWidth(true)/2) sel = '#title';
+    var txt = e.originalEvent.dataTransfer.getData("text");
+    $(sel).val(txt);
+    $(sel).removeClass('dragging');
+    checkValidity();
+});
+$('#url, #title').on('input', function(e){
+    checkValidity();
+});
+$('#genre').on('mousedown', function(){
+    if ($('#registry').css('display') != 'none'){
+        $('#registry').css('display', 'none');
+    }
+});
+$('#url').on('click', function(){
+    if ($(this).hasClass('is-valid') && $('#registry').css('display') === 'none' && $('#registry').html() !== ''){
+        showAlready();
+    }
+})
+$('body').on('click', function(e){
+    if (showingMenu){
+        closeMenu();
+    }
+    if ($('#history').css('display') != 'none'){
+        $('#history').css('display', 'none');
+    }
+});
+$('#menu').on('click', function(e){
+    e.stopPropagation();
+});
+$('#addgenre').on('click', function (e){
+    e.stopPropagation();
+    if (addGenre($('#genrename').val())){
+        setSelGen($('#genrename').val());
+        $('#genreModal').modal('hide');
+        $('#genrename').val('');
+        refresh('gs');
+    } else {
+        $('#genrename').blur();
+        $('#genrename').focus();
+    }
+});
+$('#genrename').on("keypress", function(e) {
+    if (e.keyCode == 13) { // Enter
+        e.preventDefault();
+        e.stopPropagation();
+        if (addGenre($('#genrename').val())){
+            setSelGen($('#genrename').val());
+            $('#genreModal').modal('hide');
+            $('#genrename').val('');
+            refresh('gs');
+        } else {
+            $('#genrename').blur();
+            $('#genrename').focus();
+        }
+    }
+})
+$('#button').on('click', function (e){
+    sub();
+});
+$('#genreModal').on('shown.bs.modal', function () {
+    $('#genrename').focus();
+});
+$('#genre').on('change', function (){
+    setSelGen($(this).val());
+    refresh('s');
+})
+$('#loadRaw').on('click', function (){
+    try {
+        var toload = JSON.parse($('#raw').val());
+        var videocount = 0;
+        var genrecount = 0;
+        pushPrev();
+        for (var genre in toload){
+            var list = toload[genre];
+            for (var i = 0; i < list.length/2; i++){
+                var id = list[2*i];
+                var title = list[2*i+1];
+                if (!y.hasOwnProperty(genre)) {
+                    y[genre] = [];
+                    genrecount++;
+                }
+                if (!has(genre, id)){
+                    y[genre].push(id);
+                    y[genre].push(title);
+                    videocount++;
+                }
+            }
+        }
+        if (videocount===0&&genrecount===0){
+            message('JSONから新たに動画/Genreは追加しませんでした。');
+            return;
+        }
+        message('JSONから'+(videocount>0?videocount+'個の動画':'')+(genrecount>0&&videocount>0?'、':'')+(genrecount>0?genrecount+'個のGenre':'')+'を新たに読み込みました'+UNDO_HTML_TEMPLATE, 'success');
+        refresh((genrecount>0?'g':'')+(videocount>0?'v':''));
+    } catch(e) {
+        message(e, 'danger');
+    }
+});
+$('#saveEdit').on('click', function(){
+    var id = $('#editUrl').text();
+    var title = $('#editTitle').val();
+    var genre = $('#editGenre').val();
+    var oldtitle = $(this).attr('data-title');
+    var oldgenre = $(this).attr('data-genre');
+    if (title == '' || genre == '' || (title == oldtitle && genre == oldgenre)){
+        $('#editTitle').addClass('is-invalid');
+        $('#editGenre').addClass('is-invalid');
+    } else {
+        var mes = (oldtitle!==title ? oldtitle+'\n↓\n'+title : title)
+            +'\n\n'
+            +(oldgenre!==genre ? oldgenre+'\n↓\n'+genre : genre)
+            +'\n\n保存してよろしいですか?';
+        conf(mes, function(){
+            pushPrev();
+            var list = y[oldgenre];
+            var newlist = [];
+            for (var i = 0; i < list.length/2; i++){
+                if (list[2*i] != id){
+                    newlist.push(list[2*i]);
+                    newlist.push(list[2*i+1]);
+                }
+            }
+            y[oldgenre] = newlist;
+            y[genre].push(id);
+            y[genre].push(title);
+            message('動画「'+title+'」を編集しました'+UNDO_HTML_TEMPLATE, 'info');
+            refresh('v');
+            $('#editModal').modal('hide');
+        });
+    }
+});
+$('#editModal').on('hidden.bs.modal', function(){
+    $('#editTitle').removeClass('is-invalid');
+    $('#editGenre').removeClass('is-invalid');
+})
+$('#nicolist_historyCount').on('change', function(){
+    var sh = $(this).val();
+    if (int(sh) > 0){
+        localStorage.setItem('nicolist_historyCount', sh);
+    }
+});
+$('#searchQuery').on('focus', function (e) {
+    if (searchHistory.length === 0) return;
+    $('#history').html('');
+    for (var item of searchHistory) {
+        $('<a>', {
+            text: item,
+            'class': 'dropdown-item pointer',
+            click: function(e){
+                $('#searchQuery').val($(this).text());
+                search();
+            }
+        }).appendTo('#history');
+    }
+    $('#history').outerWidth($(this).outerWidth());
+    $('#history').css({
+        'display': 'inline-block',
+        'top': $(this).offset().top + $(this).outerHeight(),
+        'left': $(this).offset().left
+    });
+});
+$('#searchQuery').on('click', function (e) {
+    e.stopPropagation();
+})
+$('#search').on('click', function(e){
+    search();
+});
+
+function search() {
+    var value = $('#searchQuery').val();
+
+    if (value==='') {
+        message('検索クエリが空です。');
+        return;
+    }
+    
+    $('#sr').html('');
+    var s = $('<span>', {
+        'aria-hidden': 'true'
+    }).html('&times;');
+    $('<button>', {
+        'class': 'close',
+        'aria-label': 'Close',
+        click: function(e){
+            $('#sr').fadeOut();
+            $('#searchQuery').val('');
+            refreshStyle();
+        }
+    }).append(s).appendTo('#sr');
+
+    pushHistory(value);
+    var sq = escapeRegexp(value).replace(/\s/g, '\|').split('&');
+    var count = 0;
+    var mobj = {};
+    for (var genre in y){
+        var list = y[genre];
+        for (var i = 0; i < list.length/2; i++){
+            var id = list[2*i];
+            var title = list[2*i+1];
+            var isMatched = true;
+            for (var queryStr of sq){
+                var m = title.match(new RegExp(queryStr, 'gi'));
+                if (m == null){
+                    isMatched = false;
+                    break;
+                }
+            }
+            if (isMatched){
+                count ++;
+                if (count > 75){//マイリスの全動画の半分以上にマッチ
+                    $('#sr').text('検索条件「'+value+'」に一致する動画が多すぎます!');
+                    $('#sr').append(
+                        $('<button>', {
+                             html: '<span>&times;</span>',
+                            'class': 'close',
+                            'aria-label': 'Close',
+                            click: function(e){
+                                $('#sr').fadeOut('slow', refreshStyle);
+                            }
+                        })
+                    );
+                    $('#sr').fadeIn();
+                    return;
+                }
+                if (!mobj.hasOwnProperty(genre)){
+                    mobj[genre] = [];
+                }
+                mobj[genre].push(id);
+                mobj[genre].push(title);
+            }
+        }
+    }
+    if (Object.keys(mobj).length == 0) {
+        $('#sr').text('検索条件「'+value+'」に一致する動画はありませんでした。');
+        $('#sr').append(
+            $('<button>', {
+                html: '<span>&times;</span>',
+                'class': 'close',
+                'aria-label': 'Close',
+                click: function(e){
+                    $('#sr').fadeOut('slow', refreshStyle);
+                }
+            })
+        );
+        $('#sr').fadeIn();
+        return;
+    }
+    for (var _g in mobj){
+        var _l = mobj[_g];
+        $('<h5>', {
+            text: _g
+        }).appendTo('#sr')
+        for (var k = 0; k < _l.length/2; k++){
+            var _id = _l[2*k];
+            var _t = _l[2*k+1];
+            var numid = int(_id);
+            var div = $('<div>');
+            if ($('#nicolist_thumb_2').prop('checked')){
+                var a = $('<a>', {
+                    'href': 'http://www.nicovideo.jp/watch/' + _id,
+                    'target': '_blank'
+                })
+                a.append($('<img>',{
+                    'src': 'http://tn-skr'+((numid%4)+1)+'.smilevideo.jp/smile?i='+numid,
+                    'alt': '',
+                    'class': 'mr-4 img-thumbnail list_thumb'
+                }));
+                a.appendTo(div);
+            }
+            div.append($('<a>', {
+                'href': 'http://www.nicovideo.jp/watch/' + _id,
+                'target': '_blank',
+                'data-genre' : _g,
+                'data-id' : _id,
+                'data-title' : _t,
+                contextmenu: function(e){
+                    showMenu(e.pageX, e.pageY, $(this));
+                    return false;
+                },
+                text: _t
+            }));
+            div.appendTo('#sr');
+        }
+    }
+    $('#sr').append($('<br>'));
+    $('#sr').fadeIn();
+}
+
+function escapeRegexp(str) {
+    return str.replace(/[\-\[\]\/\{\}\(\)\*\?\+\.\\\^\$\|]/g, "\\$&");
+}
+
+function sub(){
+    if (checkValidity()){
+        var title = $('#title').val();
+        var genre = $('#genre').val();
+        var id = $('#url').val().match(/sm\d+|nm\d+/g)[0];
+
+        if (!has(genre, id)){
+            pushPrev();
+            y[genre].push(id);
+            y[genre].push(title);
+            refresh('v');//video change
+            message('動画「'+restr(title, 50)+'」を追加しました'+UNDO_HTML_TEMPLATE, 'success');
+            $('#url').val("");
+            $('#title').val("");
+            $('#url, #title').removeClass('is-valid');
+            $('#registry').fadeOut('slow', function(){$(this).html('')});
+            lastId = '';
+        } else {
+            message('すでに登録されています');
+            $('#registry').fadeOut();
+        }
+    }
+}
+
+function checkTitleValidity(node){
+    if (node.val() === "" || bytesize(node.val()) > 100){
+        if (node.hasClass('is-valid')){
+            node.removeClass('is-valid');
+        }
+        node.addClass('is-invalid');
+        return false;
+    } else {
+        if (node.hasClass('is-invalid')){
+            node.removeClass('is-invalid');
+        }
+        node.addClass('is-valid');
+        return true;
+    }
+}
+
+var lastId = '';
+
+function checkURLValidity(){
+    var m = $('#url').val().match(/sm\d+|nm\d+/g);
+    if (m != null){
+        if ($('#url').hasClass('is-invalid')){
+            $('#url').removeClass('is-invalid');
+        }
+        $('#url').addClass('is-valid');
+        if (m[0] !== lastId){
+            $('#registry').html('');
+            var already = false;
+            for (var genre in y){
+                var list = y[genre];
+                for (var i = 0; i < list.length/2; i++) {
+                    var id = list[2*i];
+                    var title = list[2*i+1];
+                    if (id === m[0]){
+                        $('#registry').append($('<div>', {
+                            html: genre+'<span class="ml-2 text-muted">('+restr(title, 50)+')</span>',
+                            'class': 'dropdown-item pointer',
+                            'data-genre': genre,
+                            click: function(){
+                                setSelGen($(this).attr('data-genre'));
+                                refresh('s');
+                                $('#registry').fadeOut();
+                            }
+                        }));
+                        already = true;
+                    }
+                }
+            }
+            if (already){
+                $('#registry').prepend($('<div>', {
+                    'class': 'dropdown-divider'
+                }));
+                $('#registry').prepend($('<div>', {
+                    text: 'この動画は以下のGenreに登録されています:',
+                    'class': 'bold dropdown-item'
+                }))
+                $('#registry').append($('<div>', {
+                    'class': 'dropdown-divider'
+                }));
+                $('#registry').append($('<div>', {
+                    text: '閉じる',
+                    click: function(){
+                        $('#registry').fadeOut();
+                    },
+                    'class': 'dropdown-item pointer'
+                }));
+                showAlready();
+            }
+            lastId = m[0];
+        }
+        return true;
+    } else {
+        if ($('#url').hasClass('is-valid')){
+            $('#url').removeClass('is-valid');
+        }
+        $('#url').addClass('is-invalid');
+        return false;
+    }
+}
+
+function showAlready(){
+    $('#registry').css({
+        'display': 'inline-block',
+        'top': $('#url').offset().top + $('#url').outerHeight(),
+        'left': $('#url').offset().left,
+        'min-width': $('#url').outerWidth()
+    });
+}
+
+function checkGenreValidity(){
+    if ($('#genre').val() === ""){
+        $('#genre').addClass('is-invalid');
+        return false;
+    }
+    return true;
+}
+
+function checkValidity(){
+    var flag = checkGenreValidity();
+    flag = checkURLValidity() && flag;
+    flag = checkTitleValidity($('#title')) && flag;
+    if (!flag){
+        $('#button').prop('disabled', true);
+    } else {
+        $('#button').prop('disabled', false);
+    }
+    return flag;
+}
+
+function pushHistory(queryStr) {
+    if ($.inArray(queryStr, searchHistory) === -1){
+        var _a = [];
+        _a.push(queryStr);
+        var count = Math.min(int($('#nicolist_historyCount').val())-1, searchHistory.length);
+        for (var i = 0; i < count; i++) {
+            _a.push(searchHistory[i]);
+        }
+        searchHistory = _a;
+    } else {
+        var _a = [];
+        _a.push(queryStr);
+        for (var i = 0; i < searchHistory.length; i++) {
+            if (i != $.inArray(queryStr, searchHistory)){
+                _a.push(searchHistory[i]);
+            }
+        }
+        searchHistory = _a;
+    }
+    localStorage.setItem('searchhistory', JSON.stringify(searchHistory));
+}
+
+function init(){
+    $('input[type=checkbox]').each(function(){    
+        var id = $(this).attr('id');
+        if (typeof id != 'undefined'){
+            var bool = window.localStorage.getItem(id);
+            if (bool == 'true'){
+                $(this).prop('checked', true);
+            } else {
+                $(this).prop('checked', false);
+            }
+        }
+    });
+    var tabs = localStorage.getItem('_nicolistTabCount');
+    if (tabs != null){
+        tabs = int(tabs);
+        message('複数タブで同時に閲覧している可能性があります', 'danger', false);
+        localStorage.setItem('_nicolistTabCount', tabs+1);
+    } else {
+        localStorage.setItem('_nicolistTabCount', 1);
+    }
+    var l = localStorage.getItem('nicolist');
+    if (l != null){
+        try {
+            l = JSON.parse(l);
+            y = l;
+        } catch(e) {
+            message(e, 'danger');
+        }
+    }
+    var s = localStorage.getItem('selectedgenre');
+    if (Object.keys(y).length > 0){
+        if (s != null){
+            setSelGen(s);
+        } else {
+            setSelGen(Object.keys(y)[0]);
+        }
+        refresh('s');
+    }
+    var sh = localStorage.getItem('searchhistory');
+    if (sh != null){
+        searchHistory = JSON.parse(sh);
+        if (!$.isArray(searchHistory)){
+            searchHistory = [];
+        }
+    }
+    var nh = localStorage.getItem('nicolist_historyCount');
+    if (nh != null){
+        $('#nicolist_historyCount').val(int(nh));
+    }
+    refresh('vgs');
+}
+
+function unload(){
+    var tabs = int(localStorage.getItem('_nicolistTabCount'));
+    if (tabs == 1){
+        //このタブのみ
+        localStorage.removeItem('_nicolistTabCount');
+    } else if (tabs >= 2){
+        localStorage.setItem('_nicolistTabCount', tabs-1);
+    }
+}
+
+var sampleObjectTree = {
+    "おもしろ": ["sm9", "レッツゴー", "sm666", "R.O.D"],
+    "感動": ["sm114514", "ATOLS miku0"]
+}
+
+function refresh(whatChanged){
+    var videoChanged = whatChanged.indexOf('v') != -1;
+    var genreChanged = whatChanged.indexOf('g') != -1;
+    var selectChanged = whatChanged.indexOf('s') != -1;
+
+    if (selectChanged || genreChanged){
+        //genreのselectの更新
+        //#leftの更新
+        $("select[role='genre']").html('');
+        $('#left').html('');
+        for (var genre in y){
+            //select更新
+            $("select[role='genre']").each(function(i, elem){
+                $(elem).append($('<option>', {
+                    'value': genre,
+                    text: genre
+                }));
+            });
+            //#left更新
+            $('<li>', {
+                'class': (genre === selectedGenre ? 'list-group-item selected' : 'list-group-item'),
+                text: genre,
+                click: function(){
+                    var genre2 = $(this).text();
+                    if (selectedGenre != genre2){
+                        setSelGen(genre2);
+                        refresh('s');
+                    }
+                }
+            }).appendTo("#left");
+        }
+
+        var g = localStorage.getItem('selectedgenre');
+        if (g != null){
+            $('select[role="genre"]').val(g);
+        }
+    }
+
+
+    if (selectChanged || genreChanged || videoChanged){
+        //#rightの更新
+        $("#right").html('');
+
+        if (selectedGenre === 'とりあえず'){
+            $("<h4>", {
+                text: selectedGenre
+            }).appendTo("#right");
+        } else {
+            $("<h4>", {
+                text: selectedGenre
+            }).append(
+                $('<small>', {
+                    'class': 'removevideo',
+                    'data-genre' : selectedGenre,
+                    text: '×',
+                    click: function() {
+                        removeGenre($(this));
+                    }
+                })
+            ).appendTo("#right");
+        }
+        var list = y[selectedGenre];
+        for (var i = 0; i < list.length/2; i++){
+            var id = list[2*i];
+            var title = list[2*i+1];
+            var div = $('<div>');
+            var numid = int(id);
+
+            if ($('#nicolist_thumb').prop('checked')){
+                var a = $('<a>', {
+                    'href': 'http://www.nicovideo.jp/watch/' + id,
+                    'target': '_blank'
+                });
+                a.append($('<img>',{
+                    'src': 'http://tn-skr'+((numid%4)+1)+'.smilevideo.jp/smile?i='+numid,
+                    'alt': '',
+                    'class': 'mr-4 img-thumbnail list_thumb'
+                }));
+                a.appendTo(div);
+            }
+            div.append($( "<a>", {
+                "href": 'http://www.nicovideo.jp/watch/' + id,
+                'target': '_blank',
+                'data-genre' : selectedGenre,
+                'data-id' : id,
+                'data-title' : title,
+                contextmenu: function(e){
+                    showMenu(e.pageX, e.pageY, $(this));
+                    return false;
+                },
+                text: restr(title, 80)
+            }));
+            div.appendTo("#right");
+        }
+    }
+
+
+    if (genreChanged || videoChanged){
+        if ($('#registry').html() !== ''){
+            var m = $('#url').val().match(/sm\d+|nm\d+/g);
+            if (m != null){
+                if (m[0] !== lastId){
+                    $('#registry').html('');
+                    var already = false;
+                    for (var genre in y){
+                        var list = y[genre];
+                        for (var i = 0; i < list.length/2; i++) {
+                            var id = list[2*i];
+                            var title = list[2*i+1];
+                            if (id === m[0]){
+                                $('#registry').append($('<div>', {
+                                    text: genre+'<span class="ml-2 text-muted">('+restr(title, 50)+')</span>',
+                                    'class': 'dropdown-item pointer',
+                                    'data-genre': genre,
+                                    click: function(){
+                                        setSelGen($(this).attr('data-genre'));
+                                        refresh('s');
+                                        $('#registry').fadeOut();
+                                    }
+                                }));
+                                already = true;
+                            }
+                        }
+                    }
+                    if (already){
+                        $('#registry').prepend($('<div>', {
+                            'class': 'dropdown-divider'
+                        }));
+                        $('#registry').prepend($('<div>', {
+                            text: 'この動画は以下のGenreに登録されています:',
+                            'class': 'bold dropdown-item'
+                        }))
+                        $('#registry').append($('<div>', {
+                            'class': 'dropdown-divider'
+                        }));
+                        $('#registry').append($('<div>', {
+                            text: '閉じる',
+                            click: function(){
+                                $('#registry').fadeOut();
+                            },
+                            'class': 'dropdown-item pointer'
+                        }));
+                    }
+                    lastId = m[0];
+                }
+            }
+        }
+
+        $('#out').val(JSON.stringify(y, null, '    '));
+        localStorage.setItem('nicolist', JSON.stringify(y));
+    }
+}
+
+function showMenu(x, y, cont){
+    var id = cont.attr('data-id');
+    var title = cont.attr('data-title');
+    $("#menu").children('a').each(function(i, elem){
+        if ($(elem).attr('role') === 'title'){
+            $(elem).text(title);
+        } else if ($(elem).attr('role') === 'remove'){
+            $(elem).on('click', function(){
+                removeVideo(cont);
+                closeMenu();
+            });
+        } else if ($(elem).attr('role') === 'edit'){
+            $(elem).on('click', function(){
+                showEditModal(cont);
+                closeMenu();
+            });
+        } else if ($(elem).attr('role') === 'open'){
+            $(elem).on('click', function(){
+                window.open('http://www.nicovideo.jp/watch/'+id, '_blank');
+                closeMenu();
+            });
+        }
+    });
+    $('#menu').css({
+        'display': 'inline-block',
+        'top': y,
+        'left': x
+    });
+    showingMenu = true;
+}
+
+function showEditModal(cont){
+    var id = cont.attr('data-id');
+    var numid = int(id);
+    var title = cont.attr('data-title');
+    var genre = cont.attr('data-genre');
+    $('#editThumb').attr('src', 'http://tn-skr'+((numid%4)+1)+'.smilevideo.jp/smile?i='+numid);
+    $('#editUrl').text(id);
+    $('#editUrl').parent().attr('href', 'http://www.nicovideo.jp/watch/'+id);
+    $('#editTitle').val(title);
+    $('#editGenre').val(genre);
+    $('#saveEdit').attr('data-title', title);
+    $('#saveEdit').attr('data-genre', genre);
+    $('#editModal').modal();
+}
+
+function closeMenu(){
+    $('#menu').css('display', 'none');
+    showingMenu = false;
+}
+
+function has(genre, id){
+    var list = y[genre];
+    for (var i = 0; i < list.length/2; i++){
+        if (list[2*i] === id) return true;
+    }
+    return false;
+}
+
+function addGenre(name){
+    if (bytesize(name) > 50){
+        message('Genreの名前はできるだけ短くお願いします', 'warning', '#alert-genre');
+        return false;
+    }
+    if (bytesize(name) === 0){
+        message('フォームにデータを入力してください', 'warning', '#alert-genre');
+        return false;
+    }
+    if (!(name in y)){
+        pushPrev();
+        y[name] = [];
+        message('Genre「'+name+'」を追加しました'+UNDO_HTML_TEMPLATE, 'success');
+        return true;
+    } else {
+        message('Genre「'+name+'」は既に存在しているようです', 'warning', '#alert-genre');
+        return false;
+    }
+}
+
+function removeVideo(elem){
+    var genre = elem.attr('data-genre');
+    var id = elem.attr('data-id');
+    var title = elem.attr('data-title');
+    conf('本当に動画「'+restr(title, 50)+'」を削除しますか？', function(){
+        pushPrev();
+        var list = y[genre];
+        var newlist = [];
+        for (var i = 0; i < list.length/2; i++){
+            if (list[2*i] != id){
+                newlist.push(list[2*i]);
+                newlist.push(list[2*i+1]);
+            }
+        }
+        y[genre] = newlist;
+        message('動画「'+restr(title, 50)+'」を削除しました'+UNDO_HTML_TEMPLATE, 'danger');
+        refresh('v');//video change
+    });
+}
+
+function removeGenre(elem){
+    var genre = elem.attr('data-genre');
+    confirm2('本当にGenre「'+genre+'」を削除しますか？\n'+(y[genre].length/2)+'個の動画が登録されています。', function(){
+        var newy = {}; 
+        pushPrev();
+        for (var oldgenre in y){
+            if (genre != oldgenre){
+                newy[oldgenre] = y[oldgenre];
+            }
+        }
+        y = newy;
+        message('Genre「'+genre+'」を削除しました'+UNDO_HTML_TEMPLATE, 'danger');
+        setSelGen(Object.keys(y)[0]);
+        refresh('gs');//genre change
+    });
+}
+
+function setSelGen(genre){
+    if (!y.hasOwnProperty(genre)) {
+        setSelGen(Object.keys(y)[0]);
+        message('Invalid selected genre was saved... :(', 'danger');
+        return;
+    }
+    selectedGenre = genre;
+    localStorage.setItem('selectedgenre', selectedGenre);
+}
+
+function message(mes, type, wrapper) {
+    if (typeof type === 'undefined' || MESSAGE_TYPES.indexOf(type) == -1) type = 'warning';
+    if (typeof wrapper === 'undefined') wrapper = '#alert';
+
+    var div = $('<div>', {
+        'class': 'alert alert-'+type
+    }).css('display', 'none');
+    $('<button>', {
+        html: '<span>&times;</span>',
+        'type':'button',
+        'class':'close',
+        click: function(){
+            $(this).parent().fadeOut('slow', refreshStyle);
+        }
+    }).appendTo(div);
+    $('<span>', {
+        html: mes
+    }).appendTo(div);
+    
+    $(wrapper).html('');
+    $(wrapper).append(div);
+    div.fadeIn();
+}
+
+function conf(mes, func){
+    if ($('#nicolist_del').prop('checked')){
+        func.call(window);
+    } else {
+        confirm2(mes, func);
+    }
+}
+
+function confirm2(mes, func){
+    $('#confDialog').html(mes);
+    $('#confOK').html('').append($('<button>', {
+        text: 'はい',
+        'class': 'btn btn-primary',
+        click: func,
+        'data-dismiss': 'modal'
+    }));
+    $('#confModal').modal('show');
+}
+
+function pushPrev(){
+    prevy = copy(y);
+}
+
+function undo() {
+    var _c = copy(y);
+    y = copy(prevy);
+    prevy = _c;
+    message('UNDOしました<span class="undo" onclick="redo()">[REDO]</span>', 'primary');
+    refresh('vgs');
+}
+
+function redo() {
+    var _c = copy(y);
+    y = copy(prevy);
+    prevy = _c;
+    message('REDOしました'+UNDO_HTML_TEMPLATE, 'primary');
+    refresh('vgs');
+}
+
+function copy(obj){
+    return $.extend(true, {}, obj);
+}
+
+function random(){
+    var keys = Object.keys(y);
+    var rand = Math.random() * keys.length;
+    var genre = keys[Math.floor(rand)];
+    var list = y[genre];
+    var rand2 = Math.floor(Math.random() * (list.length/2));
+    var id = list[rand2*2];
+    var numid = int(id);
+    var title = list[rand2*2 + 1];
+    if ($('#nicolist_rand').prop('checked')){
+        $('#random').html('');
+    }
+    if ($('#random').html() === ''){
+        $('#random').append($('<button>', {
+            html: '<span>&times;</span>',
+            'type':'button',
+            'class':'close',
+            click: function(){
+                $(this).parent().fadeOut('slow', function(){refreshStyle();$(this).html('')});
+            }
+        }));
+    }
+    var div = $('<div>');
+    if ($('#nicolist_thumb_2').prop('checked')){
+        var a = $('<a>', {
+            'href': 'http://www.nicovideo.jp/watch/' + id,
+            'target': '_blank'
+        });
+        a.append($('<img>',{
+            'src': 'http://tn-skr'+((numid%4)+1)+'.smilevideo.jp/smile?i='+numid,
+            'alt': '',
+            'class': 'mr-4 img-thumbnail'+($('#nicolist_rand').prop('checked')?'':' list_thumb')
+        }));
+        a.appendTo(div);
+    }
+    div.append($('<a>', {
+        text: title,
+        'href': 'http://www.nicovideo.jp/watch/'+id,
+        'target': '_blank',
+        'data-genre' : genre,
+        'data-id' : id,
+        'data-title' : title,
+        contextmenu: function(e){
+            showMenu(e.pageX, e.pageY, $(this));
+            return false;
+        }
+    }));
+    div.append($('<span>', {
+        text: '('+genre+')',
+        'class': 'ml-2'
+    }));
+    div.appendTo('#random');
+    $('#random').css('display', 'block');
+}
+
+function refreshStyle(){
+    if ($('#history').css('display') != 'none'){
+        $('#history').css({
+            'top': $('#searchQuery').offset().top + $('#searchQuery').outerHeight(),
+            'left': $('#searchQuery').offset().left,
+            'min-width': $('#searchQuery').outerWidth()
+        });
+    }
+    if ($('#registry').css('display') !== 'none'){
+        $('#registry').css({
+            'top': $('#url').offset().top + $('#url').outerHeight(),
+            'left': $('#url').offset().left,
+            'min-width': $('#url').outerWidth()
+        });
+    }
+}
+
+function bytesize(str) {
+    return encodeURIComponent(str).replace(/%../g, "a").length;
+}
+
+function int(str){
+    var num = parseInt(str, 10);
+    if (isNaN(num)){
+        return parseInt(str.match(/\d+/)[0], 10);
+    } else {
+        return num;
+    }
+}
+
+function restr(str, max){
+    if (typeof max === 'undefined') max = 50;
+    if (bytesize(str)>max){
+        var count = 0;
+        var newstr = ''
+        for (var i = 0; i < str.length; i++) {
+            var chara = str.charAt(i);
+            count += bytesize(chara);
+            if (count>max){
+                return newstr + '...';
+            } else {
+                newstr += chara;
+            }
+        }
+    } else {
+        return str;
+    }
+}
+
+</script>
+</body>
+</html>
