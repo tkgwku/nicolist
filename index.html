@@ -763,7 +763,7 @@ function init(){
     var tabs = localStorage.getItem('_nicolistTabCount');
     if (tabs != null){
         tabs = int(tabs);
-        message('複数タブで同時に閲覧している可能性があります', 'danger', false);
+        message('複数タブで同時に閲覧している可能性があります', 'danger', null, true);
         localStorage.setItem('_nicolistTabCount', tabs+1);
     } else {
         localStorage.setItem('_nicolistTabCount', 1);
@@ -1094,21 +1094,24 @@ function setSelGen(genre){
     localStorage.setItem('selectedgenre', selectedGenre);
 }
 
-function message(mes, type, wrapper) {
-    if (typeof type === 'undefined' || MESSAGE_TYPES.indexOf(type) == -1) type = 'warning';
-    if (typeof wrapper === 'undefined') wrapper = '#alert';
+function message(mes, type, wrapper, permanent) {
+    if (typeof type != 'string' || MESSAGE_TYPES.indexOf(type) == -1) type = 'warning';
+    if (typeof wrapper != 'string' || wrapper === '') wrapper = '#alert';
+    if (typeof permanent != 'boolean') permanent = false;
 
     var div = $('<div>', {
         'class': 'alert alert-'+type
     }).css('display', 'none');
-    $('<button>', {
-        html: '<span>&times;</span>',
-        'type':'button',
-        'class':'close',
-        click: function(){
-            $(this).parent().fadeOut('slow', refreshStyle);
-        }
-    }).appendTo(div);
+    if (!permanent){
+        $('<button>', {
+            html: '<span>&times;</span>',
+            'type':'button',
+            'class':'close',
+            click: function(){
+                $(this).parent().fadeOut('slow', refreshStyle);
+            }
+        }).appendTo(div);
+    }
     $('<span>', {
         html: mes
     }).appendTo(div);
