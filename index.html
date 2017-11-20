@@ -17,7 +17,7 @@ button, label {cursor: pointer;}
 .selected, .list-group-item:hover{background-color: #f1f1f1;}
 #menu {display: none;position: absolute;}
 .form-inline *{margin-right: 5px}
-#sr, #random{display: none;border:1px solid #ddd;border-radius: 5px}
+#sr, #random{display: none;border:1px solid #ddd;border-radius: 5px;}
 #sr h5{margin-top: 1em}
 #history, #registry {position: absolute;margin: 0;border-top: none;border-radius: 0 0 5px 5px}
 .undo{text-decoration: underline;cursor: pointer;margin-left: 1em}
@@ -89,7 +89,8 @@ ul.tdftad li a:hover{
     <button type="submit" class="btn btn-outline-primary" data-toggle="modal" data-target="#genreModal">Add Genre</button>
     <input class="form-control mb-2 mt-2" type="text" placeholder="Search" aria-label="Search" id="searchQuery">
     <button class="btn btn-outline-success mb-2 mt-2" type="submit" id="search">Search</button>
-    <button class="btn btn-outline-secondary mb-2 mt-2" type="submit" onclick="random()">Random</button>
+    <button class="btn btn-outline-secondary mb-2 mt-2" type="submit" onclick="randomFromAll()">Random</button>
+    <button class="btn btn-outline-secondary mb-2 mt-2" type="submit" onclick="randomFromSel()">Random from selected genre</button>
 </div>
 
 <div id="random" class="alert">
@@ -141,7 +142,7 @@ ul.tdftad li a:hover{
     <input type="number" name="" style="max-width: 5em" id="nicolist_historyCount" value="7" class="form-control" size="">個まで検索履歴を表示
 </div>
 
-<p>raw output</p>
+<p>raw output <span id="length"></span></p>
 <div class="form-group">
 <textarea class="form-control" id="out" rows="3" onclick="this.focus();this.select()" readonly="readonly"></textarea>
 </div>
@@ -1030,6 +1031,7 @@ function refresh(whatChanged){
 
         $('#out').val(JSON.stringify(y, null, '    '));
         localStorage.setItem('nicolist', JSON.stringify(y));
+        $('#length').text('('+bytesize(JSON.stringify(y))+'byte)');
     }
 }
 
@@ -1229,19 +1231,23 @@ function copy(obj){
     return $.extend(true, {}, obj);
 }
 
-function random(){
+function randomFromAll(){
     var keys = Object.keys(y);
     var rand = Math.random() * keys.length;
     var genre = keys[Math.floor(rand)];
+    random(genre, true);
+}
+
+function random(genre, showGenre){
     var list = y[genre];
     var rand2 = Math.floor(Math.random() * (list.length/2));
     var id = list[rand2*2];
     var numid = int(id);
     var title = list[rand2*2 + 1];
     if ($('#nicolist_rand').prop('checked')){
-        $('#random').html('');
+        $('#randomVideo').html('');
     }
-    if ($('#randomVideo').html() === ''){
+    if (!$('#random button').length){// if #random button doesn't exist
         $('#random').prepend($('<button>', {
             html: '<span>&times;</span>',
             'type':'button',
@@ -1272,7 +1278,7 @@ function random(){
         a.appendTo(div);
     }
     div.append($('<a>', {
-        text: title,
+        text: restr(title, 70),
         'href': 'http://www.nicovideo.jp/watch/'+id,
         'target': '_blank',
         'data-genre' : genre,
@@ -1283,12 +1289,18 @@ function random(){
             return false;
         }
     }));
-    div.append($('<span>', {
-        text: '('+genre+')',
-        'class': 'ml-2'
-    }));
+    if (showGenre){
+        div.append($('<span>', {
+            text: '('+genre+')',
+            'class': 'ml-2 text-muted'
+        }));
+    }
     div.prependTo('#randomVideo');
     $('#random').css('display', 'block');
+}
+
+function randomFromSel(){
+    random(selectedGenre, !$('#nicolist_rand').prop('checked'));
 }
 
 function refreshStyle(){
