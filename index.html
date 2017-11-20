@@ -23,7 +23,19 @@ button, label {cursor: pointer;}
 .undo{text-decoration: underline;cursor: pointer;margin-left: 1em}
 #button:disabled{cursor: initial;}
 .bold{font-weight: bold;}
-.list_thumb{max-width: 91px}
+.list_thumb{
+    width: 91px;
+    height: 70px!important;
+    text-align: center;
+    line-height: 60px;
+    color: #333;
+    font-style: italic;
+    display: inline-block;
+}
+.list_thumb span{
+    display: inline-block;
+}
+
 
 div.tdftdiv{
     padding:3px;
@@ -80,7 +92,9 @@ ul.tdftad li a:hover{
     <button class="btn btn-outline-secondary mb-2 mt-2" type="submit" onclick="random()">Random</button>
 </div>
 
-<div id="random" class="alert"></div>
+<div id="random" class="alert">
+    <div id="randomVideo"></div>
+</div>
 <div id="sr" class="alert"></div>
 
 <div class="row" style="margin: 2em 0">
@@ -300,7 +314,12 @@ $('body').on('drop', function (e){
     e.stopPropagation();
     e.preventDefault();
     var sel = '#url';
-    if (e.pageX > $('body').outerWidth(true)/2) sel = '#title';
+    if (e.pageX > $('body').outerWidth(true)/2) {
+        sel = '#title';
+        if ($('#registry').css('display') != 'none'){
+            $('#registry').css('display', 'none');
+        }
+    }
     var txt = e.originalEvent.dataTransfer.getData("text");
     $(sel).val(txt);
     $(sel).removeClass('dragging');
@@ -318,7 +337,12 @@ $('#url').on('click', function(){
     if ($(this).hasClass('is-valid') && $('#registry').css('display') === 'none' && $('#registry').html() !== ''){
         showAlready();
     }
-})
+});
+$('#title').on('click', function(){
+    if ($('#registry').css('display') != 'none'){
+        $('#registry').css('display', 'none');
+    }
+});
 $('body').on('click', function(e){
     if (showingMenu){
         closeMenu();
@@ -562,12 +586,19 @@ function search() {
                 var a = $('<a>', {
                     'href': 'http://www.nicovideo.jp/watch/' + _id,
                     'target': '_blank'
-                })
-                a.append($('<img>',{
-                    'src': 'http://tn-skr'+((numid%4)+1)+'.smilevideo.jp/smile?i='+numid,
-                    'alt': '',
-                    'class': 'mr-4 img-thumbnail list_thumb'
-                }));
+                });
+                if (_id.match(/sm\d+|nm\d+/g) != null){
+                    a.append($('<img>',{
+                        'src': 'http://tn-skr'+((numid%4)+1)+'.smilevideo.jp/smile?i='+numid,
+                        'alt': 'No Image',
+                        'class': 'mr-4 img-thumbnail list_thumb'
+                    }));
+                } else {
+                    a.append($('<div>',{
+                        html: '<span>Channel</span>',
+                        'class': 'mr-4 img-thumbnail list_thumb'
+                    }));
+                }
                 a.appendTo(div);
             }
             div.append($('<a>', {
@@ -593,11 +624,15 @@ function escapeRegexp(str) {
     return str.replace(/[\-\[\]\/\{\}\(\)\*\?\+\.\\\^\$\|]/g, "\\$&");
 }
 
+function videoIdMatch(str){
+    return str.match(/sm\d+|nm\d+|\d+/g);
+}
+
 function sub(){
     if (checkValidity()){
         var title = $('#title').val();
         var genre = $('#genre').val();
-        var id = $('#url').val().match(/sm\d+|nm\d+/g)[0];
+        var id = videoIdMatch($('#url').val())[0];
 
         if (!has(genre, id)){
             pushPrev();
@@ -636,7 +671,7 @@ function checkTitleValidity(node){
 var lastId = '';
 
 function checkURLValidity(){
-    var m = $('#url').val().match(/sm\d+|nm\d+/g);
+    var m = videoIdMatch($('#url').val());
     if (m != null){
         if ($('#url').hasClass('is-invalid')){
             $('#url').removeClass('is-invalid');
@@ -644,14 +679,14 @@ function checkURLValidity(){
         $('#url').addClass('is-valid');
         if (m[0] !== lastId){
             $('#registry').html('');
-            var already = false;
+            var already = $('<div>');
             for (var genre in y){
                 var list = y[genre];
                 for (var i = 0; i < list.length/2; i++) {
                     var id = list[2*i];
                     var title = list[2*i+1];
                     if (id === m[0]){
-                        $('#registry').append($('<div>', {
+                        already.append($('<div>', {
                             html: genre+'<span class="ml-2 text-muted">('+restr(title, 50)+')</span>',
                             'class': 'dropdown-item pointer',
                             'data-genre': genre,
@@ -661,18 +696,39 @@ function checkURLValidity(){
                                 $('#registry').fadeOut();
                             }
                         }));
-                        already = true;
                     }
                 }
             }
-            if (already){
-                $('#registry').prepend($('<div>', {
-                    'class': 'dropdown-divider'
-                }));
-                $('#registry').prepend($('<div>', {
+            if ($('#nicolist_thumb_2').prop('checked')){
+                var numid = int(m[0]);
+
+                if (m[0].match(/sm\d+|nm\d+/g) != null){
+                    $("#registry").append($('<img>',{
+                        'src': 'http://tn-skr'+((numid%4)+1)+'.smilevideo.jp/smile?i='+numid,
+                        'alt': 'No Image',
+                        'class': 'ml-2 img-thumbnail list_thumb'
+                    }));
+                } else {
+                    $("#registry").append($('<div>',{
+                        html: '<span>Channel</span>',
+                        'class': 'ml-2 img-thumbnail list_thumb'
+                    }));
+                }
+                if (already.html() != ''){
+                    $('#registry').append($('<div>', {
+                        'class': 'dropdown-divider'
+                    }));
+                }
+            }
+            if (already.html() != ''){
+                $('#registry').append($('<div>', {
                     text: 'この動画は以下のGenreに登録されています:',
                     'class': 'bold dropdown-item'
-                }))
+                }));
+                $('#registry').append($('<div>', {
+                    'class': 'dropdown-divider'
+                }));
+                $('#registry').append(already);
                 $('#registry').append($('<div>', {
                     'class': 'dropdown-divider'
                 }));
@@ -683,8 +739,8 @@ function checkURLValidity(){
                     },
                     'class': 'dropdown-item pointer'
                 }));
-                showAlready();
             }
+            showAlready();
             lastId = m[0];
         }
         return true;
@@ -888,11 +944,20 @@ function refresh(whatChanged){
                     'href': 'http://www.nicovideo.jp/watch/' + id,
                     'target': '_blank'
                 });
-                a.append($('<img>',{
-                    'src': 'http://tn-skr'+((numid%4)+1)+'.smilevideo.jp/smile?i='+numid,
-                    'alt': '',
-                    'class': 'mr-4 img-thumbnail list_thumb'
-                }));
+
+                if (id.match(/sm\d+|nm\d+/g) != null){
+                    a.append($('<img>',{
+                        'src': 'http://tn-skr'+((numid%4)+1)+'.smilevideo.jp/smile?i='+numid,
+                        'alt': 'No Image',
+                        'class': 'mr-4 img-thumbnail list_thumb'
+                    }));
+                } else {
+                    a.append($('<div>',{
+                        html: '<span>Channel</span>',
+                        'class': 'mr-4 img-thumbnail list_thumb'
+                    }));
+                }
+
                 a.appendTo(div);
             }
             div.append($( "<a>", {
@@ -914,7 +979,7 @@ function refresh(whatChanged){
 
     if (genreChanged || videoChanged){
         if ($('#registry').html() !== ''){
-            var m = $('#url').val().match(/sm\d+|nm\d+/g);
+            var m = videoIdMatch($('#url').val());
             if (m != null){
                 if (m[0] !== lastId){
                     $('#registry').html('');
@@ -1176,8 +1241,8 @@ function random(){
     if ($('#nicolist_rand').prop('checked')){
         $('#random').html('');
     }
-    if ($('#random').html() === ''){
-        $('#random').append($('<button>', {
+    if ($('#randomVideo').html() === ''){
+        $('#random').prepend($('<button>', {
             html: '<span>&times;</span>',
             'type':'button',
             'class':'close',
@@ -1192,11 +1257,18 @@ function random(){
             'href': 'http://www.nicovideo.jp/watch/' + id,
             'target': '_blank'
         });
-        a.append($('<img>',{
-            'src': 'http://tn-skr'+((numid%4)+1)+'.smilevideo.jp/smile?i='+numid,
-            'alt': '',
-            'class': 'mr-4 img-thumbnail'+($('#nicolist_rand').prop('checked')?'':' list_thumb')
-        }));
+        if (id.match(/sm\d+|nm\d+/g) != null){
+            a.append($('<img>',{
+                'src': 'http://tn-skr'+((numid%4)+1)+'.smilevideo.jp/smile?i='+numid,
+                'alt': 'No Image',
+                'class': 'mr-4 img-thumbnail'+($('#nicolist_rand').prop('checked')?'':' list_thumb')
+            }));
+        } else {
+            a.append($('<div>',{
+                html: '<span>Channel</span>',
+                'class': 'mr-4 img-thumbnail list_thumb'
+            }));
+        }
         a.appendTo(div);
     }
     div.append($('<a>', {
@@ -1215,7 +1287,7 @@ function random(){
         text: '('+genre+')',
         'class': 'ml-2'
     }));
-    div.appendTo('#random');
+    div.prependTo('#randomVideo');
     $('#random').css('display', 'block');
 }
 
