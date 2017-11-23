@@ -39,6 +39,9 @@ button, label {cursor: pointer;}
     font-style: italic;
     display: inline-block;
 }
+.ccwrapper{display: none;border-radius: 5px;border:1px solid #eee;padding: 8px;margin:5px 0;}
+.ccvideo{border:1px solid transparent;padding: 0 5px;cursor: pointer;}
+.ccvideo:hover{border-color: #4BB363}
 
 div.tdftdiv{
     padding:3px;
@@ -88,12 +91,13 @@ ul.tdftad li a:hover{
     </select>
 </div>
 <div class="form-group form-inline">
-    <button type="submit" class="btn btn-primary" id="button" disabled="">Submit</button>
-    <button type="submit" class="btn btn-outline-primary" data-toggle="modal" data-target="#genreModal">Add Genre</button>
+    <button type="submit" class="btn btn-primary" id="button" disabled="">追加</button>
+    <button type="submit" class="btn btn-outline-primary" data-toggle="modal" data-target="#genreModal">Genre追加</button>
+    <button type="submit" class="btn btn-outline-primary" id="ccopen">既存の動画でGenreを作成</button>
     <input class="form-control mb-2 mt-2" type="text" placeholder="Search" aria-label="Search" id="searchQuery">
-    <button class="btn btn-outline-success mb-2 mt-2" type="submit" id="search">Search</button>
-    <button class="btn btn-outline-secondary mb-2 mt-2" type="submit" onclick="randomFromAll()">Random</button>
-    <button class="btn btn-outline-secondary mb-2 mt-2" type="submit" onclick="randomFromSel()">Random from selected genre</button>
+    <button class="btn btn-outline-success mb-2 mt-2" type="submit" id="search">検索</button>
+    <button class="btn btn-outline-secondary mb-2 mt-2" type="submit" onclick="randomFromAll()">ランダム</button>
+    <button class="btn btn-outline-secondary mb-2 mt-2" type="submit" onclick="randomFromSel()">選択中のGenreからランダム</button>
 </div>
 
 <div id="random" class="alert">
@@ -161,7 +165,7 @@ ul.tdftad li a:hover{
 <footer style="margin-top: 3em">&copy; 2017 fine_diary, all rights reserved.</footer>
 
 <!-- ADD GENRE MODAL -->
-<div class="modal fade" id="genreModal" tabindex="-1" role="dialog" aria-labelledby="genreModalLabel" aria-hidden="true">
+<div class="modal fade" id="genreModal" tabindex="-1" role="dialog" aria-hidden="true">
   <div class="modal-dialog" role="document">
     <div class="modal-content">
       <div class="modal-header">
@@ -186,6 +190,43 @@ ul.tdftad li a:hover{
   </div>
 </div>
 <!-- ADD GENRE MODAL ends -->
+
+<!-- CREATE COPY MODAL -->
+<div class="modal fade" id="ccModal" tabindex="-1" role="dialog" aria-hidden="true">
+  <div class="modal-dialog" role="document">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title">CREATE COPY</h5>
+        <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+          <span aria-hidden="true">&times;</span>
+        </button>
+      </div>
+      <div class="modal-body">
+        <p>動画を選択してGenreを作成</p>
+
+        <div id="ccalert"></div>
+        <div>
+        <label class="custom-control custom-checkbox">
+            <input type="checkbox" class="custom-control-input" id="ccmove">
+            <span class="custom-control-indicator"></span>
+            <span class="custom-control-description">元の動画は削除しておく</span>
+        </label>
+        </div>
+        <div class="form-group">
+            <input type="text" class="form-control" id="ccname" placeholder="genre name">
+        </div>
+        <div id="ccvideos">
+            
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-primary" id="createcopy">Create Copy</button>
+        <button type="button" class="btn btn-secondary" data-dismiss="modal">Cancel</button>
+      </div>
+    </div>
+  </div>
+</div>
+<!-- CREATE COPY MODAL ends -->
 
 <!-- EDIT VIDEO MODAL -->
 <div class="modal fade" id="editModal" tabindex="-1" role="dialog" aria-labelledby="editModalLabel" aria-hidden="true">
@@ -292,9 +333,9 @@ $('body').on('dragenter', function (e) {
     e.stopPropagation();
     e.preventDefault();
     if ($('html,body').scrollTop() > 100){
-        $('html,body').animate({scrollTop: 0}, 500, 'swing');
+        $('html,body').stop().animate({scrollTop:0}, 'swing');
     }
-})
+});
 $('body').on('dragover', function (e)
 {
     e.stopPropagation();
@@ -315,7 +356,6 @@ $('body').on('dragleave', function (e){
     }
 })
 $('body').on('drop', function (e){
-    e.stopPropagation();
     e.preventDefault();
     var sel = '#url';
     if (e.pageX > $('body').outerWidth(true)/2) {
@@ -328,6 +368,7 @@ $('body').on('drop', function (e){
     $(sel).val(txt);
     $(sel).removeClass('dragging');
     checkValidity();
+    $('html,body').stop();
 });
 $('#url, #title').on('input', function(e){
     checkValidity();
@@ -495,6 +536,112 @@ $('#searchQuery').on('click', function (e) {
 })
 $('#search').on('click', function(e){
     search();
+});
+$('#ccopen').on('click', function(){
+    $('#ccvideos').html('');
+    for(var genre in y){
+        var wrapper = $('<div>');
+        var genre_name = $('<a>',{
+            click: function(){
+                $(this).next().next().fadeToggle();
+                return false;
+            },
+            text: genre,
+            'href':''
+        });
+        var genre_count = $('<span>',{
+            'data-count':'0'
+        });
+        var ccwrapper = $('<div>', {
+            'class':'ccwrapper'
+        })
+        var videos_table = $('<table>',{
+            'class':'cctable'
+        });
+        var list = y[genre];
+        for (var i = 0; i < list.length/2; i++) {
+            var id = list[2*i];
+            var title = list[2*i+1];
+            var tr = $('<tr>');
+            var video_div = $('<div>', {
+                'class':'ccvideo',
+                'data-title': title,
+                'data-id':id,
+                'data-genre':genre,
+                click: function(){
+                    var elem = $(this).parent().parent().prev();
+                    var count = int(elem.attr('data-count'));
+                    if ($(this).hasClass('alert-success')){
+                        $(this).removeClass('alert-success');
+                        count--;
+                    } else {
+                        $(this).addClass('alert-success');
+                        count++;
+                    }
+                    elem.attr('data-count', count);
+                    elem.text((count>0?' ('+count+')':''))
+                }
+            });
+            if ($('#nicolist_thumb').prop('checked')){
+                var td1 = $('<td>');
+                var img = createThumbImgElem(id, false);
+                td1.append(img);
+                tr.append(td1);
+            }
+            var td2 = $('<td>',{
+                text: title
+            });
+            tr.append(td2);
+            video_div.append(tr);
+            videos_table.append(video_div);
+        }
+        wrapper.append(genre_name);
+        wrapper.append(genre_count);
+        ccwrapper.append(videos_table);
+        wrapper.append(ccwrapper);
+        $('#ccvideos').append(wrapper);
+    }
+    $('#ccModal').modal('show');
+});
+$('#createcopy').on('click', function(){
+    var ccname = $('#ccname').val();
+    if (ccname === ''){
+        message('作成するGenreの名前を入力してください。', 'warning', '#ccalert');
+        $('#ccModal').stop().animate({scrollTop:0}, 'slow');
+        return;
+    } else if (Object.keys(y).indexOf(ccname) != -1){
+        message('既に存在するGenreです。', 'warning', '#ccalert');
+        $('#ccModal').stop().animate({scrollTop:0}, 'slow');
+        return;
+    } else {
+        pushPrev();
+        var list = new Array();
+        var remove_cb = $('#ccmove').prop('checked');
+        $('#ccvideos .alert-success').each(function(){
+            var title = $(this).attr('data-title');
+            var id = $(this).attr('data-id');
+            if (remove_cb){
+                var genre = $(this).attr('data-genre');
+                var list2 = y[genre];
+                var newlist = [];
+                for (var i = 0; i < list2.length/2; i++){
+                    if (list2[2*i] != id){
+                        newlist.push(list2[2*i]);
+                        newlist.push(list2[2*i+1]);
+                    }
+                }
+                y[genre] = newlist;
+            }
+            list.push(id);
+            list.push(title);
+        });
+        y[ccname] = list;
+        message('Genre「'+ccname+'」を作成しました。('+(list.length/2)+'個の動画が登録済み)'+UNDO_HTML_TEMPLATE, 'success');
+        setSelGen(ccname);
+        refresh('gvs');
+        $('#ccModal').modal('hide');
+        $('#ccname').val('');
+    }
 });
 
 function search() {
@@ -695,7 +842,7 @@ function checkURLValidity(){
                 }
             }
             if ($('#nicolist_thumb_2').prop('checked')){
-                createThumbImgElem(m[0], false).appendTo('#registry');
+                createThumbImgElem(m[0], false).addClass('ml-2').appendTo('#registry');
                 if (already.html() != ''){
                     $('#registry').append($('<div>', {
                         'class': 'dropdown-divider'
@@ -936,7 +1083,7 @@ function refresh(whatChanged){
                 a.append(createThumbImgElem(id, false));
             }
             a.append($('<span>',{
-                text: restr(title, 80)
+                text: restr2(title,30)
             }))
             a.appendTo(div);
             div.appendTo("#right");
@@ -1298,6 +1445,15 @@ function restr(str, max){
                 newstr += chara;
             }
         }
+    } else {
+        return str;
+    }
+}
+
+function restr2(str, max){
+    if (typeof max === 'undefined') max = 30;
+    if (str.length>max){
+        return str.substring(0, max)+'...';
     } else {
         return str;
     }
