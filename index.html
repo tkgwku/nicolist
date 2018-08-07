@@ -40,10 +40,13 @@ button, label {cursor: pointer;}
     font-style: italic;
     display: inline-block;
 }
+.ccgenrename{color: #2c6cd3;margin: 0.5em;cursor: pointer;transition: color 0.1s ease-in-out 0s;}
+.ccgenrename:hover{color: #9fbff2}
+.ccgenrename span{color: #000!important}
 .ccwrapper{display: none;border-radius: 5px;border:1px solid #eee;padding: 8px;margin:5px 0;}
-.ccvideo{border:1px solid transparent;padding: 0 5px;cursor: pointer;transition: background-color,border-color 0.1s ease-in-out 0s;}
-.ccvideo:hover{border-color: #4BB363}
-
+.ccvideo{border-left:2px solid transparent;padding: 0 5px;cursor: pointer;transition: background-color,border-color,color 0.1s ease-in-out 0s;}
+.ccvideo:hover{border-left-color: #4BB363;color: #417238}
+.rightvideo{border-bottom:1px solid #d9eef4;margin-bottom: .2em}
 div.tdftdiv{
     padding:3px;
     line-height:16px;
@@ -68,6 +71,9 @@ ul.tdftad li.tdftlink{
 ul.tdftad li a:hover{
     text-decoration:none;
 }
+.silent{
+	display: none;
+}
 </style>
 </head>
 
@@ -87,111 +93,38 @@ ul.tdftad li a:hover{
 <span class="input-group-addon" id="basic-addon2">title</span>
 <input type="text" class="form-control" id="title" aria-describedby="basic-addon2">
 </div>
+
 <div class="form-group">
     <select class="form-control" role="genre" id="genre"></select>
     </select>
 </div>
+
 <div class="form-group form-inline">
     <button type="submit" class="btn btn-primary mb-1 mt-1" id="button" disabled="">追加</button>
-    <button type="submit" class="btn btn-outline-primary mb-1 mt-1" data-toggle="modal" data-target="#genreModal">Genre追加</button>
+    <button type="submit" class="btn btn-outline-primary mb-1 mt-1" data-toggle="modal" data-target="#genreModal" onclick="$('#alert-genre').html('');">Genre追加</button>
     <button type="submit" class="btn btn-outline-primary mb-1 mt-1" id="ccopen">既存の動画でGenreを作成</button>
     <input class="form-control mb-1 mt-1" type="text" placeholder="Search" aria-label="Search" id="searchQuery">
     <button class="btn btn-outline-success mb-1 mt-1" type="submit" id="search">検索</button>
-    <button class="btn btn-outline-secondary mb-1 mt-1" type="submit" onclick="randomFromAll()">ランダム</button>
-    <button class="btn btn-outline-secondary mb-1 mt-1" type="submit" onclick="randomFromSel()">選択中のGenreからランダム</button>
+    <button class="btn btn-outline-info mb-1 mt-1" type="submit" onclick="randomFromAll()">ランダム</button>
+    <button class="btn btn-outline-info mb-1 mt-1" type="submit" onclick="randomFromSel()">選択中のGenreからランダム</button>
+    <button class="btn btn-outline-secondary mb-1 mt-1" type="submit" data-toggle="modal" data-target="#prefModal">設定</button>
 </div>
 
 <div id="random" class="alert">
     <div id="randomVideo"></div>
 </div>
+
 <div id="sr" class="alert"></div>
 
 <div class="row" style="margin: 2em 0">
-<ul class="list-group col-sm-3 mb-4" style="display: inline-block;" id="left">
-</ul>
-<div class="col" style="display: inline-block;padding:0;" id="right">
-
-</div>
-</div>
-
-<div>
-<label class="custom-control custom-checkbox">
-    <input type="checkbox" class="custom-control-input" id="nicolist_del">
-    <span class="custom-control-indicator"></span>
-    <span class="custom-control-description">confirmを非表示</span>
-</label>
-</div>
-
-<div>
-<label class="custom-control custom-checkbox">
-    <input type="checkbox" class="custom-control-input" id="nicolist_thumb" onchange="refresh('v')">
-    <span class="custom-control-indicator"></span>
-    <span class="custom-control-description">一覧でthumbnailを表示</span>
-</label>
-</div>
-
-<div>
-<label class="custom-control custom-checkbox">
-    <input type="checkbox" class="custom-control-input" id="nicolist_thumb_res" checked="">
-    <span class="custom-control-indicator"></span>
-    <span class="custom-control-description">検索結果・Randomでthumbnailを表示</span>
-</label>
-</div>
-
-<div>
-<label class="custom-control custom-checkbox">
-    <input type="checkbox" class="custom-control-input" id="nicolist_thumb_cc" checked="">
-    <span class="custom-control-indicator"></span>
-    <span class="custom-control-description">「既存の動画でGenreを作成」でthumbnailを表示</span>
-</label>
-</div>
-
-<div>
-<label class="custom-control custom-checkbox">
-    <input type="checkbox" class="custom-control-input" id="nicolist_rand" checked="">
-    <span class="custom-control-indicator"></span>
-    <span class="custom-control-description">Randomは1項目のみ表示</span>
-</label>
-</div>
-
-<div>
-<label class="custom-control custom-checkbox">
-    <input type="checkbox" class="custom-control-input" id="nicolist_and" checked="">
-    <span class="custom-control-indicator"></span>
-    <span class="custom-control-description">AND検索をする</span>
-</label>
-</div>
-
-<div>
-<label class="custom-control custom-checkbox">
-    <input type="checkbox" class="custom-control-input" id="nicolist_sort" onchange="refresh('v')" checked="">
-    <span class="custom-control-indicator"></span>
-    <span class="custom-control-description">新しいものが上に来るように表示</span>
-</label>
-</div>
-
-<div class="mb-1 form-inline">
-    <input type="number" name="" style="max-width: 5em" id="nicolist_historyCount" value="7" class="form-control" size="">個まで検索履歴を表示
-</div>
-
-<div class="mb-4 form-inline">
-    <input type="number" name="" style="max-width: 5em" id="nicolist_msc" value="75" class="form-control" size="">個以上がヒットした場合表示しない
-</div>
-
-<p>raw output <span id="length"></span></p>
-<div class="form-group">
-<textarea class="form-control" id="out" rows="3" onclick="this.focus();this.select()" readonly="readonly"></textarea>
-</div>
-<p>from raw output</p>
-<div class="form-group">
-<textarea class="form-control" id="raw" rows="3"></textarea>
-
-</div>
-<button type="submit" class="btn btn-outline-primary" id="loadRaw">Add from Raw Output</button>
-
+	<ul class="list-group col-sm-3 mb-4" style="display: inline-block;" id="left"></ul>
+	<div class="col" style="display: inline-block;padding:0;" id="right"></div>
 </div>
 
 <footer style="margin-top: 3em">&copy; 2017 fine_diary, all rights reserved.</footer>
+
+</div>
+<!-- container ends -->
 
 <!-- ADD GENRE MODAL -->
 <div class="modal fade" id="genreModal" tabindex="-1" role="dialog" aria-hidden="true">
@@ -231,9 +164,14 @@ ul.tdftad li a:hover{
         </button>
       </div>
       <div class="modal-body">
-        <p>動画を選択してGenreを作成</p>
+        <p>動画を選択して新しいGenreを作成</p>
 
         <div id="ccalert"></div>
+
+        <div class="form-group">
+            <input type="text" class="form-control" id="ccname" placeholder="新しいGenreの名前を入力...">
+        </div>
+
         <div>
         <label class="custom-control custom-checkbox">
             <input type="checkbox" class="custom-control-input" id="ccmove">
@@ -241,9 +179,15 @@ ul.tdftad li a:hover{
             <span class="custom-control-description">元の動画は削除しておく</span>
         </label>
         </div>
-        <div class="form-group">
-            <input type="text" class="form-control" id="ccname" placeholder="genre name">
-        </div>
+
+		<div>
+		<label class="custom-control custom-checkbox">
+		    <input type="checkbox" class="custom-control-input" id="nicolist_thumb_cc" checked="" onchange="cctntoggle()">
+		    <span class="custom-control-indicator"></span>
+		    <span class="custom-control-description">サムネイルを表示</span>
+		</label>
+		</div>
+
         <div id="ccvideos">
             
         </div>
@@ -319,6 +263,100 @@ ul.tdftad li a:hover{
   </div>
 </div>
 <!-- CONFIRM MODAL ends -->
+
+
+<!-- PREFERENCE MODAL -->
+<div class="modal fade" id="prefModal" tabindex="-1" role="dialog" aria-labelledby="prefModalLabel" aria-hidden="true">
+  <div class="modal-dialog" role="document">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title">PREFERENCES</h5>
+        <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+          <span aria-hidden="true">&times;</span>
+        </button>
+      </div>
+      <div class="modal-body">
+
+			<div>
+			<label class="custom-control custom-checkbox">
+			    <input type="checkbox" class="custom-control-input" id="nicolist_del">
+			    <span class="custom-control-indicator"></span>
+			    <span class="custom-control-description">confirmを非表示</span>
+			</label>
+			</div>
+
+			<div>
+			<label class="custom-control custom-checkbox">
+			    <input type="checkbox" class="custom-control-input" id="nicolist_thumb" onchange="refresh('v')">
+			    <span class="custom-control-indicator"></span>
+			    <span class="custom-control-description">一覧でthumbnailを表示</span>
+			</label>
+			</div>
+
+			<div>
+			<label class="custom-control custom-checkbox">
+			    <input type="checkbox" class="custom-control-input" id="nicolist_thumb_res" checked="">
+			    <span class="custom-control-indicator"></span>
+			    <span class="custom-control-description">検索結果・Randomでthumbnailを表示</span>
+			</label>
+			</div>
+
+			<div>
+			<label class="custom-control custom-checkbox">
+			    <input type="checkbox" class="custom-control-input" id="nicolist_rand" checked="">
+			    <span class="custom-control-indicator"></span>
+			    <span class="custom-control-description">Randomは1項目のみ表示</span>
+			</label>
+			</div>
+
+			<div>
+			<label class="custom-control custom-checkbox">
+			    <input type="checkbox" class="custom-control-input" id="nicolist_and" checked="">
+			    <span class="custom-control-indicator"></span>
+			    <span class="custom-control-description">AND検索をする</span>
+			</label>
+			</div>
+
+			<div>
+			<label class="custom-control custom-checkbox">
+			    <input type="checkbox" class="custom-control-input" id="nicolist_sort" onchange="refresh('v')" checked="">
+			    <span class="custom-control-indicator"></span>
+			    <span class="custom-control-description">新しいものが上に来るように表示</span>
+			</label>
+			</div>
+
+			<hr>
+
+			<div class="mt-4 mb-1 form-inline">
+			    <input type="number" name="" style="max-width: 5em" id="nicolist_historyCount" value="7" class="form-control" size="">個まで検索履歴を表示
+			</div>
+
+			<div class="mb-4 form-inline">
+			    <input type="number" name="" style="max-width: 5em" id="nicolist_msc" value="75" class="form-control" size="">個以上がヒットした場合表示しない
+			</div>
+
+			<hr>
+
+			<p>raw output <span id="length"></span></p>
+			<div class="form-group">
+			<textarea class="form-control" id="out" rows="3" onclick="this.focus();this.select()" readonly="readonly"></textarea>
+			</div>
+
+			<hr>
+
+			<p>from raw output</p>
+			<div class="form-group">
+			<textarea class="form-control" id="raw" rows="3"></textarea>
+
+			</div>
+			<button type="submit" class="btn btn-outline-primary" id="loadRaw" data-dismiss="modal">Add from Raw Output</button>
+			<hr>
+        	<button type="button" class="btn btn-outline-secondary" data-dismiss="modal">Close</button>
+      </div>
+    </div>
+  </div>
+</div>
+<!-- PREFERENCE MODAL ends -->
 
 <!-- VIDEO LINK CONTEXT MENU -->
 <div class="dropdown-menu" id="menu">
@@ -582,15 +620,16 @@ $('#search').on('click', function(e){
 });
 $('#ccopen').on('click', function(){
     $('#ccvideos').html('');
+    $('#ccalert').html('');
     for(var genre in y){
         var wrapper = $('<div>');
-        var genre_name = $('<a>',{
+        var genre_name = $('<p>',{
             click: function(){
-                $(this).next().next().fadeToggle();
+                $(this).next().fadeToggle();
                 return false;
             },
             text: genre,
-            'href':''
+            'class':'ccgenrename'
         });
         var genre_count = $('<span>',{
             'data-count':'0'
@@ -605,14 +644,13 @@ $('#ccopen').on('click', function(){
         for (var i = 0; i < list.length/2; i++) {
             var id = list[2*i];
             var title = list[2*i+1];
-            var tr = $('<tr>');
-            var video_div = $('<div>', {
+            var tr = $('<tr>', {
                 'class':'ccvideo',
                 'data-title': title,
                 'data-id':id,
                 'data-genre':genre,
                 click: function(){
-                    var elem = $(this).parent().parent().prev();
+                    var elem = $(this).parent().parent().prev().find('span');
                     var count = int(elem.attr('data-count'));
                     if ($(this).hasClass('alert-success')){
                         $(this).removeClass('alert-success');
@@ -625,27 +663,36 @@ $('#ccopen').on('click', function(){
                     elem.text((count>0?' ('+count+')':''))
                 }
             });
-            if ($('#nicolist_thumb_cc').prop('checked')){
-                var td1 = $('<td>');
-                var img = createThumbImgElem(id, false);
-                td1.append(img);
-                tr.append(td1);
+            var td1 = $('<td>');
+            var img = createThumbImgElem(id, false);
+            if (!$('#nicolist_thumb_cc').prop('checked')){
+                img.addClass('silent');
             }
+            td1.append(img);
+            tr.append(td1);
             var td2 = $('<td>',{
                 text: title
             });
             tr.append(td2);
-            video_div.append(tr);
-            videos_table.append(video_div);
+            if (i != list.length/2-1){
+            	td1.css('border-bottom', '1px solid #eee');
+            	td2.css('border-bottom', '1px solid #eee');
+            }
+            videos_table.append(tr);
         }
+        genre_name.append(genre_count);
         wrapper.append(genre_name);
-        wrapper.append(genre_count);
         ccwrapper.append(videos_table);
         wrapper.append(ccwrapper);
         $('#ccvideos').append(wrapper);
     }
     $('#ccModal').modal('show');
 });
+function cctntoggle(){
+	$('#ccvideos .img-thumbnail').each(function(){
+		$(this).toggleClass('silent');
+	});
+}
 $('#createcopy').on('click', function(){
     var ccname = $('#ccname').val();
     if (ccname === ''){
@@ -656,11 +703,15 @@ $('#createcopy').on('click', function(){
         message('既に存在するGenreです。', 'warning', '#ccalert');
         $('#ccModal').stop().animate({scrollTop:0}, 'slow');
         return;
+    } else if ($('#ccvideos tr.alert-success').length === 0){
+        message('動画が選択されていません。', 'warning', '#ccalert');
+        $('#ccModal').stop().animate({scrollTop:0}, 'slow');
+        return;
     } else {
         pushPrev();
         var list = new Array();
         var remove_cb = $('#ccmove').prop('checked');
-        $('#ccvideos .alert-success').each(function(){
+        $('#ccvideos tr.alert-success').each(function(){
             var title = $(this).attr('data-title');
             var id = $(this).attr('data-id');
             if (remove_cb){
@@ -1073,6 +1124,10 @@ var sampleObjectTree = {
 }
 
 function refresh(whatChanged){
+    if (!y.hasOwnProperty(selectedGenre)){
+        setSelGen('とりあえず');
+    }
+
     var videoChanged = whatChanged.indexOf('v') != -1;
     var genreChanged = whatChanged.indexOf('g') != -1;
     var selectChanged = whatChanged.indexOf('s') != -1;
@@ -1133,6 +1188,7 @@ function refresh(whatChanged){
                 })
             ).appendTo("#right");
         }
+
         var list = y[selectedGenre];
 
         if ($('#nicolist_sort').prop('checked')){
@@ -1151,7 +1207,8 @@ function refresh(whatChanged){
 	                contextmenu: function(e){
 	                    showMenu(e.pageX, e.pageY, $(this));
 	                    return false;
-	                }
+	                },
+	                'class': 'rightvideo'
 	            });
 	            if ($('#nicolist_thumb').prop('checked')){
 	                a.append(createThumbImgElem(id, false));
@@ -1310,11 +1367,11 @@ function has(genre, id){
 
 function addGenre(name){
     if (bytesize(name) > 50){
-        message('Genreの名前はできるだけ短くお願いします', 'warning', '#alert-genre');
+        message('Genreの名前は49バイト以内です。', 'warning', '#alert-genre');
         return false;
     }
     if (bytesize(name) === 0){
-        message('フォームにデータを入力してください', 'warning', '#alert-genre');
+        message('作成するGenreの名前を入力してください。', 'warning', '#alert-genre');
         return false;
     }
     if (!(name in y)){
@@ -1323,7 +1380,7 @@ function addGenre(name){
         message('Genre「'+name+'」を追加しました'+UNDO_HTML_TEMPLATE, 'success');
         return true;
     } else {
-        message('Genre「'+name+'」は既に存在しているようです', 'warning', '#alert-genre');
+        message('Genre「'+name+'」は既に存在しているようです。', 'warning', '#alert-genre');
         return false;
     }
 }
