@@ -44,9 +44,11 @@ button, label {cursor: pointer;}
 .ccgenrename:hover{color: #9fbff2}
 .ccgenrename span{color: #000!important}
 .ccwrapper{display: none;border-radius: 5px;border:1px solid #eee;padding: 8px;margin:5px 0;}
-.ccvideo{border-left:2px solid transparent;padding: 0 5px;cursor: pointer;transition: background-color,border-color,color 0.1s ease-in-out 0s;}
-.ccvideo:hover{border-left-color: #4BB363;color: #417238}
-.rightvideo{border-bottom:1px solid #d9eef4;margin-bottom: .2em}
+.ccvideo{border-left:2px solid transparent;border-right:2px solid transparent;padding: 0 5px;cursor: pointer;transition: background-color,border-color,color 0.1s ease-in-out 0s;}
+.ccvideo:hover{border-left-color: #4BB363;border-right-color: #4BB363;color: #417238}
+.cctable td{border-bottom:1px solid #eee;}
+.cctable td:last{border-bottom:none;}
+.rightvideo{border-bottom:1px solid #d9eef4;margin-bottom: 0.2em}
 div.tdftdiv{
     padding:3px;
     line-height:16px;
@@ -74,11 +76,21 @@ ul.tdftad li a:hover{
 .silent{
 	display: none;
 }
+div.sgg{
+	border-radius: 5px;
+	padding: .7em 1em;
+	border:1px solid #ddd;
+	cursor: pointer;
+	margin: .3em;
+}
+div.sgdef{
+	background-color: #eee;
+}
 </style>
 </head>
 
 <body onload="init()" onunload="unload()">
-
+<div id="body">
 <div class="container">
 <h1>nicol;st</h1>
 
@@ -108,6 +120,7 @@ ul.tdftad li a:hover{
     <button class="btn btn-outline-info mb-1 mt-1" type="submit" onclick="randomFromAll()">ランダム</button>
     <button class="btn btn-outline-info mb-1 mt-1" type="submit" onclick="randomFromSel()">選択中のGenreからランダム</button>
     <button class="btn btn-outline-secondary mb-1 mt-1" type="submit" data-toggle="modal" data-target="#prefModal">設定</button>
+    <button class="btn btn-outline-secondary mb-1 mt-1" type="submit" id="sgopen">Genreを並び替え</button>
 </div>
 
 <div id="random" class="alert">
@@ -121,8 +134,10 @@ ul.tdftad li a:hover{
 	<div class="col" style="display: inline-block;padding:0;" id="right"></div>
 </div>
 
-<footer style="margin-top: 3em">&copy; 2017 fine_diary, all rights reserved.</footer>
-
+<footer style="margin-top: 3em">
+	<p>HTML5, Javascript, LocalStorageを使用しています。一部のブラウザでは動作しない可能性があります。<br>&copy; 2017 fine_diary, all rights reserved. Powered by <a href="https://jquery.com/" target="_blank">jQuery</a>, <a href="https://getbootstrap.com/" target="_blank">bootstrap</a>, <a href="http://rubaxa.github.io/Sortable/" target="_blank">Sortable.js</a></p>
+</footer>
+</div>
 </div>
 <!-- container ends -->
 
@@ -265,6 +280,29 @@ ul.tdftad li a:hover{
 <!-- CONFIRM MODAL ends -->
 
 
+<!-- GENRE SORT MODAL -->
+<div class="modal fade" id="genreSortModal" tabindex="-1" role="dialog">
+  <div class="modal-dialog" role="document">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title">SORT GENRE LIST</h5>
+        <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+          <span aria-hidden="true">&times;</span>
+        </button>
+      </div>
+      <div class="modal-body">
+      	<div id="sggenre"></div>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-primary" id="submitGenreSort">適用</button>
+        <button type="button" class="btn btn-secondary" data-dismiss="modal">キャンセル</button>
+      </div>
+    </div>
+  </div>
+</div>
+<!-- CONFIRM MODAL ends -->
+
+
 <!-- PREFERENCE MODAL -->
 <div class="modal fade" id="prefModal" tabindex="-1" role="dialog" aria-labelledby="prefModalLabel" aria-hidden="true">
   <div class="modal-dialog" role="document">
@@ -380,6 +418,7 @@ ul.tdftad li a:hover{
 <script src="https://code.jquery.com/jquery-3.2.1.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.11.0/umd/popper.min.js" integrity="sha384-b/U6ypiBEHpOf/4+1nzFpr53nxSS+GLCkfwBdFNTxtclqqenISfwAzpKaMNFNmj4" crossorigin="anonymous"></script>
 <script src="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0-beta/js/bootstrap.min.js" integrity="sha384-h0AbiXch4ZDo7tp9hKZ4TsHbi047NrKGLO3SEJAg45jXxnGIfYzk4Si90RDIqNm1" crossorigin="anonymous"></script>
+<script type="text/javascript" src="Sortable.min.js"></script>
 <script type="text/javascript">
 const MESSAGE_TYPES = ['primary', 'secondary', 'success', 'danger', 'warning', 'info', 'light', 'dark'];
 const UNDO_HTML_TEMPLATE = '<span class="undo" onclick="undo()">[UNDO]</span>';
@@ -396,14 +435,14 @@ $('input[type=checkbox]').on('change', function(){
         window.localStorage.setItem(id, $(this).prop('checked'));
     }
 });
-$('body').on('dragenter', function (e) {
+$('#body').on('dragenter', function (e) {
     e.stopPropagation();
     e.preventDefault();
     if ($('html,body').scrollTop() > 100){
         $('html,body').stop().animate({scrollTop:0}, 'swing');
     }
 });
-$('body').on('dragover', function (e)
+$('#body').on('dragover', function (e)
 {
     e.stopPropagation();
     e.preventDefault();
@@ -415,14 +454,14 @@ $('body').on('dragover', function (e)
         if ($('#title').hasClass('dragging')) $('#title').removeClass('dragging');
     }
 });
-$('body').on('dragleave', function (e){
+$('#body').on('dragleave', function (e){
     e.stopPropagation();
     e.preventDefault();
     if ($('#url, #title').hasClass('dragging')){
         $('#url, #title').removeClass('dragging');
     }
 })
-$('body').on('drop', function (e){
+$('#body').on('drop', function (e){
     e.preventDefault();
     var sel = '#url';
     if (e.pageX > $('body').outerWidth(true)/2) {
@@ -625,6 +664,15 @@ $('#ccopen').on('click', function(){
         var wrapper = $('<div>');
         var genre_name = $('<p>',{
             click: function(){
+				if ($('#nicolist_thumb_cc').prop('checked')){
+	            	$(this).next().find('.img-thumbnail').each(function(i, elem){
+	            		loadImg($(elem));
+	            	});
+            	} else {
+	            	$(this).next().find('.img-thumbnail').each(function(i, elem){
+	            		$(elem).attr('data-loadstatus', 'ready');
+	            	});
+            	}
                 $(this).next().fadeToggle();
                 return false;
             },
@@ -664,7 +712,7 @@ $('#ccopen').on('click', function(){
                 }
             });
             var td1 = $('<td>');
-            var img = createThumbImgElem(id, false);
+            var img = createStayUnloadedTNI(id, false);
             if (!$('#nicolist_thumb_cc').prop('checked')){
                 img.addClass('silent');
             }
@@ -674,10 +722,6 @@ $('#ccopen').on('click', function(){
                 text: title
             });
             tr.append(td2);
-            if (i != list.length/2-1){
-            	td1.css('border-bottom', '1px solid #eee');
-            	td2.css('border-bottom', '1px solid #eee');
-            }
             videos_table.append(tr);
         }
         genre_name.append(genre_count);
@@ -690,8 +734,20 @@ $('#ccopen').on('click', function(){
 });
 function cctntoggle(){
 	$('#ccvideos .img-thumbnail').each(function(){
+		if ($(this).hasClass('silent')){
+			var ls = $(this).attr('data-loadstatus');
+			if (ls != undefined && ls == 'ready'){
+				loadImg($(this));
+			}
+		}
 		$(this).toggleClass('silent');
 	});
+}
+function loadImg(elem){
+	var srcurl = elem.attr('data-src');
+	if (srcurl != undefined){
+		elem.attr('src', srcurl);
+	}
 }
 $('#createcopy').on('click', function(){
     var ccname = $('#ccname').val();
@@ -736,6 +792,37 @@ $('#createcopy').on('click', function(){
         $('#ccModal').modal('hide');
         $('#ccname').val('');
     }
+});
+$('#sgopen').on('click', function(){
+	$('#sggenre').html('');
+	var gs = Object.keys(y);
+	for (i = 0; i< gs.length; i++){
+		var g = gs[i];
+		var clazz = 'sgg '+(i != 0 ? 'sgtarget' : 'sgdef');
+		var div = $('<div>',{
+			text: g,
+			'class': clazz
+		});
+		$('#sggenre').append(div);
+	}
+	$('#genreSortModal').modal('show');
+
+	Sortable.create(sggenre, {
+		draggable: '.sgtarget',
+	    animation: 300
+	});
+});
+$('#submitGenreSort').on('click', function(){
+	pushPrev();
+	var _y = {};
+	$('.sgg').each(function(i, elem){
+		var g = $(elem).text();
+		_y[g] = y[g];
+	});
+	y = _y;
+	refresh('g');
+	message('Genreを並び替えしました'+UNDO_HTML_TEMPLATE, 'success');
+	$('#genreSortModal').modal('hide');
 });
 
 function search() {
@@ -839,7 +926,7 @@ function search() {
             var _t = _l[2*k+1];
             var div = $('<div>');
             var a = $('<a>', {
-                'href': 'http://www.nicovideo.jp/watch/' + _id,
+                'href': getVideoURL(_id),
                 'target': '_blank',
                 'data-genre' : _g,
                 'data-id' : _id,
@@ -878,18 +965,58 @@ function search() {
     $('#sr').fadeIn();
 }
 
+function getVideoURL(id){
+	if ((new RegExp("^sm\\d+$")).test(id)
+		|| (new RegExp("^nm\\d+$")).test(id)
+		|| (new RegExp("^\\d+$")).test(id)){
+		return 'http://www.nicovideo.jp/watch/' + id;
+	} else {
+		return 'https://www.youtube.com/watch?v=' + id;
+	}
+}
+
 function getThumbURL(id){
-    var numid = int(id);
-    return 'http://tn.smilevideo.jp/smile?i='+numid
+	if ((new RegExp("^sm\\d+$")).test(id)){
+    	var numid = int(id);
+    	return 'http://tn.smilevideo.jp/smile?i='+numid;
+	} else if ((new RegExp("^nm\\d+$")).test(id)){
+    	var numid = int(id);
+    	return 'http://tn.smilevideo.jp/smile?i='+numid;
+	} else if ((new RegExp("^\\d+$")).test(id)){
+    	var numid = int(id);
+    	return 'channel.jpg';
+	} else {
+		return 'https://img.youtube.com/vi/'+id+'/0.jpg'
+	}
     //'http://tn-skr'+((numid%4)+1)+'.smilevideo.jp/smile?i='+numid
+    //https://img.youtube.com/vi/+wordid+/0.jpg
 }
 
 function videoIdMatch(str){
-    //http://tn.smilevideo.jp/smile?i=31952025
-    if (str.match(/smile\?i\=/g) != null){
-        return null;
-    } else {
-        return str.match(/sm\d+|nm\d+|\d+/g);
+	//http://www.nicovideo.jp/watch/sm33430845?~~~
+	//http://sp.nicovideo.jp/watch/sm33430845
+	//http://www.nicovideo.jp/watch/1507032627
+	//https://www.youtube.com/watch?v=5f01yaapjdg
+    var m_sm = str.match(/nicovideo\.jp\/watch\/(sm\d+)/);
+    if (m_sm != null){
+    	console.log(m_sm);
+    	return m_sm[1];
+    }
+    var m_nm = str.match(/nicovideo\.jp\/watch\/(nm\d+)/);
+    if (m_nm != null){
+    	return m_nm[1];
+    }
+    var m_cn = str.match(/nicovideo\.jp\/watch\/(\d+)/);
+    if (m_cn != null){
+    	return m_cn[1];
+    }
+    var m_yt = str.match(/youtube\.com\/watch\?v=([a-zA-Z0-9_-]+)/);
+    if (m_yt != null){
+    	return m_yt[1];
+    }
+    var m_yt2 = str.match(/youtube\.com\/watch\?[^&]+&v=([a-zA-Z0-9_-]+)/);
+    if (m_yt2 != null){
+    	return m_yt2[1];
     }
 }
 
@@ -897,7 +1024,7 @@ function sub(){
     if (checkValidity()){
         var title = $('#title').val();
         var genre = $('#genre').val();
-        var id = videoIdMatch($('#url').val())[0];
+        var id = videoIdMatch($('#url').val());
 
         if (!has(genre, id)){
             pushPrev();
@@ -942,7 +1069,7 @@ function checkURLValidity(){
             $('#url').removeClass('is-invalid');
         }
         $('#url').addClass('is-valid');
-        if (m[0] !== lastId){
+        if (m !== lastId){
             $('#registry').html('');
             var already = $('<div>');
             for (var genre in y){
@@ -950,7 +1077,7 @@ function checkURLValidity(){
                 for (var i = 0; i < list.length/2; i++) {
                     var id = list[2*i];
                     var title = list[2*i+1];
-                    if (id === m[0]){
+                    if (id === m){
                         already.append($('<div>', {
                             html: genre+'<span class="ml-2 text-muted">('+restr(title, 50)+')</span>',
                             'class': 'dropdown-item pointer',
@@ -964,7 +1091,7 @@ function checkURLValidity(){
                     }
                 }
             }
-            createThumbImgElem(m[0], false).addClass('ml-2').appendTo('#registry');
+            createThumbImgElem(m, false).addClass('ml-2').appendTo('#registry');
             if (already.html() != ''){
                 $('#registry').append($('<div>', {
                     'class': 'dropdown-divider'
@@ -989,7 +1116,7 @@ function checkURLValidity(){
                 }));
             }
             showAlready();
-            lastId = m[0];
+            lastId = m;
         }
         return true;
     } else {
@@ -1118,10 +1245,12 @@ function unload(){
     }
 }
 
+/*
 var sampleObjectTree = {
     "おもしろ": ["sm9", "レッツゴー", "sm666", "R.O.D"],
     "感動": ["sm114514", "ATOLS miku0"]
 }
+*/
 
 function refresh(whatChanged){
     if (!y.hasOwnProperty(selectedGenre)){
@@ -1198,17 +1327,17 @@ function refresh(whatChanged){
 	            var div = $('<div>', {
 	                'class': 'd-flex flex-row'
 	            });
-	            var a = $( "<a>", {
-	                "href": 'http://www.nicovideo.jp/watch/' + id,
+	            var a = $("<a>", {
+	                "href": getVideoURL(id),
 	                'target': '_blank',
 	                'data-genre' : selectedGenre,
 	                'data-id' : id,
 	                'data-title' : title,
+	                'class': 'rightvideo',
 	                contextmenu: function(e){
 	                    showMenu(e.pageX, e.pageY, $(this));
 	                    return false;
-	                },
-	                'class': 'rightvideo'
+	                }
 	            });
 	            if ($('#nicolist_thumb').prop('checked')){
 	                a.append(createThumbImgElem(id, false));
@@ -1227,11 +1356,12 @@ function refresh(whatChanged){
 	                'class': 'd-flex flex-row'
 	            });
 	            var a = $( "<a>", {
-	                "href": 'http://www.nicovideo.jp/watch/' + id,
+	                "href": getVideoURL(id),
 	                'target': '_blank',
 	                'data-genre' : selectedGenre,
 	                'data-id' : id,
 	                'data-title' : title,
+	                'class': 'rightvideo',
 	                contextmenu: function(e){
 	                    showMenu(e.pageX, e.pageY, $(this));
 	                    return false;
@@ -1241,7 +1371,7 @@ function refresh(whatChanged){
 	                a.append(createThumbImgElem(id, false));
 	            }
 	            a.append($('<span>',{
-	                text: restr2(title,30)
+	                text: restr2(title, 50)
 	            }))
 	            a.appendTo(div);
 	            div.appendTo("#right");
@@ -1254,7 +1384,7 @@ function refresh(whatChanged){
         if ($('#registry').html() !== ''){
             var m = videoIdMatch($('#url').val());
             if (m != null){
-                if (m[0] !== lastId){
+                if (m !== lastId){
                     $('#registry').html('');
                     var already = false;
                     for (var genre in y){
@@ -1262,9 +1392,9 @@ function refresh(whatChanged){
                         for (var i = 0; i < list.length/2; i++) {
                             var id = list[2*i];
                             var title = list[2*i+1];
-                            if (id === m[0]){
+                            if (id === m){
                                 $('#registry').append($('<div>', {
-                                    text: genre+'<span class="ml-2 text-muted">('+restr(title, 50)+')</span>',
+                                    text: genre+'<span class="ml-2 text-muted">('+restr2(title, 50)+')</span>',
                                     'class': 'dropdown-item pointer',
                                     'data-genre': genre,
                                     click: function(){
@@ -1296,7 +1426,7 @@ function refresh(whatChanged){
                             'class': 'dropdown-item pointer'
                         }));
                     }
-                    lastId = m[0];
+                    lastId = m;
                 }
             }
         }
@@ -1325,7 +1455,7 @@ function showMenu(x, y, cont){
             });
         } else if ($(elem).attr('role') === 'open'){
             $(elem).on('click', function(){
-                window.open('http://www.nicovideo.jp/watch/'+id, '_blank');
+                window.open(getVideoURL(id), '_blank');
                 closeMenu();
             });
         }
@@ -1344,7 +1474,7 @@ function showEditModal(cont){
     var genre = cont.attr('data-genre');
     $('#editThumb').attr('src', getThumbURL(id));
     $('#editUrl').text(id);
-    $('#editUrl').parent().attr('href', 'http://www.nicovideo.jp/watch/'+id);
+    $('#editUrl').parent().attr('href', getVideoURL(id));
     $('#editTitle').val(title);
     $('#editGenre').val(genre);
     $('#saveEdit').attr('data-title', title);
@@ -1540,7 +1670,7 @@ function random(genre, showGenre){
     }
     var div = $('<div>');
     var a = $('<a>', {
-        'href': 'http://www.nicovideo.jp/watch/'+id,
+        'href': getVideoURL(id),
         'target': '_blank',
         'data-genre' : genre,
         'data-id' : id,
@@ -1632,7 +1762,14 @@ function restr2(str, max){
 
 function createThumbImgElem(id, isFullSize){
     return $('<img>',{
-        'src': (id.match(/sm\d+|nm\d+/g) != null? getThumbURL(id) : 'channel.jpg'),
+        'src': (getThumbURL(id)),
+        'alt': 'No Image',
+        'class': 'mr-4 img-thumbnail '+(isFullSize?'full-thumb':'sm-thumb')
+    });
+}
+function createStayUnloadedTNI(id, isFullSize){
+    return $('<img>',{
+        'data-src': (getThumbURL(id)),
         'alt': 'No Image',
         'class': 'mr-4 img-thumbnail '+(isFullSize?'full-thumb':'sm-thumb')
     });
