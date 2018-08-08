@@ -4,95 +4,102 @@
   <title>nicol;st</title>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+  <!-- bootstrap -->
   <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0-beta/css/bootstrap.min.css" integrity="sha384-/Y6pD6FV/Vv2HJnA6t+vslU6fwYXjCFtcEpHbNJ0lyAFsXTsjBbfaDjzALeQsN6M" crossorigin="anonymous">
   <style type="text/css">
-  *{font-size: 13px}
-  button.close span{font-size: 16px !important}
-  .dragging{border :1px solid #0B85A1 !important;background-color: #d4edda !important}
-  .is-invalid{background-color: #f8d7da}
-  button, label {cursor: pointer;}
-  .removevideo {cursor: pointer;color: #aaa}
-  .videolist{padding: .5em 0}
-  .list-group-item, .pointer{cursor: pointer;transition: background-color 0.1s ease-in-out 0s;}
-  .selected, .list-group-item:hover{background-color: #f1f1f1;}
-  #menu {display: none;position: absolute;}
-  .form-inline *{margin-right: 5px}
-  #sr, #random{display: none;border:1px solid #ddd;border-radius: 5px;}
-  #sr h5{margin-top: 1em}
-  #sr h4{margin: .5em 0}
-  #history, #registry {position: absolute;margin: 0;border-top: none;border-radius: 0 0 5px 5px}
-  .undo{text-decoration: underline;cursor: pointer;margin-left: 1em}
-  #button:disabled{cursor: initial;}
-  .bold{font-weight: bold;}
-  .sm-thumb{
-    width: 91px!important;
-    max-width: 91px!important;
-    text-align: center;
-    color: #333;
-    font-style: italic;
-    display: inline-block;
-  }
-  .full-thumb{
-    width: 130px!important;
-    max-width: 130px!important;
-    text-align: center;
-    color: #333;
-    font-style: italic;
-    display: inline-block;
-  }
-  .ccgenrename{color: #2c6cd3;margin: 0.5em;cursor: pointer;transition: color 0.1s ease-in-out 0s;}
-  .ccgenrename:hover{color: #9fbff2}
-  .ccgenrename span{color: #000!important}
-  .ccwrapper{display: none;border-radius: 5px;border:1px solid #eee;padding: 8px;margin:5px 0;}
-  .ccvideo{
-    border-left:2px solid transparent;
-    border-right:2px solid transparent;
-    padding: 0 5px;
-    cursor: pointer;
-    transition: background-color,border-color,color 0.1s ease-in-out 0s;
-  }
-  .ccvideo:hover{border-left-color: #4BB363;border-right-color: #4BB363;color: #417238}
-  .cctable td{border-bottom:1px solid #eee;}
-  .cctable td:last{border-bottom:none;}
-  .rightvideo{border-bottom:1px solid #d9eef4;margin-bottom: 0.2em}
-  div.tdftdiv{
-    padding:3px;
-    line-height:16px;
-  }
-  ul.tdftad{
-    margin:0;
-    padding:0;
-  }
-  ul.tdftad li{
-    display:inline;
-    background-position:left center;
-    background-repeat:no-repeat;
-    padding:0 4px 0 8px;
-    font-size:13px;
-  }
-  ul.tdftad li.tdftpr{
-    padding-left:20px;
-  }
-  ul.tdftad li.tdftlink{
-    padding-left:25px;
-  }
-  ul.tdftad li a:hover{
-    text-decoration:none;
-  }
-  .silent{
-   display: none;
- }
- div.sgg{
-   border-radius: 5px;
-   padding: .7em 1em;
-   border:1px solid #ddd;
-   cursor: pointer;
-   margin: .3em;
- }
- div.sgdef{
-   background-color: #eee;
- }
-</style>
+    *{font-size: 13px}
+    button.close span{font-size: 16px !important}
+    .dragging{border :1px solid #0B85A1 !important;background-color: #d4edda !important}
+    .is-invalid{background-color: #f8d7da}
+    button, label {cursor: pointer;}
+    .removevideo {cursor: pointer;color: #aaa}
+    .videolist{padding: .5em 0}
+    .list-group-item, .pointer{cursor: pointer;transition: background-color 0.1s ease-in-out 0s;}
+    .selected, .list-group-item:hover{background-color: #f1f1f1;}
+    #menu {display: none;position: absolute;}
+    .form-inline *{margin-right: 5px}
+    #sr, #random{display: none;border:1px solid #ddd;border-radius: 5px;}
+    #sr h5{margin-top: 1em}
+    #sr h4{margin: .5em 0}
+    #history, #registry {position: absolute;margin: 0;border-top: none;border-radius: 0 0 5px 5px}
+    .undo{text-decoration: underline;cursor: pointer;margin-left: 1em}
+    #button:disabled{cursor: initial;}
+    .bold{font-weight: bold;}
+    .sm-thumb{
+      width: 91px!important;
+      max-width: 91px!important;
+      text-align: center;
+      color: #333;
+      font-style: italic;
+      display: inline-block;
+    }
+    .full-thumb{
+      width: 130px!important;
+      max-width: 130px!important;
+      text-align: center;
+      color: #333;
+      font-style: italic;
+      display: inline-block;
+    }
+    .ccgenrename{color: #2c6cd3;margin: 0.5em;cursor: pointer;transition: color 0.1s ease-in-out 0s;}
+    .ccgenrename:hover{color: #9fbff2}
+    .ccgenrename span{color: #000!important}
+    .ccwrapper{
+      display: none;
+      border-radius: 5px;
+      border:1px solid #eee;
+      padding: 8px;
+      margin:5px 0;
+    }
+    .ccvideo{
+      border-left:2px solid transparent;
+      border-right:2px solid transparent;
+      padding: 0 5px;
+      cursor: pointer;
+      transition: background-color,border-color,color 0.1s ease-in-out 0s;
+    }
+    .ccvideo:hover{border-left-color: #4BB363;border-right-color: #4BB363;color: #417238}
+    .cctable td{border-bottom:1px solid #eee;}
+    .cctable td:last{border-bottom:none;}
+    .rightvideo{border-bottom:1px solid #d9eef4;margin-bottom: 0.2em}
+    div.tdftdiv{
+      padding:3px;
+      line-height:16px;
+    }
+    ul.tdftad{
+      margin:0;
+      padding:0;
+    }
+    ul.tdftad li{
+      display:inline;
+      background-position:left center;
+      background-repeat:no-repeat;
+      padding:0 4px 0 8px;
+      font-size:13px;
+    }
+    ul.tdftad li.tdftpr{
+      padding-left:20px;
+    }
+    ul.tdftad li.tdftlink{
+      padding-left:25px;
+    }
+    ul.tdftad li a:hover{
+      text-decoration:none;
+    }
+    .silent{
+     display: none;
+   }
+   div.sgg{
+     border-radius: 5px;
+     padding: .7em 1em;
+     border:1px solid #ddd;
+     cursor: pointer;
+     margin: .3em;
+   }
+   div.sgdef{
+     background-color: #eee;
+   }
+  </style>
 </head>
 
 <body onload="init()" onunload="unload()">
@@ -1764,7 +1771,6 @@ function sub(){
         'class': 'mr-4 img-thumbnail '+(isFullSize?'full-thumb':'sm-thumb')
       });
     }
-
-    </script>
-  </body>
+  </script>
+</body>
 </html>
