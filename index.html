@@ -25,6 +25,8 @@
     .undo{text-decoration: underline;cursor: pointer;margin-left: 1em}
     #button:disabled{cursor: initial;}
     .bold{font-weight: bold;}
+    .confirmedit{padding-top: 1em}
+    .gray{color: #777;font-style: italic;}
     .sm-thumb{
       width: 91px!important;
       max-width: 91px!important;
@@ -434,7 +436,6 @@
   <script type="text/javascript" src="Sortable.min.js"></script>
   <script type="text/javascript">
     const MESSAGE_TYPES = ['primary', 'secondary', 'success', 'danger', 'warning', 'info', 'light', 'dark'];
-    const UNDO_HTML_TEMPLATE = '<span class="undo" onclick="undo()">[UNDO]</span>';
 
     var y = {"とりあえず":[]};
     var prevy = {"とりあえず":[]};
@@ -588,7 +589,7 @@
         if (videocount===0&&genrecount===0){
           message('すべて登録済みであるか、inputに動画が存在しません');
         } else {
-          message('JSONから'+(videocount>0?videocount+'個の動画':'')+(genrecount>0&&videocount>0?'、':'')+(genrecount>0?genrecount+'個のGenre':'')+'を新たに読み込みました'+UNDO_HTML_TEMPLATE, 'success');
+          messageUndoable('JSONから'+(videocount>0?videocount+'個の動画':'')+(genrecount>0&&videocount>0?'、':'')+(genrecount>0?genrecount+'個のGenre':'')+'を新たに読み込みました', 'success');
           refresh((genrecount>0?'g':'')+(videocount>0?'v':''));
         }
       } catch(e) {
@@ -605,11 +606,37 @@
         $('#editTitle').addClass('is-invalid');
         $('#editGenre').addClass('is-invalid');
       } else {
-        var mes = (oldtitle!==title ? oldtitle+'\n↓\n'+title : title)
-        +'\n\n'
-        +(oldgenre!==genre ? oldgenre+'\n↓\n'+genre : genre)
-        +'\n\n保存してよろしいですか?';
-        conf(mes, function(){
+      	var mesElem = $('<div>');
+      	var table = $('<table>', {'class':'mb-4'});
+      	var tr1 = $('<tr>');
+      	tr1.append($('<td>', {text: 'Title: '}));
+      	var td1 = $('<td>');
+      	td1.append($('<strong>', {text: title}));
+      	if (oldtitle==title) td1.append($('<span>', {text: ' (変更なし)'}))
+      	td1.appendTo(tr1);
+      	tr1.appendTo(table);
+      	if (oldtitle!=title){
+	      var tr2 = $('<tr>', {'class': 'gray'});
+	      tr2.append($('<td>', {text: '変更前: '}));
+	      tr2.append($('<td>', {text: oldtitle}))
+	      tr2.appendTo(table);
+      	}
+      	var tr3 = $('<tr>');
+      	tr3.append($('<td>', {text: 'Genre: ','class':'confirmedit'}));
+      	var td2 = $('<td>',{'class':'confirmedit'});
+      	td2.append($('<strong>', {text: genre}));
+      	if (oldgenre==genre) td2.append($('<span>', {text: ' (変更なし)'}))
+      	td2.appendTo(tr3);
+      	tr3.appendTo(table);
+      	if (oldgenre!=genre){
+	      var tr4 = $('<tr>', {'class': 'gray'});
+	      tr4.append($('<td>', {text: '変更前: '}));
+	      tr4.append($('<td>', {text: oldgenre}))
+	      tr4.appendTo(table);
+      	}
+      	mesElem.append(table);
+      	mesElem.append($('<span>', {text:'変更を保存しますか?'}));
+        conf(mesElem, function(){
           pushPrev();
           var list = y[oldgenre];
           var newlist = [];
@@ -617,12 +644,17 @@
             if (list[2*i] != id){
               newlist.push(list[2*i]);
               newlist.push(list[2*i+1]);
+            } else if (oldgenre == genre){
+              newlist.push(id);
+              newlist.push(title);
             }
           }
           y[oldgenre] = newlist;
-          y[genre].push(id);
-          y[genre].push(title);
-          message('動画「'+title+'」を編集しました'+UNDO_HTML_TEMPLATE, 'info');
+          if (oldgenre != genre){
+            y[genre].push(id);
+            y[genre].push(title);
+          }
+          messageUndoable('動画「'+title+'」を編集しました', 'info');
           refresh('v');
           $('#editModal').modal('hide');
         });
@@ -799,7 +831,7 @@
           list.push(title);
         });
         y[ccname] = list;
-        message('Genre「'+ccname+'」を作成しました。('+(list.length/2)+'個の動画が登録済み)'+UNDO_HTML_TEMPLATE, 'success');
+        messageUndoable('Genre「'+ccname+'」を作成しました。('+(list.length/2)+'個の動画が登録済み)', 'success');
         setSelGen(ccname);
         refresh('gvs');
         $('#ccModal').modal('hide');
@@ -834,7 +866,7 @@
       });
       y = _y;
       refresh('g');
-      message('Genreを並び替えしました'+UNDO_HTML_TEMPLATE, 'success');
+      messageUndoable('Genreを並び替えしました', 'success');
       $('#genreSortModal').modal('hide');
     });
 
@@ -1035,7 +1067,7 @@ function sub(){
       y[genre].push(id);
       y[genre].push(title);
           refresh('v');//video change
-          message('動画「'+restr(title, 50)+'」を追加しました'+UNDO_HTML_TEMPLATE, 'success');
+          messageUndoable('動画「'+restr(title, 50)+'」を追加しました', 'success');
           $('#url').val("");
           $('#title').val("");
           $('#url, #title').removeClass('is-valid');
@@ -1504,7 +1536,7 @@ function sub(){
       if (!(name in y)){
         pushPrev();
         y[name] = [];
-        message('Genre「'+name+'」を追加しました'+UNDO_HTML_TEMPLATE, 'success');
+        messageUndoable('Genre「'+name+'」を追加しました', 'success');
         return true;
       } else {
         message('Genre「'+name+'」は既に存在しているようです。', 'warning', '#alert-genre');
@@ -1527,7 +1559,7 @@ function sub(){
           }
         }
         y[genre] = newlist;
-        message('動画「'+restr(title, 50)+'」を削除しました'+UNDO_HTML_TEMPLATE, 'danger');
+        messageUndoable('動画「'+restr(title, 50)+'」を削除しました', 'danger');
         refresh('v');//video change
       });
     }
@@ -1543,7 +1575,7 @@ function sub(){
           }
         }
         y = newy;
-        message('Genre「'+genre+'」を削除しました'+UNDO_HTML_TEMPLATE, 'danger');
+        messageUndoable('Genre「'+genre+'」を削除しました', 'danger');
         setSelGen(Object.keys(y)[0]);
         refresh('gs');//genre change
       });
@@ -1559,7 +1591,23 @@ function sub(){
       localStorage.setItem('selectedgenre', selectedGenre);
     }
 
-    function message(mes, type, wrapper, permanent) {
+    function redo() {
+      var _c = copy(y);
+      y = copy(prevy);
+      prevy = _c;
+      messageUndoable('REDOしました', 'primary');
+      refresh('vgs');
+    }
+
+    function undo() {
+      var _c = copy(y);
+      y = copy(prevy);
+      prevy = _c;
+      messageUndoable('UNDOしました', 'primary', '#alert', false, 'redo');
+      refresh('vgs');
+    }
+
+    function message(mes, type, wrapper, permanent, elem) {
       if (typeof type != 'string' || MESSAGE_TYPES.indexOf(type) == -1) type = 'warning';
       if (typeof wrapper != 'string' || wrapper === '') wrapper = '#alert';
       if (typeof permanent != 'boolean') permanent = false;
@@ -1577,25 +1625,54 @@ function sub(){
           }
         }).appendTo(div);
       }
-      $('<span>', {
-        html: mes
-      }).appendTo(div);
-
+      var span = $('<span>', {
+        text: mes
+      });
+      if (elem != null && elem != undefined) span.append(elem);
+      span.appendTo(div);
       $(wrapper).html('');
       $(wrapper).append(div);
       div.fadeIn();
+    }
+
+    function messageUndoable(mes, type, wrapper, permanent, toredo){
+      var span;
+      if (toredo === 'redo') {
+      	span = $('<span>', {
+		  text: '[REDO]',
+		  'class': 'undo',
+		  click : function(){
+		    redo();
+		  }
+		});
+      } else {
+      	span = $('<span>', {
+		  text: '[UNDO]',
+		  'class': 'undo',
+		  click : function(){
+		    undo();
+		  }
+		});
+      }
+      message(mes, type, wrapper, permanent, span);
     }
 
     function conf(mes, func){
       if ($('#nicolist_del').prop('checked')){
         func.call(window);
       } else {
-        confirm2(mes, func);
+      	if (typeof mes === 'string'){
+          confirm2($('<span>',{text: mes}), func);
+      	} else {
+      		console.log(typeof mes);
+          confirm2(mes, func);
+      	}
       }
     }
 
-    function confirm2(mes, func){
-      $('#confDialog').html(mes);
+    function confirm2(mesElem, func){
+      $('#confDialog').html('');
+      $('#confDialog').append(mesElem);
       $('#confOK').html('').append($('<button>', {
         text: 'はい',
         'class': 'btn btn-primary',
@@ -1607,22 +1684,6 @@ function sub(){
 
     function pushPrev(){
       prevy = copy(y);
-    }
-
-    function undo() {
-      var _c = copy(y);
-      y = copy(prevy);
-      prevy = _c;
-      message('UNDOしました<span class="undo" onclick="redo()">[REDO]</span>', 'primary');
-      refresh('vgs');
-    }
-
-    function redo() {
-      var _c = copy(y);
-      y = copy(prevy);
-      prevy = _c;
-      message('REDOしました'+UNDO_HTML_TEMPLATE, 'primary');
-      refresh('vgs');
     }
 
     function copy(obj){
