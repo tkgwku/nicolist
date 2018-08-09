@@ -484,8 +484,40 @@
           $('#registry').css('display', 'none');
         }
       }
-      var txt = e.originalEvent.dataTransfer.getData("text");
-      $(sel).val(txt);
+
+      var data = e.originalEvent.dataTransfer.items;
+
+      for (var i = 0; i < data.length; i += 1) {
+        if ((data[i].kind == 'string') && (data[i].type.match('^text/plain'))) {
+          data[i].getAsString(function (s){
+            $(sel).val(s);
+          });
+        } else if ((data[i].kind == 'string') &&  (data[i].type.match('^text/html'))) {
+          data[i].getAsString(function (s){
+            var m = s.match(/<[^><]+>[^><]*(?=<)/g);
+            var s2 = null;
+            if (m != null){
+              for (j = 0; j < m.length; j++){
+                if (m[j].match(/<span id="video-title"/) != null){
+                  s2 = m[j].replace(/<[^><]+>/g, '').replace(/^\s+/, '').replace(/\s+$/, '').replace(/\n/g, '');
+                  $('#title').val(s2);
+                }
+              }
+            }
+            if (s2 == null){
+              var s2 = s.replace(/<[^><]+>/g, '').replace(/^\s+/, '').replace(/\s+$/, '').replace(/\n/g, '');
+              $('#title').val(s2);
+            }
+            checkTitleValidity($('#title'));
+          });
+        } else if ((data[i].kind == 'string') && (data[i].type.match('^text/uri-list'))) {
+          data[i].getAsString(function (s){
+            $('#url').val(s);
+            checkURLValidity();
+          });
+        }
+      } 
+
       $(sel).removeClass('dragging');
       checkValidity();
       $('html,body').stop();
@@ -1011,6 +1043,7 @@
     function getVideoURL(id){
       if ((new RegExp("^sm\\d+$")).test(id)
         || (new RegExp("^nm\\d+$")).test(id)
+        || (new RegExp("^so\\d+$")).test(id)
         || (new RegExp("^\\d+$")).test(id)){
         return 'http://www.nicovideo.jp/watch/' + id;
     } else {
@@ -1023,6 +1056,9 @@
     var numid = int(id);
     return 'http://tn.smilevideo.jp/smile?i='+numid;
   } else if ((new RegExp("^nm\\d+$")).test(id)){
+    var numid = int(id);
+    return 'http://tn.smilevideo.jp/smile?i='+numid;
+  } else if ((new RegExp("^so\\d+$")).test(id)){
     var numid = int(id);
     return 'http://tn.smilevideo.jp/smile?i='+numid;
   } else if ((new RegExp("^\\d+$")).test(id)){
@@ -1041,6 +1077,10 @@ function videoIdMatch(str){
   var m_nm = str.match(/nicovideo\.jp\/watch\/(nm\d+)/);
   if (m_nm != null){
     return m_nm[1];
+  }
+  var m_so = str.match(/nicovideo\.jp\/watch\/(so\d+)/);
+  if (m_so != null){
+    return m_so[1];
   }
   var m_cn = str.match(/nicovideo\.jp\/watch\/(\d+)/);
   if (m_cn != null){
@@ -1081,7 +1121,10 @@ function sub(){
     }
 
     function checkTitleValidity(node){
-      if (node.val() === "" || node.val().length > 100){
+      if (node.val() === "" 
+        || node.val().length > 100 
+        || node.val().match(/^http:\/\//) != null 
+        || node.val().match(/^https:\/\//) != null ){
         if (node.hasClass('is-valid')){
           node.removeClass('is-valid');
         }
@@ -1676,7 +1719,6 @@ function sub(){
       	if (typeof mes === 'string'){
           confirm2($('<span>',{text: mes}), func);
       	} else {
-      		console.log(typeof mes);
           confirm2(mes, func);
       	}
       }
