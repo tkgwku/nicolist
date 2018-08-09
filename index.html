@@ -491,6 +491,7 @@
         if ((data[i].kind == 'string') && (data[i].type.match('^text/plain'))) {
           data[i].getAsString(function (s){
             $(sel).val(s);
+            checkValidity();
           });
         } else if ((data[i].kind == 'string') &&  (data[i].type.match('^text/html'))) {
           data[i].getAsString(function (s){
@@ -508,18 +509,17 @@
               var s2 = s.replace(/<[^><]+>/g, '').replace(/^\s+/, '').replace(/\s+$/, '').replace(/\n/g, '');
               $('#title').val(s2);
             }
-            checkTitleValidity($('#title'));
+            checkValidity();
           });
         } else if ((data[i].kind == 'string') && (data[i].type.match('^text/uri-list'))) {
           data[i].getAsString(function (s){
             $('#url').val(s);
-            checkURLValidity();
+            checkValidity();
           });
         }
       } 
 
       $(sel).removeClass('dragging');
-      checkValidity();
       $('html,body').stop();
     });
     $('#url, #title').on('input', function(e){
