@@ -1469,9 +1469,21 @@ function sub(){
     function showMenu(x, y, cont){
       var id = cont.attr('data-id');
       var title = cont.attr('data-title');
+      var url = cont.attr('href');
+      var hasurlattr = typeof url !== typeof undefined && url !== false;
       $("#menu").children('a').each(function(i, elem){
         if ($(elem).attr('role') === 'title'){
-          $(elem).text(title);
+          if (hasurlattr){
+            $(elem).html('');
+            var anc = $('<a>', {
+              'href':url,
+              text:title,
+              'target':'_blank'
+            });
+             $(elem).append(anc);
+          } else {
+            $(elem).text(title);
+          }
         } else if ($(elem).attr('role') === 'remove'){
           $(elem).on('click', function(){
             removeVideo(cont);
