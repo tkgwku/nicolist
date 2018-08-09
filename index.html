@@ -1776,7 +1776,7 @@ function sub(){
           'type':'button',
           'class':'close',
           click: function(){
-            $(this).parent().fadeOut('slow', function(){refreshStyle();$(this).html('')});
+            $(this).parent().fadeOut('slow', function(){refreshStyle();$('#randomVideo').html('')});
           }
         }));
       }
@@ -1796,7 +1796,7 @@ function sub(){
         a.append(createThumbImgElem(id, $('#nicolist_rand').prop('checked')));
       }
       a.append($('<span>',{
-        text: restr(title, 70)
+        text: title
       }));
       div.append(a);
       if (showGenre){
