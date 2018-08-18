@@ -137,6 +137,13 @@ div.sgdef{
 			<button class="btn btn-outline-secondary mb-1 mt-1" type="submit" id="sgopen">ジャンルを並び替え</button>
 		</div>
 
+		<div id="play"></div>
+		<div>
+			<button class="btn btn-outline-secondary mb-1 mt-1 silent" type="submit" onclick="previous()" id="pcprev">前の動画へ</button>
+			<button class="btn btn-outline-secondary mb-1 mt-1 silent" type="submit" onclick="next()" id="pcnext">次の動画へ</button>
+			<button class="btn btn-outline-secondary mb-1 mt-1 silent" type="submit" id="pcclose">閉じる</button>
+		</div>
+
 		<div id="random" class="alert">
 			<div id="randomVideo"></div>
 		</div>
@@ -417,6 +424,8 @@ div.sgdef{
 <div class="dropdown-menu" id="menu">
 	<a class="dropdown-item" role="title"></a>
 	<div class="dropdown-divider"></div>
+	<a class="dropdown-item pointer" role="play">このページで視聴</a>
+	<a class="dropdown-item pointer" role="playall">ここから連続再生</a>
 	<a class="dropdown-item pointer" role="open">新しいタブで開く</a>
 	<a class="dropdown-item pointer" role="edit">編集する</a>
 	<a class="dropdown-item pointer" role="remove">削除する</a>
@@ -438,22 +447,23 @@ div.sgdef{
 <script src="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0-beta/js/bootstrap.min.js" integrity="sha384-h0AbiXch4ZDo7tp9hKZ4TsHbi047NrKGLO3SEJAg45jXxnGIfYzk4Si90RDIqNm1" crossorigin="anonymous"></script>
 <!-- Sortable -->
 <script type="text/javascript" src="Sortable.min.js"></script>
+<!-- Youtube iframe api-->
+<script type="text/javascript" src="https://www.youtube.com/iframe_api"></script>
 <script type="text/javascript">
 const MESSAGE_TYPES = ['primary', 'secondary', 'success', 'danger', 'warning', 'info', 'light', 'dark'];
-
 var y = {"とりあえず":[]};
 var prevy = {"とりあえず":[]};
 var searchHistory = [];
 var selectedGenre = '';
 var showingMenu = false;
-
+var playlist = [];
+var playindex = -1;
 $('input[type=checkbox]').on('change', function(){
 	var id = $(this).attr('id');
 	if (typeof id != 'undefined'){
 		window.localStorage.setItem(id, $(this).prop('checked'));
 	}
 });
-
 $('#body').on('dragenter', function (e) {
 	e.stopPropagation();
 	e.preventDefault();
@@ -461,7 +471,6 @@ $('#body').on('dragenter', function (e) {
 		$('html,body').stop().animate({scrollTop:0}, 'swing');
 	}
 });
-
 $('#body').on('dragover', function (e) {
 	e.stopPropagation();
 	e.preventDefault();
@@ -473,7 +482,6 @@ $('#body').on('dragover', function (e) {
 		if ($('#title').hasClass('dragging')) $('#title').removeClass('dragging');
 	}
 });
-
 $('#body').on('dragleave', function (e){
 	e.stopPropagation();
 	e.preventDefault();
@@ -481,7 +489,6 @@ $('#body').on('dragleave', function (e){
 		$('#url, #title').removeClass('dragging');
 	}
 });
-
 $('#body').on('drop', function (e){
 	e.preventDefault();
 	var sel = '#url';
@@ -491,9 +498,7 @@ $('#body').on('drop', function (e){
 			$('#registry').css('display', 'none');
 		}
 	}
-
 	var data = e.originalEvent.dataTransfer.items;
-
 	for (var i = 0; i < data.length; i += 1) {
 		if ((data[i].kind == 'string') && (data[i].type.match('^text/plain'))) {
 			data[i].getAsString(function (s){
@@ -525,33 +530,27 @@ $('#body').on('drop', function (e){
 			});
 		}
 	} 
-
 	$(sel).removeClass('dragging');
 	$('html,body').stop();
 });
-
 $('#url, #title').on('input', function(e){
 	checkValidity();
 });
-
 $('#genre').on('mousedown', function(){
 	if ($('#registry').css('display') != 'none'){
 		$('#registry').css('display', 'none');
 	}
 });
-
 $('#url').on('click', function(){
 	if ($(this).hasClass('is-valid') && $('#registry').css('display') === 'none' && $('#registry').html() !== ''){
 		showAlready();
 	}
 });
-
 $('#title').on('click', function(){
 	if ($('#registry').css('display') != 'none'){
 		$('#registry').css('display', 'none');
 	}
 });
-
 $('body').on('click', function(e){
 	if (showingMenu){
 		closeMenu();
@@ -560,11 +559,9 @@ $('body').on('click', function(e){
 		$('#history').css('display', 'none');
 	}
 });
-
 $('#menu').on('click', function(e){
 	e.stopPropagation();
 });
-
 $('#addgenre').on('click', function (e){
 	e.stopPropagation();
 	if (addGenre($('#genrename').val())){
@@ -577,7 +574,6 @@ $('#addgenre').on('click', function (e){
 		$('#genrename').focus();
 	}
 });
-
 $('#genrename').on("keypress", function(e) {
 if (e.keyCode == 13) { // Enter
 	e.preventDefault();
@@ -593,20 +589,16 @@ if (e.keyCode == 13) { // Enter
 	}
 }
 });
-
 $('#button').on('click', function (e){
 	sub();
 });
-
 $('#genreModal').on('shown.bs.modal', function () {
 	$('#genrename').focus();
 });
-
 $('#genre').on('change', function (){
 	setSelGen($(this).val());
 	refresh('s');
 });
-
 $('#loadRaw').on('click', function (){
 	try {
 		var toload = JSON.parse($('#raw').val());
@@ -647,7 +639,6 @@ $('#loadRaw').on('click', function (){
 		message(e, 'danger');
 	}
 });
-
 $('#saveEdit').on('click', function(){
 	var id = $('#editUrl').text();
 	var title = $('#editTitle').val();
@@ -712,26 +703,22 @@ $('#saveEdit').on('click', function(){
 		});
 	}
 });
-
 $('#editModal').on('hidden.bs.modal', function(){
 	$('#editTitle').removeClass('is-invalid');
 	$('#editGenre').removeClass('is-invalid');
 })
-
 $('#nicolist_historyCount').on('change', function(){
 	var sh = $(this).val();
 	if (int(sh) > 0){
 		localStorage.setItem('nicolist_historyCount', sh);
 	}
 });
-
 $('#nicolist_msc').on('change', function(){
 	var sh = $(this).val();
 	if (int(sh) > 0){
 		localStorage.setItem('nicolist_msc', sh);
 	}
 });
-
 $('#searchQuery').on('focus', function (e) {
 	if (searchHistory.length === 0) return;
 	$('#history').html('');
@@ -752,15 +739,12 @@ $('#searchQuery').on('focus', function (e) {
 		'left': $(this).offset().left
 	});
 });
-
 $('#searchQuery').on('click', function (e) {
 	e.stopPropagation();
 });
-
 $('#search').on('click', function(e){
 	search();
 });
-
 $('#ccopen').on('click', function(){
 	$('#ccvideos').html('');
 	$('#ccalert').html('');
@@ -836,7 +820,6 @@ $('#ccopen').on('click', function(){
 	}
 	$('#ccModal').modal('show');
 });
-
 function cctntoggle(){
 	$('#ccvideos .img-thumbnail').each(function(){
 		if ($(this).hasClass('silent')){
@@ -848,23 +831,19 @@ function cctntoggle(){
 		$(this).toggleClass('silent');
 	});
 }
-
 function loadImg(elem){
 	var srcurl = elem.attr('data-src');
 	if (srcurl != undefined){
 		elem.attr('src', srcurl);
 	}
 }
-
 $('#createcopy').on('click', function(){
 	if ($('#ccvideos tr.alert-success').length === 0){
 		message('動画が選択されていません。', 'warning', '#ccalert');
 		$('#ccModal').stop().animate({scrollTop:0}, 'slow');
 		return;
 	}
-
 	var mode = $('#ccnew').val();
-
 	if (mode === 'copytoold' || mode === 'movetoold') {
 		var targetgenre = $('#ccoldsel').val();
 		if ($.inArray(targetgenre, Object.keys(y)) === -1){
@@ -951,7 +930,6 @@ $('#createcopy').on('click', function(){
 		}
 	}
 });
-
 function ccnew(){
 	var val = $('#ccnew').val();
 	localStorage.setItem('nicolist_ccnewval', val);
@@ -968,7 +946,6 @@ function ccnew(){
 		$('#createcopy').text('移動');
 	}
 }
-
 $('#sgopen').on('click', function(){
 	$('#sggenre').html('');
 	var gs = Object.keys(y);
@@ -982,13 +959,11 @@ $('#sgopen').on('click', function(){
 		$('#sggenre').append(div);
 	}
 	$('#genreSortModal').modal('show');
-
 	Sortable.create(sggenre, {
 		draggable: '.sgtarget',
 		animation: 300
 	});
 });
-
 $('#submitGenreSort').on('click', function(){
 	pushPrev();
 	var _y = {};
@@ -1001,23 +976,16 @@ $('#submitGenreSort').on('click', function(){
 	messageUndoable('Genreを並び替えしました', 'success');
 	$('#genreSortModal').modal('hide');
 });
-
 function search() {
 	var value = $('#searchQuery').val();
-
 	var sq = value.replace(/[\-^\\\[;:\],./=~|`{+\*}<>?_!"#$%&'()"！”＃＄％＆’（）＝～｜｀｛＋＊｝＜＞？＿【】『』「」［］〈〉《》ー＾￥；：」、。・／＼]/g, '$').replace(/\$+/g, '$').replace(/\$$|^\$/g, '').split('$');
-
 	if (sq[0] == '') {
 		message('検索クエリが空です。');
 		return;
 	}
-
 	sqDesc = sq.join('」+「');
-
 	$('#sr').html('');
-
 	pushHistory(value);
-
 	var count = 0;
 	var mobj = {};
 	var isand = $("#nicolist_and").prop('checked');
@@ -1050,7 +1018,6 @@ function search() {
 					}
 				}
 			}
-
 			if (isMatched){
 				count ++;
 				if (count > maxsearchcount){
@@ -1097,31 +1064,27 @@ function search() {
 			var _t = _l[2*k+1];
 			var div = $('<div>');
 			var a = $('<a>', {
+				text: restr(_t,80),
 				'href': getVideoURL(_id),
 				'target': '_blank',
 				'data-genre' : _g,
 				'data-id' : _id,
 				'data-title' : _t,
 				contextmenu: function(e){
-					showMenu(e.pageX, e.pageY, $(this));
+					showMenu(e.pageX, e.pageY, $(this), 'search');
 					return false;
 				}
 			});
 			if ($('#nicolist_thumb_res').prop('checked')){
 				a.append(createThumbImgElem(_id, false));
 			}
-			a.append($('<span>',{
-				text: restr(_t,80)
-			}));
 			a.appendTo(div);
 			div.appendTo('#sr');
 		}
 	}
-
 	$('<h4>', {
 		text: '「'+sqDesc+'」の検索結果'
 	}).prependTo('#sr');
-
 	$('#sr').prepend($('<button>', {
 		html: '<span>&times;</span>',
 		'class': 'close',
@@ -1130,10 +1093,8 @@ function search() {
 			$('#sr').fadeOut('slow', refreshStyle);
 		}
 	}));
-
 	$('#sr').fadeIn();
 }
-
 function getVideoURL(id){
 	if ((new RegExp("^sm\\d+$")).test(id)
 		|| (new RegExp("^nm\\d+$")).test(id)
@@ -1144,7 +1105,6 @@ function getVideoURL(id){
 		return 'https://www.youtube.com/watch?v=' + id;
 	}
 }
-
 function getThumbURL(id){
 	if ((new RegExp("^sm\\d+$")).test(id)){
 		var numid = int(id);
@@ -1162,7 +1122,6 @@ function getThumbURL(id){
 		return 'https://img.youtube.com/vi/'+id+'/0.jpg'
 	}
 }
-
 function videoIdMatch(str){
 	var m_sm = str.match(/nicovideo\.jp\/watch\/(sm\d+)/);
 	if (m_sm != null){
@@ -1189,13 +1148,11 @@ function videoIdMatch(str){
 		return m_yt2[1];
 	}
 }
-
 function sub(){
 	if (checkValidity()){
 		var title = $('#title').val();
 		var genre = $('#genre').val();
 		var id = videoIdMatch($('#url').val());
-
 		if (!has(genre, id)){
 			pushPrev();
 			y[genre].push(id);
@@ -1213,7 +1170,6 @@ function sub(){
 		}
 	}
 }
-
 function checkTitleValidity(node){
 	if (node.val() === "" 
 		|| node.val().length > 100 
@@ -1232,9 +1188,7 @@ function checkTitleValidity(node){
 		return true;
 	}
 }
-
 var lastId = '';
-
 function checkURLValidity(){
 	var m = videoIdMatch($('#url').val());
 	if (m != null){
@@ -1300,7 +1254,6 @@ function checkURLValidity(){
 		return false;
 	}
 }
-
 function showAlready(){
 	$('#registry').css({
 		'display': 'inline-block',
@@ -1309,7 +1262,6 @@ function showAlready(){
 		'min-width': $('#url').outerWidth()
 	});
 }
-
 function checkGenreValidity(){
 	if ($('#genre').val() === ""){
 		$('#genre').addClass('is-invalid');
@@ -1317,7 +1269,6 @@ function checkGenreValidity(){
 	}
 	return true;
 }
-
 function checkValidity(){
 	var flag = checkGenreValidity();
 	flag = checkURLValidity() && flag;
@@ -1329,7 +1280,6 @@ function checkValidity(){
 	}
 	return flag;
 }
-
 function pushHistory(queryStr) {
 	if ($.inArray(queryStr, searchHistory) === -1){
 		var _a = [];
@@ -1351,7 +1301,6 @@ function pushHistory(queryStr) {
 	}
 	localStorage.setItem('searchhistory', JSON.stringify(searchHistory));
 }
-
 function init(){
 	$('input[type=checkbox]').each(function(){    
 		var id = $(this).attr('id');
@@ -1412,7 +1361,6 @@ function init(){
 	}
 	refresh('vgs');
 }
-
 function unload(){
 	var tabs = int(localStorage.getItem('_nicolistTabCount'));
 	if (tabs == 1){
@@ -1421,16 +1369,13 @@ function unload(){
 		localStorage.setItem('_nicolistTabCount', tabs-1);
 	}
 }
-
 function refresh(whatChanged){
 	if (!y.hasOwnProperty(selectedGenre)){
 		setSelGen('とりあえず');
 	}
-
 	var videoChanged = whatChanged.indexOf('v') != -1;
 	var genreChanged = whatChanged.indexOf('g') != -1;
 	var selectChanged = whatChanged.indexOf('s') != -1;
-
 	if (selectChanged || genreChanged){
 	    //genreのselectの更新
 	    //#leftの更新
@@ -1457,18 +1402,14 @@ function refresh(whatChanged){
 	        	}
 	        }).appendTo("#left");
 	    }
-
 	    var g = localStorage.getItem('selectedgenre');
 	    if (g != null){
 	    	$('select[role="genre"]').val(g);
 	    }
 	}
-
-
 	if (selectChanged || genreChanged || videoChanged){
 	    //#rightの更新
 	    $("#right").html('');
-
 	    if (selectedGenre === 'とりあえず'){
 	    	$("<h4>", {
 	    		text: selectedGenre
@@ -1487,9 +1428,7 @@ function refresh(whatChanged){
 	    	})
 	    	).appendTo("#right");
 	    }
-
 	    var list = y[selectedGenre];
-
 	    if ($('#nicolist_sort').prop('checked')){
 	    	for (var i = list.length/2-1; i >= 0; i--){//koko dake
 	    		var id = list[2*i];
@@ -1505,7 +1444,7 @@ function refresh(whatChanged){
 	    			'data-title' : title,
 	    			'class': 'rightvideo',
 	    			contextmenu: function(e){
-	    				showMenu(e.pageX, e.pageY, $(this));
+	    				showMenu(e.pageX, e.pageY, $(this), 'right_reversed');
 	    				return false;
 	    			}
 	    		});
@@ -1533,7 +1472,7 @@ function refresh(whatChanged){
 	    			'data-title' : title,
 	    			'class': 'rightvideo',
 	    			contextmenu: function(e){
-	    				showMenu(e.pageX, e.pageY, $(this));
+	    				showMenu(e.pageX, e.pageY, $(this), 'right');
 	    				return false;
 	    			}
 	    		});
@@ -1548,8 +1487,6 @@ function refresh(whatChanged){
 	    	}
 	    }
 	}
-
-
 	if (genreChanged || videoChanged){
 		if ($('#registry').html() !== ''){
 			var m = videoIdMatch($('#url').val());
@@ -1600,20 +1537,20 @@ function refresh(whatChanged){
 				}
 			}
 		}
-
 		$('#out').val(JSON.stringify(y, null, '    '));
 		localStorage.setItem('nicolist', JSON.stringify(y));
 		$('#length').text('('+bytesize(JSON.stringify(y))+'byte)');
 	}
 }
-
-function showMenu(x, y, cont){
+function showMenu(coord_x, coord_y, cont, mode){
 	var id = cont.attr('data-id');
+	var genre = cont.attr('data-genre');
 	var title = cont.attr('data-title');
 	var url = cont.attr('href');
 	var hasurlattr = typeof url !== typeof undefined && url !== false;
 	$("#menu").children('a').each(function(i, elem){
-		if ($(elem).attr('role') === 'title'){
+		var role = $(elem).attr('role');
+		if (role === 'title'){
 			if (hasurlattr){
 				$(elem).html('');
 				var anc = $('<a>', {
@@ -1625,31 +1562,79 @@ function showMenu(x, y, cont){
 			} else {
 				$(elem).text(title);
 			}
-		} else if ($(elem).attr('role') === 'remove'){
+		} else if (role === 'remove'){
 			$(elem).on('click', function(){
 				removeVideo(cont);
 				closeMenu();
 			});
-		} else if ($(elem).attr('role') === 'edit'){
+		} else if (role === 'edit'){
 			$(elem).on('click', function(){
 				showEditModal(cont);
 				closeMenu();
 			});
-		} else if ($(elem).attr('role') === 'open'){
+		} else if (role === 'open'){
 			$(elem).on('click', function(){
 				window.open(getVideoURL(id), '_blank');
+				closeMenu();
+			});
+		} else if (role === 'play'){
+			$(elem).on('click', function(){
+				$('#play').html('');
+				playindex = -1;
+				playlist = [];
+				createEmbedElem(id);
+				refreshController();
+				closeMenu();
+			});
+		} else if (role === 'playall'){
+			$(elem).on('click', function(){
+				$('#play').html('');
+				if (mode === 'right' || mode === 'right_reversed'){
+					if ($(elem).hasClass('disabled')){
+						$(elem).removeClass('disabled');
+					}
+					var list = y[genre];
+					var ids = [];
+					for (var i = 0; i < list.length; i+=2) {
+						ids.push(list[i]);
+					}
+					if (mode === 'right_reversed'){
+						playlist = ids.reverse();
+					} else {
+						playlist = ids;
+					}
+				} else if (mode === 'random'){
+					if ($(elem).hasClass('disabled')){
+						$(elem).removeClass('disabled');
+					}
+					$('#randomVideo a[data-id]').each(function(i, elem2){
+						playlist.push($(elem2).attr('data-id'));
+					});
+				} else if (mode === 'search'){
+					if ($(elem).hasClass('disabled')){
+						$(elem).removeClass('disabled');
+					}
+					$('#sr a[data-id]').each(function(i, elem2){
+						playlist.push($(elem2).attr('data-id'));
+					})
+				} else {
+					$(elem).addClass('disabled');
+				}
+				playindex = playlist.indexOf(id);
+				createEmbedElem(id);
+				refreshController();
+				$('html,body').stop().animate({scrollTop:0}, 'swing');
 				closeMenu();
 			});
 		}
 	});
 	$('#menu').css({
 		'display': 'inline-block',
-		'top': y,
-		'left': x
+		'top': coord_y,
+		'left': coord_x
 	});
 	showingMenu = true;
 }
-
 function showEditModal(cont){
 	var id = cont.attr('data-id');
 	var title = cont.attr('data-title');
@@ -1663,12 +1648,10 @@ function showEditModal(cont){
 	$('#saveEdit').attr('data-genre', genre);
 	$('#editModal').modal();
 }
-
 function closeMenu(){
 	$('#menu').css('display', 'none');
 	showingMenu = false;
 }
-
 function has(genre, id){
 	var list = y[genre];
 	for (var i = 0; i < list.length/2; i++){
@@ -1676,7 +1659,6 @@ function has(genre, id){
 	}
 	return false;
 }
-
 function addGenre(name){
 	if (bytesize(name) > 50){
 		message('Genreの名前は49バイト以内です。', 'warning', '#alert-genre');
@@ -1696,7 +1678,6 @@ function addGenre(name){
 		return false;
 	}
 }
-
 function removeVideo(elem){
 	var genre = elem.attr('data-genre');
 	var id = elem.attr('data-id');
@@ -1716,7 +1697,6 @@ function removeVideo(elem){
 	    refresh('v');//video change
 	});
 }
-
 function removeGenre(elem){
 	var genre = elem.attr('data-genre');
 	confirm2('本当にGenre「'+genre+'」を削除しますか？\n'+(y[genre].length/2)+'個の動画が登録されています。', function(){
@@ -1733,7 +1713,6 @@ function removeGenre(elem){
 	    refresh('gs');//genre change
 	});
 }
-
 function setSelGen(genre){
 	if (!y.hasOwnProperty(genre)) {
 		setSelGen(Object.keys(y)[0]);
@@ -1743,7 +1722,6 @@ function setSelGen(genre){
 	selectedGenre = genre;
 	localStorage.setItem('selectedgenre', selectedGenre);
 }
-
 function redo() {
 	var _c = copy(y);
 	y = copy(prevy);
@@ -1751,7 +1729,6 @@ function redo() {
 	messageUndoable('REDOしました', 'primary');
 	refresh('vgs');
 }
-
 function undo() {
 	var _c = copy(y);
 	y = copy(prevy);
@@ -1759,12 +1736,10 @@ function undo() {
 	messageUndoable('UNDOしました', 'primary', '#alert', false, 'redo');
 	refresh('vgs');
 }
-
 function message(mes, type, wrapper, permanent, elem) {
 	if (typeof type != 'string' || MESSAGE_TYPES.indexOf(type) == -1) type = 'warning';
 	if (typeof wrapper != 'string' || wrapper === '') wrapper = '#alert';
 	if (typeof permanent != 'boolean') permanent = false;
-
 	var div = $('<div>', {
 		'class': 'alert alert-'+type
 	}).css('display', 'none');
@@ -1789,7 +1764,6 @@ function message(mes, type, wrapper, permanent, elem) {
 	$(wrapper).append(div);
 	div.fadeIn();
 }
-
 function messageUndoable(mes, type, wrapper, permanent, toredo){
 	var span;
 	if (toredo === 'redo') {
@@ -1811,7 +1785,6 @@ function messageUndoable(mes, type, wrapper, permanent, toredo){
 	}
 	message(mes, type, wrapper, permanent, span);
 }
-
 function conf(mes, func){
 	if ($('#nicolist_del').prop('checked')){
 		func.call(window);
@@ -1823,7 +1796,6 @@ function conf(mes, func){
 		}
 	}
 }
-
 function confirm2(mesElem, func){
 	$('#confDialog').html('');
 	$('#confDialog').append(mesElem);
@@ -1835,15 +1807,12 @@ function confirm2(mesElem, func){
 	}));
 	$('#confModal').modal('show');
 }
-
 function pushPrev(){
 	prevy = copy(y);
 }
-
 function copy(obj){
 	return $.extend(true, {}, obj);
 }
-
 function randomFromAll(){
 	var _temp = {};
 	var sum = 0;
@@ -1861,7 +1830,6 @@ function randomFromAll(){
 		sum2 += _temp[genre2];
 	}
 }
-
 function random(genre, showGenre){
 	var list = y[genre];
 	var rand2 = Math.floor(Math.random() * (list.length/2));
@@ -1882,22 +1850,20 @@ function random(genre, showGenre){
 	}
 	var div = $('<div>');
 	var a = $('<a>', {
+		text: title,
 		'href': getVideoURL(id),
 		'target': '_blank',
 		'data-genre' : genre,
 		'data-id' : id,
 		'data-title' : title,
 		contextmenu: function(e){
-			showMenu(e.pageX, e.pageY, $(this));
+			showMenu(e.pageX, e.pageY, $(this), 'random');
 			return false;
 		}
 	});
 	if ($('#nicolist_thumb_res').prop('checked')){
 		a.append(createThumbImgElem(id, $('#nicolist_rand').prop('checked')));
 	}
-	a.append($('<span>',{
-		text: title
-	}));
 	div.append(a);
 	if (showGenre){
 		div.append($('<span>', {
@@ -1908,11 +1874,9 @@ function random(genre, showGenre){
 	div.prependTo('#randomVideo');
 	$('#random').css('display', 'block');
 }
-
 function randomFromSel(){
 	random(selectedGenre, !$('#nicolist_rand').prop('checked'));
 }
-
 function refreshStyle(){
 	if ($('#history').css('display') != 'none'){
 		$('#history').css({
@@ -1929,11 +1893,9 @@ function refreshStyle(){
 		});
 	}
 }
-
 function bytesize(str) {
 	return encodeURIComponent(str).replace(/%../g, "a").length;
 }
-
 function int(str){
 	var num = parseInt(str, 10);
 	if (isNaN(num)){
@@ -1942,7 +1904,6 @@ function int(str){
 		return num;
 	}
 }
-
 function restr(str, max){
 	if (typeof max === 'undefined') max = 50;
 	if (bytesize(str)>max){
@@ -1961,7 +1922,6 @@ function restr(str, max){
 		return str;
 	}
 }
-
 function restr2(str, max){
 	if (typeof max === 'undefined') max = 40;
 	if (str.length>max){
@@ -1970,7 +1930,6 @@ function restr2(str, max){
 		return str;
 	}
 }
-
 function createThumbImgElem(id, isFullSize){
 	return $('<img>',{
 		'src': (getThumbURL(id)),
@@ -1978,7 +1937,6 @@ function createThumbImgElem(id, isFullSize){
 		'class': 'mr-4 img-thumbnail '+(isFullSize?'full-thumb':'sm-thumb')
 	});
 }
-
 function createStayUnloadedTNI(id, isFullSize){
 	return $('<img>',{
 		'data-src': (getThumbURL(id)),
@@ -1986,6 +1944,145 @@ function createStayUnloadedTNI(id, isFullSize){
 		'class': 'mr-4 img-thumbnail '+(isFullSize?'full-thumb':'sm-thumb')
 	});
 }
+var autoplay = false;
+function createEmbedElem(id){
+	if ((new RegExp("^sm\\d+$")).test(id)|| (new RegExp("^nm\\d+$")).test(id) || (new RegExp("^so\\d+$")).test(id) || (new RegExp("^\\d+$")).test(id)){
+		setupNiconicoIframe(id);
+	} else {
+		setupYoutubeIframe(id);
+	}
+}
+var player;
+function setupYoutubeIframe(id){
+	$('#play').html('');
+	var div = $('<div>',{
+		"id": "playeriframeyoutube",
+	});
+	$('#play').append(div);
+	player = new YT.Player('playeriframeyoutube', {
+		width: 640,
+		height: 360,
+		videoId: id,
+    	playerVars: { 'autoplay': (autoplay ? 1 : 0)},
+		events: {
+			'onStateChange': function(event){
+				if (event.data === YT.PlayerState.ENDED){
+					autoplay = true;
+					next();
+				} else if (autoplay && event.data === YT.PlayerState.CUED){
+					player.playVideo();
+					autoplay = false;
+				}
+	        }
+	    }
+	});
+}
+function setupNiconicoIframe(id){
+	$('#play').html('');
+	var iframeElement = $('<iframe>',{
+		"id": "playeriframenicovideo",
+		"width": "640",
+		"height": "360",
+		"src": 'https://embed.nicovideo.jp/watch/'+id+'?jsapi=1&playerId='+playindex,
+		"frameborder": "0",
+		"allow": "autoplay; encrypted-media",
+		"allowfullscreen": ""
+	});
+	$('#play').append(iframeElement);
+	window.addEventListener('message', function (event) {
+		if (event.origin === 'https://embed.nicovideo.jp'){
+			if (event.data.eventName === 'playerStatusChange'){
+				if (event.data.data.playerStatus === 4){
+					autoplay = true;
+					next();
+				}
+			} else if (autoplay && event.data.eventName === 'loadComplete'){
+				$('#play iframe').get(0).contentWindow.postMessage({eventName:'play',playerId:playindex+"",sourceConnectorType:1}, 'https://embed.nicovideo.jp');
+				autoplay = false;
+			}
+		}
+	});
+}
+function next(){
+	if (hasNext()){
+		playindex++;
+		var id = playlist[playindex];
+		if ((new RegExp("^sm\\d+$")).test(id)|| (new RegExp("^nm\\d+$")).test(id) || (new RegExp("^so\\d+$")).test(id) || (new RegExp("^\\d+$")).test(id)){
+			if (!$('#play iframe').length || $('#play iframe').attr('id') === 'playeriframeyoutube'){
+				setupNiconicoIframe(id);
+			} else {
+				$('#play iframe').attr('src', 'https://embed.nicovideo.jp/watch/'+id+'?jsapi=1&playerId='+(playindex));
+			}
+		} else {
+			if (!$('#play iframe').length || $('#play iframe').attr('id') === 'playeriframenicovideo'){
+				setupYoutubeIframe(id);
+			} else {
+				player.cueVideoById({videoId: id});
+			}
+		}
+		refreshController();
+	}
+}
+function hasNext(){
+	return playindex !== -1 && playlist.length > playindex + 1;
+}
+function hasPrevious(){
+	return playindex > 0;
+}
+function previous(){
+	if (hasPrevious()){
+		playindex--;
+		var id = playlist[playindex];
+		if ((new RegExp("^sm\\d+$")).test(id)|| (new RegExp("^nm\\d+$")).test(id) || (new RegExp("^so\\d+$")).test(id) || (new RegExp("^\\d+$")).test(id)){
+			if (!$('#play iframe').length || $('#play iframe').attr('id') === 'playeriframeyoutube'){
+				setupNiconicoIframe(id);
+			} else {
+				$('#play iframe').attr('src', 'https://embed.nicovideo.jp/watch/'+id+'?jsapi=1&playerId='+(playindex));
+			}
+		} else {
+			if (!$('#play iframe').length || $('#play iframe').attr('id') === 'playeriframenicovideo'){
+				setupYoutubeIframe(id);
+			} else {
+				player.loadVideoById({videoId: id});
+			}
+		}
+		refreshController();
+	}
+}
+function refreshController(){
+	if (hasNext()){
+		if ($('#pcnext').hasClass('silent')){
+			$('#pcnext').removeClass('silent');
+		}
+	} else {
+		if (!$('#pcnext').hasClass('silent')){
+			$('#pcnext').addClass('silent');
+		}
+	}
+	if (hasPrevious()){
+		if ($('#pcprev').hasClass('silent')){
+			$('#pcprev').removeClass('silent');
+		}
+	} else {
+		if (!$('#pcprev').hasClass('silent')){
+			$('#pcprev').addClass('silent');
+		}
+	}
+	if ($('#play').html() !== '' && $('#pcclose').hasClass('silent')){
+		$('#pcclose').removeClass('silent');
+	}
+}
+$('#pcclose').on('click', function(){
+	$('#play').html('');
+	$('#pcclose').addClass('silent');
+	$('#pcnext').addClass('silent');
+	$('#pcprev').addClass('silent');
+	playindex = -1;
+	playlist = [];
+});
+//TODO : ランダム連続再生 (今のジャンル / 全ジャンル)
+//TODO : ビデオサイズ変更など
+//TODO : 再生に関する設定など
 </script>
 </body>
 </html>
