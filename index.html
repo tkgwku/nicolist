@@ -1607,6 +1607,7 @@ function showMenu(coord_x, coord_y, cont, mode){
 					if ($(elem).hasClass('disabled')){
 						$(elem).removeClass('disabled');
 					}
+					playlist = [];
 					$('#randomVideo a[data-id]').each(function(i, elem2){
 						playlist.push($(elem2).attr('data-id'));
 					});
@@ -1614,6 +1615,7 @@ function showMenu(coord_x, coord_y, cont, mode){
 					if ($(elem).hasClass('disabled')){
 						$(elem).removeClass('disabled');
 					}
+					playlist = [];
 					$('#sr a[data-id]').each(function(i, elem2){
 						playlist.push($(elem2).attr('data-id'));
 					})
