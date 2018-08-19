@@ -252,6 +252,7 @@ div.sgdef{
 				</button>
 			</div>
 			<div class="modal-body">
+				<div id="emalert"></div>
 				<div class="d-flex flex-row">
 					<div class="mr-4" style="display: inline-block;">
 						<img src="" alt="No Image" id="editThumb" class="img-thumbnail edit_thumb">
@@ -604,34 +605,36 @@ $('#loadRaw').on('click', function (){
 		var toload = JSON.parse($('#raw').val());
 		var videocount = 0;
 		var genrecount = 0;
-		pushPrev();
 		if (!(toload instanceof Object)){
-			message('invalid input!', 'danger');
+			message('フォーマットが正しくありません', 'warning');
 			return;
 		}
+		var _y = copy(y);
 		for (var genre in toload){
 			var list = toload[genre];
 			if (!(list instanceof Array)){
-				message('invalid input!', 'danger');
+				message('フォーマットが正しくありません', 'warning');
 				return;
 			}
 			for (var i = 0; i < list.length/2; i++){
 				var id = list[2*i];
 				var title = list[2*i+1];
-				if (!y.hasOwnProperty(genre)) {
-					y[genre] = [];
+				if (!_y.hasOwnProperty(genre)) {
+					_y[genre] = [];
 					genrecount++;
 				}
-				if (!has(genre, id)){
-					y[genre].push(id);
-					y[genre].push(title);
+				if ($.inArray(id, _y[genre]) === -1){
+					_y[genre].push(id);
+					_y[genre].push(title);
 					videocount++;
 				}
 			}
 		}
 		if (videocount===0&&genrecount===0){
-			message('すべて登録済みであるか、inputに動画が存在しません');
+			message('すべて登録済みの動画です');
 		} else {
+			pushPrev();
+			y = _y;
 			messageUndoable('JSONから'+(videocount>0?videocount+'個の動画':'')+(genrecount>0&&videocount>0?'、':'')+(genrecount>0?genrecount+'個のGenre':'')+'を新たに読み込みました', 'success');
 			refresh((genrecount>0?'g':'')+(videocount>0?'v':''));
 		}
@@ -645,9 +648,18 @@ $('#saveEdit').on('click', function(){
 	var genre = $('#editGenre').val();
 	var oldtitle = $(this).attr('data-title');
 	var oldgenre = $(this).attr('data-genre');
-	if (title == '' || genre == '' || (title == oldtitle && genre == oldgenre)){
+	if (title == ''){
+		message('タイトルが空欄です', 'warning', '#emalert');
+		$('#editTitle').addClass('is-invalid');
+	} else if (genre == ''){
+		message('ジャンルが正しく選択されていません', 'warning', '#emalert');
+		$('#editGenre').addClass('is-invalid');
+	} else if (title == oldtitle && genre == oldgenre){
+		message('変更なしになっています', 'warning', '#emalert');
 		$('#editTitle').addClass('is-invalid');
 		$('#editGenre').addClass('is-invalid');
+	} else if ($.inArray(id, y[genre]) !== -1){
+		message('既に移動先のジャンルに登録されている動画です', 'warning', '#emalert');
 	} else {
 		var mesElem = $('<div>');
 		var table = $('<table>', {'class':'mb-4'});
@@ -680,8 +692,8 @@ $('#saveEdit').on('click', function(){
 		mesElem.append(table);
 		mesElem.append($('<span>', {text:'変更を保存しますか?'}));
 		conf(mesElem, function(){
-			pushPrev();
-			var list = y[oldgenre];
+			var _y = copy(y);
+			var list = _y[oldgenre];
 			var newlist = [];
 			for (var i = 0; i < list.length/2; i++){
 				if (list[2*i] != id){
@@ -692,11 +704,13 @@ $('#saveEdit').on('click', function(){
 					newlist.push(title);
 				}
 			}
-			y[oldgenre] = newlist;
+			_y[oldgenre] = newlist;
 			if (oldgenre != genre){
-				y[genre].push(id);
-				y[genre].push(title);
+				_y[genre].push(id);
+				_y[genre].push(title);
 			}
+			pushPrev();
+			y = _y;
 			messageUndoable('動画「'+title+'」を編集しました', 'info');
 			refresh('v');
 			$('#editModal').modal('hide');
@@ -706,6 +720,7 @@ $('#saveEdit').on('click', function(){
 $('#editModal').on('hidden.bs.modal', function(){
 	$('#editTitle').removeClass('is-invalid');
 	$('#editGenre').removeClass('is-invalid');
+	$('#emalert').html('');
 })
 $('#nicolist_historyCount').on('change', function(){
 	var sh = $(this).val();
@@ -777,6 +792,9 @@ $('#ccopen').on('click', function(){
 			'class':'cctable'
 		});
 		var list = y[genre];
+		if ($('#nicolist_sort').prop('checked')){
+			list = reversePairList(list);
+		}
 		for (var i = 0; i < list.length/2; i++) {
 			var id = list[2*i];
 			var title = list[2*i+1];
@@ -884,6 +902,8 @@ $('#createcopy').on('click', function(){
 			messageUndoable(successcount+'個の動画を「'+targetgenre+'」に'+__a+'しました'+(failcount>0?' ('+failcount+'個の動画は既に登録されているため'+__a+'されません)':''), 'success');
 		} else {
 			message('すべて「'+targetgenre+'」に登録済みの動画です', 'warning', '#ccalert');
+			$('#ccModal').stop().animate({scrollTop:0}, 'slow');
+			return;
 		}
 		setSelGen(targetgenre);
 		refresh('gvs');
@@ -892,11 +912,11 @@ $('#createcopy').on('click', function(){
 		var remove_cb = mode === 'movetonew';
 		var ccname = $('#ccname').val();
 		if (ccname === ''){
-			message('作成するGenreの名前を入力してください。', 'warning', '#ccalert');
+			message('作成するジャンルの名前を入力してください。', 'warning', '#ccalert');
 			$('#ccModal').stop().animate({scrollTop:0}, 'slow');
 			return;
-		} else if (Object.keys(y).indexOf(ccname) != -1){
-			message('既に存在するGenreです。', 'warning', '#ccalert');
+		} else if (Object.keys(y).indexOf(ccname) !== -1){
+			message('既に存在するジャンル名です。', 'warning', '#ccalert');
 			$('#ccModal').stop().animate({scrollTop:0}, 'slow');
 			return;
 		} else {
@@ -917,8 +937,10 @@ $('#createcopy').on('click', function(){
 					}
 					y[genre] = newlist;
 				}
-				list.push(id);
-				list.push(title);
+				if ($.inArray(id, list) === -1){
+					list.push(id);
+					list.push(title);
+				}
 			});
 			y[ccname] = list;
 			var __a = remove_cc?'移動':'コピー';
@@ -1255,6 +1277,7 @@ function checkURLValidity(){
 	}
 }
 function showAlready(){
+	//TODO add configuration which disables 'already-registered' popdown
 	$('#registry').css({
 		'display': 'inline-block',
 		'top': $('#url').offset().top + $('#url').outerHeight(),
@@ -1390,6 +1413,7 @@ function refresh(whatChanged){
 	        	}));
 	        });
 	        //#left更新
+	        //TODO : display how many videos are registered after each list in #left (configurable)
 	        $('<li>', {
 	        	'class': (genre === selectedGenre ? 'list-group-item selected' : 'list-group-item'),
 	        	text: genre,
@@ -1429,64 +1453,39 @@ function refresh(whatChanged){
 	    	).appendTo("#right");
 	    }
 	    var list = y[selectedGenre];
-	    if ($('#nicolist_sort').prop('checked')){
-	    	for (var i = list.length/2-1; i >= 0; i--){//koko dake
-	    		var id = list[2*i];
-	    		var title = list[2*i+1];
-	    		var div = $('<div>', {
-	    			'class': 'd-flex flex-row'
-	    		});
-	    		var a = $("<a>", {
-	    			"href": getVideoURL(id),
-	    			'target': '_blank',
-	    			'data-genre' : selectedGenre,
-	    			'data-id' : id,
-	    			'data-title' : title,
-	    			'class': 'rightvideo',
-	    			contextmenu: function(e){
-	    				showMenu(e.pageX, e.pageY, $(this), 'right_reversed');
-	    				return false;
-	    			}
-	    		});
-	    		if ($('#nicolist_thumb').prop('checked')){
-	    			a.append(createThumbImgElem(id, false));
+		if ($('#nicolist_sort').prop('checked')){
+			list = reversePairList(list);
+		}
+	    for (var i = 0; i < list.length/2; i++){
+	    	var id = list[2*i];
+	    	var title = list[2*i+1];
+	    	var div = $('<div>', {
+	    		'class': 'd-flex flex-row'
+	    	});
+	    	var a = $( "<a>", {
+	    		"href": getVideoURL(id),
+	    		'target': '_blank',
+	    		'data-genre' : selectedGenre,
+	    		'data-id' : id,
+	    		'data-title' : title,
+	    		'class': 'rightvideo',
+	    		contextmenu: function(e){
+	    			var _b = $('#nicolist_sort').prop('checked') ? 'right_reversed' : 'right';
+	    			showMenu(e.pageX, e.pageY, $(this), _b);
+	    			return false;
 	    		}
-	    		a.append($('<span>',{
-	    			text: restr2(title,30)
-	    		}))
-	    		a.appendTo(div);
-	    		div.appendTo("#right");
+	    	});
+	    	if ($('#nicolist_thumb').prop('checked')){
+	    		a.append(createThumbImgElem(id, false));
 	    	}
-	    } else {
-	    	for (var i = 0; i < list.length/2; i++){
-	    		var id = list[2*i];
-	    		var title = list[2*i+1];
-	    		var div = $('<div>', {
-	    			'class': 'd-flex flex-row'
-	    		});
-	    		var a = $( "<a>", {
-	    			"href": getVideoURL(id),
-	    			'target': '_blank',
-	    			'data-genre' : selectedGenre,
-	    			'data-id' : id,
-	    			'data-title' : title,
-	    			'class': 'rightvideo',
-	    			contextmenu: function(e){
-	    				showMenu(e.pageX, e.pageY, $(this), 'right');
-	    				return false;
-	    			}
-	    		});
-	    		if ($('#nicolist_thumb').prop('checked')){
-	    			a.append(createThumbImgElem(id, false));
-	    		}
-	    		a.append($('<span>',{
-	    			text: restr2(title, 50)
-	    		}))
-	    		a.appendTo(div);
-	    		div.appendTo("#right");
-	    	}
+	    	a.append($('<span>',{
+	    		text: restr2(title, 50)
+	    	}))
+	    	a.appendTo(div);
+	    	div.appendTo("#right");
 	    }
 	}
+	//TODO : what this does?
 	if (genreChanged || videoChanged){
 		if ($('#registry').html() !== ''){
 			var m = videoIdMatch($('#url').val());
@@ -1519,7 +1518,7 @@ function refresh(whatChanged){
 							'class': 'dropdown-divider'
 						}));
 						$('#registry').prepend($('<div>', {
-							text: 'この動画は以下のGenreに登録されています:',
+							text: 'この動画は以下のジャンルに登録されています:',
 							'class': 'bold dropdown-item'
 						}))
 						$('#registry').append($('<div>', {
@@ -1663,20 +1662,20 @@ function has(genre, id){
 }
 function addGenre(name){
 	if (bytesize(name) > 50){
-		message('Genreの名前は49バイト以内です。', 'warning', '#alert-genre');
+		message('ジャンル名は49バイト以内に収める必要があります', 'warning', '#alert-genre');
 		return false;
 	}
 	if (bytesize(name) === 0){
-		message('作成するGenreの名前を入力してください。', 'warning', '#alert-genre');
+		message('作成するジャンルの名前を入力してください。', 'warning', '#alert-genre');
 		return false;
 	}
 	if (!(name in y)){
 		pushPrev();
 		y[name] = [];
-		messageUndoable('Genre「'+name+'」を追加しました', 'success');
+		messageUndoable('ジャンル「'+name+'」を追加しました', 'success');
 		return true;
 	} else {
-		message('Genre「'+name+'」は既に存在しているようです。', 'warning', '#alert-genre');
+		message('ジャンル「'+name+'」は既に存在しているようです。', 'warning', '#alert-genre');
 		return false;
 	}
 }
@@ -1701,7 +1700,7 @@ function removeVideo(elem){
 }
 function removeGenre(elem){
 	var genre = elem.attr('data-genre');
-	confirm2('本当にGenre「'+genre+'」を削除しますか？\n'+(y[genre].length/2)+'個の動画が登録されています。', function(){
+	confirm2('本当にジャンル「'+genre+'」を削除しますか？\n'+(y[genre].length/2)+'個の動画が登録されています。', function(){
 		var newy = {}; 
 		pushPrev();
 		for (var oldgenre in y){
@@ -1710,7 +1709,7 @@ function removeGenre(elem){
 			}
 		}
 		y = newy;
-		messageUndoable('Genre「'+genre+'」を削除しました', 'danger');
+		messageUndoable('ジャンル「'+genre+'」を削除しました', 'danger');
 		setSelGen(Object.keys(y)[0]);
 	    refresh('gs');//genre change
 	});
@@ -1718,7 +1717,7 @@ function removeGenre(elem){
 function setSelGen(genre){
 	if (!y.hasOwnProperty(genre)) {
 		setSelGen(Object.keys(y)[0]);
-		message('Invalid selected genre was saved... :(', 'danger');
+		message('前回選択していたジャンルの引き継ぎ時にエラーが発生しました', 'danger');
 		return;
 	}
 	selectedGenre = genre;
@@ -2083,8 +2082,15 @@ $('#pcclose').on('click', function(){
 	playlist = [];
 });
 //TODO : ランダム連続再生 (今のジャンル / 全ジャンル)
-//TODO : ビデオサイズ変更など
-//TODO : 再生に関する設定など
+//TODO : 再生に関する設定
+function reversePairList(list){
+	var _list = [];
+	for (var i = list.length/2 - 1; i >= 0; i--) {
+		_list.push(list[2*i]);
+		_list.push(list[2*i+1]);
+	}
+	return _list;
+}
 </script>
 </body>
 </html>
