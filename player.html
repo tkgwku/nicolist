@@ -1,0 +1,192 @@
+<!DOCTYPE html>
+<html>
+<head>
+<title>nicol;st</title>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+<!-- bootstrap -->
+<link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0-beta/css/bootstrap.min.css" integrity="sha384-/Y6pD6FV/Vv2HJnA6t+vslU6fwYXjCFtcEpHbNJ0lyAFsXTsjBbfaDjzALeQsN6M" crossorigin="anonymous">
+<style type="text/css">
+	.silent {display: none}
+	body{background-color: #223;padding: 1em;margin: 0;color: #ddd}
+</style>
+</head>
+<body onload="init();">
+	<div id="play"></div>
+	<div id="controller">
+		<div>
+			<button class="btn btn-outline-secondary mb-1 mt-1 silent" type="submit" onclick="previous()" id="pcprev">前の動画へ</button>
+			<button class="btn btn-outline-secondary mb-1 mt-1 silent" type="submit" onclick="next()" id="pcnext">次の動画へ</button>
+		</div>
+	</div>
+
+<!-- jQuery -->
+<script src="https://code.jquery.com/jquery-3.2.1.min.js"></script>
+<!-- Youtube iframe api-->
+<script type="text/javascript" src="https://www.youtube.com/iframe_api"></script>
+<script type="text/javascript">
+var playlist = [];
+var playindex = 0;
+
+function init(){
+	var infoarray = window.location.search.match(/[^?&]+=[^?&]*/g);
+
+	if (infoarray == null){
+		$('#play').text('プレイリスト情報がないため動画は再生されません。');
+		return;
+	}
+
+	for (var i = 0; i < infoarray.length; i++) {
+		var m = infoarray[i].match(/^pl=([^?&]+)$/);
+		if (m) {
+			try {
+				playlist = JSON.parse(unescape(m[1]));
+			} catch(e) {
+				$('#play').text(e);
+				return;
+			}
+		} else {
+			var m2 = infoarray[i].match(/^i=(\d+)$/);
+			if (m2) {
+				playindex = parseInt(m2[1], 10);
+			}
+		}
+	}
+
+	if (!(playlist instanceof Array) || playlist.length === 0){
+		$('#play').text('プレイリスト情報が不正です。');
+		return;
+	}
+
+	refreshController();
+	createEmbedElem(playlist[0]);
+}
+	
+var autoplay = false;
+function createEmbedElem(id){
+	if ((new RegExp("^sm\\d+$")).test(id)|| (new RegExp("^nm\\d+$")).test(id) || (new RegExp("^so\\d+$")).test(id) || (new RegExp("^\\d+$")).test(id)){
+		setupNiconicoIframe(id);
+	} else {
+		setupYoutubeIframe(id);
+	}
+}
+var player;
+function setupYoutubeIframe(id){
+	$('#play').html('');
+	var div = $('<div>',{
+		"id": "playeriframeyoutube",
+	});
+	$('#play').append(div);
+	player = new YT.Player('playeriframeyoutube', {
+		width: $('#play').innerWidth(),
+		height: Math.floor($('#play').innerWidth()*9/16),
+		videoId: id,
+    	playerVars: { 'autoplay': (autoplay ? 1 : 0)},
+		events: {
+			'onStateChange': function(event){
+				if (event.data === YT.PlayerState.ENDED){
+					autoplay = true;
+					next();
+				} else if (autoplay && event.data === YT.PlayerState.CUED){
+					player.playVideo();
+					autoplay = false;
+				}
+	        }
+	    }
+	});
+}
+function setupNiconicoIframe(id){
+	$('#play').html('');
+	var iframeElement = $('<iframe>',{
+		"id": "playeriframenicovideo",
+		"width": $('#play').innerWidth()+"",
+		"height": Math.floor($('#play').innerWidth()*9/16)+"",
+		"src": 'https://embed.nicovideo.jp/watch/'+id+'?jsapi=1&playerId='+playindex,
+		"frameborder": "0",
+		"allow": "autoplay; encrypted-media",
+		"allowfullscreen": ""
+	});
+	$('#play').append(iframeElement);
+	window.addEventListener('message', function (event) {
+		if (event.origin === 'https://embed.nicovideo.jp'){
+			if (event.data.eventName === 'playerStatusChange'){
+				if (event.data.data.playerStatus === 4){
+					autoplay = true;
+					next();
+				}
+			} else if (autoplay && event.data.eventName === 'loadComplete'){
+				$('#play iframe').get(0).contentWindow.postMessage({eventName:'play',playerId:playindex+"",sourceConnectorType:1}, 'https://embed.nicovideo.jp');
+				autoplay = false;
+			}
+		}
+	});
+}
+function next(){
+	if (hasNext()){
+		playindex++;
+		var id = playlist[playindex];
+		if ((new RegExp("^sm\\d+$")).test(id)|| (new RegExp("^nm\\d+$")).test(id) || (new RegExp("^so\\d+$")).test(id) || (new RegExp("^\\d+$")).test(id)){
+			if (!$('#play iframe').length || $('#play iframe').attr('id') === 'playeriframeyoutube'){
+				setupNiconicoIframe(id);
+			} else {
+				$('#play iframe').attr('src', 'https://embed.nicovideo.jp/watch/'+id+'?jsapi=1&playerId='+(playindex));
+			}
+		} else {
+			if (!$('#play iframe').length || $('#play iframe').attr('id') === 'playeriframenicovideo'){
+				setupYoutubeIframe(id);
+			} else {
+				player.cueVideoById({videoId: id});
+			}
+		}
+		refreshController();
+	}
+}
+function hasNext(){
+	return playindex !== -1 && playlist.length > playindex + 1;
+}
+function hasPrevious(){
+	return playindex > 0;
+}
+function previous(){
+	if (hasPrevious()){
+		playindex--;
+		var id = playlist[playindex];
+		if ((new RegExp("^sm\\d+$")).test(id)|| (new RegExp("^nm\\d+$")).test(id) || (new RegExp("^so\\d+$")).test(id) || (new RegExp("^\\d+$")).test(id)){
+			if (!$('#play iframe').length || $('#play iframe').attr('id') === 'playeriframeyoutube'){
+				setupNiconicoIframe(id);
+			} else {
+				$('#play iframe').attr('src', 'https://embed.nicovideo.jp/watch/'+id+'?jsapi=1&playerId='+(playindex));
+			}
+		} else {
+			if (!$('#play iframe').length || $('#play iframe').attr('id') === 'playeriframenicovideo'){
+				setupYoutubeIframe(id);
+			} else {
+				player.loadVideoById({videoId: id});
+			}
+		}
+		refreshController();
+	}
+}
+function refreshController(){
+	if (hasNext()){
+		if ($('#pcnext').hasClass('silent')){
+			$('#pcnext').removeClass('silent');
+		}
+	} else {
+		if (!$('#pcnext').hasClass('silent')){
+			$('#pcnext').addClass('silent');
+		}
+	}
+	if (hasPrevious()){
+		if ($('#pcprev').hasClass('silent')){
+			$('#pcprev').removeClass('silent');
+		}
+	} else {
+		if (!$('#pcprev').hasClass('silent')){
+			$('#pcprev').addClass('silent');
+		}
+	}
+}
+</script>
+</body>
+</html>

@@ -138,10 +138,11 @@ div.sgdef{
 		</div>
 
 		<div id="play"></div>
-		<div>
+		<div id="controller">
 			<button class="btn btn-outline-secondary mb-1 mt-1 silent" type="submit" onclick="previous()" id="pcprev">前の動画へ</button>
 			<button class="btn btn-outline-secondary mb-1 mt-1 silent" type="submit" onclick="next()" id="pcnext">次の動画へ</button>
 			<button class="btn btn-outline-secondary mb-1 mt-1 silent" type="submit" id="pcclose">閉じる</button>
+			<button class="btn btn-outline-secondary mb-1 mt-1 silent" type="submit" id="pcnewtab">別タブで連続再生 (Local限定)</button>
 		</div>
 
 		<div id="random" class="alert">
@@ -459,6 +460,7 @@ var selectedGenre = '';
 var showingMenu = false;
 var playlist = [];
 var playindex = -1;
+var islocal = window.location.protocol === 'file:';
 $('input[type=checkbox]').on('change', function(){
 	var id = $(this).attr('id');
 	if (typeof id != 'undefined'){
@@ -1580,7 +1582,7 @@ function showMenu(coord_x, coord_y, cont, mode){
 			$(elem).on('click', function(){
 				$('#play').html('');
 				playindex = -1;
-				playlist = [];
+				playlist = [id];
 				createEmbedElem(id);
 				refreshController();
 				closeMenu();
@@ -1788,7 +1790,7 @@ function messageUndoable(mes, type, wrapper, permanent, toredo){
 }
 function conf(mes, func){
 	if ($('#nicolist_del').prop('checked')){
-		func.call(window);
+		(func)();
 	} else {
 		if (typeof mes === 'string'){
 			confirm2($('<span>',{text: mes}), func);
@@ -2072,6 +2074,15 @@ function refreshController(){
 	if ($('#play').html() !== '' && $('#pcclose').hasClass('silent')){
 		$('#pcclose').removeClass('silent');
 	}
+	if (islocal && playlist.length > 0){
+		if ($('#pcnewtab').hasClass('silent')){
+			$('#pcnewtab').removeClass('silent');
+		}
+	} else {
+		if (!$('#pcnewtab').hasClass('silent')){
+			$('#pcnewtab').removeClass('silent');
+		}
+	}
 }
 $('#pcclose').on('click', function(){
 	$('#play').html('');
@@ -2081,8 +2092,9 @@ $('#pcclose').on('click', function(){
 	playindex = -1;
 	playlist = [];
 });
-//TODO : ランダム連続再生 (今のジャンル / 全ジャンル)
-//TODO : 再生に関する設定
+$('#pcnewtab').on('click', function(){
+	window.open('http://jar.oiran.org/app/nicolist/player.html?pl='+escape(JSON.stringify(playlist))+'&i='+playindex, 'nlplayer');
+})
 function reversePairList(list){
 	var _list = [];
 	for (var i = list.length/2 - 1; i >= 0; i--) {
@@ -2091,6 +2103,18 @@ function reversePairList(list){
 	}
 	return _list;
 }
+/* TODO : 
+ * - ランダム連続再生 (今のジャンル / 全ジャンル)
+ * - 再生に関する設定
+ * - 一覧に項目が多い場合、スクロール時に情報をロード (configurable)
+ * - 画像のキャッシュを作成
+ * - add configuration which disables 'already-registered' popdown
+ * - display how many videos are registered after each list in #left (configurable)
+ * - 次に再生 (キューに追加)
+ * - プレイリストを表示
+ * - プレイリストをジャンルとして保存
+ * - if location.protocol === 'file:' then disable video player and provide player.html instead
+ */
 </script>
 </body>
 </html>
