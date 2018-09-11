@@ -12,7 +12,7 @@
 button.close span{font-size: 16px !important}
 .dragging{border :1px solid #0B85A1 !important;background-color: #d4edda !important}
 .is-invalid{background-color: #f8d7da}
-button, label {cursor: pointer;}
+.btn, label {cursor: pointer;}
 .removevideo {cursor: pointer;color: #aaa}
 .videolist{padding: .5em 0}
 .list-group-item, .pointer{cursor: pointer;transition: background-color 0.1s ease-in-out 0s;}
@@ -341,6 +341,7 @@ div.sgdef{
 				</button>
 			</div>
 			<div class="modal-body">
+				<div id="prefalert"></div>
 
 				<div>
 					<label class="custom-control custom-checkbox">
@@ -394,7 +395,7 @@ div.sgdef{
 					<label class="custom-control custom-checkbox">
 						<input type="checkbox" class="custom-control-input" id="nicolist_cinematic" onchange="videoResize()">
 						<span class="custom-control-indicator"></span>
-						<span class="custom-control-description">ビデオをシネマティックモードで再生</span>
+						<span class="custom-control-description">動画をシネマティックモードで再生</span>
 					</label>
 				</div>
 
@@ -410,21 +411,22 @@ div.sgdef{
 
 				<hr>
 
-				<p>raw output <span id="length"></span></p>
+				<p>エクスポート <span id="length"></span></p>
+				<div>
+					<button type="submit" class="btn btn-outline-primary mb-3" id="issueRaw">データのバックアップファイルを保存</button>
+				</div>
 				<div class="form-group">
 					<textarea class="form-control" id="out" rows="3" onclick="this.focus();this.select()" readonly="readonly"></textarea>
 				</div>
 
 				<hr>
 
-				<p>from raw output</p>
-				<div class="form-group">
-					<textarea class="form-control" id="raw" rows="3"></textarea>
-
+				<p>インポート</p>
+				<div>
+					<input type="file" class="btn btn-outline-primary" id="fromRawFile">
 				</div>
-				<button type="submit" class="btn btn-outline-primary" id="loadRaw" data-dismiss="modal">Add from Raw Output</button>
 				<hr>
-				<button type="button" class="btn btn-outline-secondary" data-dismiss="modal">Close</button>
+				<button type="button" class="btn btn-outline-secondary" data-dismiss="modal">閉じる</button>
 			</div>
 		</div>
 	</div>

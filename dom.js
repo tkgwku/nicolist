@@ -149,48 +149,6 @@ $('#genre').on('change', function (){
 	setSelGen($(this).val());
 	refresh('s');
 });
-$('#loadRaw').on('click', function (){
-	try {
-		var toload = JSON.parse($('#raw').val());
-		var videocount = 0;
-		var genrecount = 0;
-		if (!(toload instanceof Object)){
-			message('フォーマットが正しくありません', 'warning');
-			return;
-		}
-		var _y = copy(y);
-		for (var genre in toload){
-			var list = toload[genre];
-			if (!(list instanceof Array)){
-				message('フォーマットが正しくありません', 'warning');
-				return;
-			}
-			for (var i = 0; i < list.length/2; i++){
-				var id = list[2*i];
-				var title = list[2*i+1];
-				if (!_y.hasOwnProperty(genre)) {
-					_y[genre] = [];
-					genrecount++;
-				}
-				if ($.inArray(id, _y[genre]) === -1){
-					_y[genre].push(id);
-					_y[genre].push(title);
-					videocount++;
-				}
-			}
-		}
-		if (videocount===0&&genrecount===0){
-			message('すべて登録済みの動画です');
-		} else {
-			pushPrev();
-			y = _y;
-			messageUndoable('JSONから'+(videocount>0?videocount+'個の動画':'')+(genrecount>0&&videocount>0?'、':'')+(genrecount>0?genrecount+'個のジャンル':'')+'を新たに読み込みました', 'success');
-			refresh((genrecount>0?'g':'')+(videocount>0?'v':''));
-		}
-	} catch(e) {
-		message(e, 'danger');
-	}
-});
 $('#saveEdit').on('click', function(){
 	var id = $('#editUrl').text();
 	var title = $('#editTitle').val();
@@ -1673,6 +1631,87 @@ $(window).resize(function() {
 		videoResize();
 	}
 });
+function promptWinExplorer(filename, content){
+    var file = new Blob([content], {type: 'text/plane;'});
+    if (window.navigator.msSaveOrOpenBlob) {
+        window.navigator.msSaveOrOpenBlob(file, filename);
+    } else {
+        var a = document.createElement('a');
+        var url = URL.createObjectURL(file);
+        a.href = url;
+        a.download = filename;
+        document.body.appendChild(a);
+        a.click();
+        setTimeout(function() {
+            document.body.removeChild(a);
+            window.URL.revokeObjectURL(url);  
+        }, 0); 
+    }
+}
+$('#issueRaw').on('click', function(){
+	var d = new Date();
+	promptWinExplorer('backup_'+d.getFullYear()+'_'+(d.getMonth()+1)+'_'+d.getDate()+'.json', JSON.stringify(y));
+});
+$('#fromRawFile').on('change', function (e){
+	var files = e.target.files;
+	if (files.length !== 1) {
+		message('正しいファイルを選択してください', 'warning', '#prefalert');
+		return;
+	}
+	console.log(files[0].type);
+	if (!files[0].type.match(/json/)){
+		message('jsonファイルを選択してください', 'warning', '#prefalert');
+		return;
+	}
+
+	var reader = new FileReader();
+    reader.readAsText(files[0]);
+
+    reader.onload = function (){
+    	console.log(reader.result);
+    	try {
+			var toload = JSON.parse(reader.result);
+    	} catch (e){
+			message('フォーマットが正しくありません', 'warning', '#prefalert');
+			return;
+    	}
+		var videocount = 0;
+		var genrecount = 0;
+		if (!(toload instanceof Object)){
+			message('フォーマットが正しくありません', 'warning', '#prefalert');
+			return;
+		}
+		var _y = copy(y);
+		for (var genre in toload){
+			var list = toload[genre];
+			if (!(list instanceof Array)){
+				message('フォーマットが正しくありません', 'warning', '#prefalert');
+				return;
+			}
+			for (var i = 0; i < list.length/2; i++){
+				var id = list[2*i];
+				var title = list[2*i+1];
+				if (!_y.hasOwnProperty(genre)) {
+					_y[genre] = [];
+					genrecount++;
+				}
+				if ($.inArray(id, _y[genre]) === -1){
+					_y[genre].push(id);
+					_y[genre].push(title);
+					videocount++;
+				}
+			}
+		}
+		if (videocount===0&&genrecount===0){
+			message('すべて登録済みの動画です', 'warning', '#prefalert');
+		} else {
+			pushPrev();
+			y = _y;
+			messageUndoable('JSONから'+(videocount>0?videocount+'個の動画':'')+(genrecount>0&&videocount>0?'、':'')+(genrecount>0?genrecount+'個のジャンル':'')+'を新たに読み込みました', 'success');
+			refresh((genrecount>0?'g':'')+(videocount>0?'v':''));
+		}
+	};
+})
 /* TODO : 
  * - ランダム連続再生 (今のジャンル / 全ジャンル)
  * - (half done) 再生に関する設定
