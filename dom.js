@@ -1710,6 +1710,7 @@ $('#fromRawFile').on('change', function (e){
 			y = _y;
 			messageUndoable('JSONから'+(videocount>0?videocount+'個の動画':'')+(genrecount>0&&videocount>0?'、':'')+(genrecount>0?genrecount+'個のジャンル':'')+'を新たに読み込みました', 'success');
 			refresh((genrecount>0?'g':'')+(videocount>0?'v':''));
+			$('#prefModal').modal('hide');
 		}
 	};
 })
