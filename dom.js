@@ -593,7 +593,6 @@ function search() {
 			var _t = _l[2*k+1];
 			var div = $('<div>');
 			var a = $('<a>', {
-				text: restr(_t,80),
 				'href': getVideoURL(_id),
 				'target': '_blank',
 				'data-genre' : _g,
@@ -607,6 +606,8 @@ function search() {
 			if ($('#nicolist_thumb_res').prop('checked')){
 				a.append(createThumbImgElem(_id, false));
 			}
+			var span = $('<span>', {text:restr(_t,80)});
+			a.append(span);
 			a.appendTo(div);
 			div.appendTo('#sr');
 		}
@@ -1358,7 +1359,6 @@ function random(genre, showGenre){
 	}
 	var div = $('<div>');
 	var a = $('<a>', {
-		text: title,
 		'href': getVideoURL(id),
 		'target': '_blank',
 		'data-genre' : genre,
@@ -1372,6 +1372,8 @@ function random(genre, showGenre){
 	if ($('#nicolist_thumb_res').prop('checked')){
 		a.append(createThumbImgElem(id, $('#nicolist_rand').prop('checked')));
 	}
+	var span = $('<span>', {text:title});
+	a.append(span);
 	div.append(a);
 	if (showGenre){
 		div.append($('<span>', {
@@ -1513,9 +1515,9 @@ function setupNiconicoIframe(id){
 	});
 }
 function videoSize(){
-	if ($('#nicolist_cinematic').prop('checked')){
-		var w = $('#play').outerWidth();
-		var h = Math.ceil(w * 9 / 16);
+	var w = $('#play').outerWidth();
+	var h = Math.ceil(w * 9 / 16);
+	if (w < 640 || $('#nicolist_cinematic').prop('checked')){
 		return [w, h];
 	} else {
 		return [640, 360];
@@ -1658,7 +1660,6 @@ $('#fromRawFile').on('change', function (e){
 		message('正しいファイルを選択してください', 'warning', '#prefalert');
 		return;
 	}
-	console.log(files[0].type);
 	if (!files[0].type.match(/json/)){
 		message('jsonファイルを選択してください', 'warning', '#prefalert');
 		return;
@@ -1668,7 +1669,6 @@ $('#fromRawFile').on('change', function (e){
     reader.readAsText(files[0]);
 
     reader.onload = function (){
-    	console.log(reader.result);
     	try {
 			var toload = JSON.parse(reader.result);
     	} catch (e){
@@ -1726,4 +1726,5 @@ $('#fromRawFile').on('change', function (e){
  * - 登録件数が多い順にジャンルを並び替え
  * - 更新が新しい順にジャンルを並び替え
  * - お気に入り
+ * - 前回のプレイリストを表示
  */

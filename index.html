@@ -12,7 +12,7 @@
 button.close span{font-size: 16px !important}
 .dragging{border :1px solid #0B85A1 !important;background-color: #d4edda !important}
 .is-invalid{background-color: #f8d7da}
-.btn, label {cursor: pointer;}
+.btn, button, label {cursor: pointer;}
 .removevideo {cursor: pointer;color: #aaa}
 .videolist{padding: .5em 0}
 .list-group-item, .pointer{cursor: pointer;transition: background-color 0.1s ease-in-out 0s;}
@@ -139,11 +139,12 @@ div.sgdef{
 		</div>
 
 		<div id="play"></div>
-		<div id="controller">
-			<button class="btn btn-outline-secondary mb-1 mt-1 silent" type="submit" onclick="previous()" id="pcprev">前の動画</button>
-			<button class="btn btn-outline-secondary mb-1 mt-1 silent" type="submit" onclick="next()" id="pcnext">次の動画</button>
-			<button class="btn btn-outline-secondary mb-1 mt-1 silent" type="submit" id="pcclose">閉じる</button>
-			<button class="btn btn-outline-secondary mb-1 mt-1 silent" type="submit" id="pcnewtab">別タブで視聴</button>
+		<div id="controller" class="mb-3 mt-1">
+			<button class="btn btn-outline-secondary silent" type="submit" onclick="previous()" id="pcprev">前の動画</button>
+			<button class="btn btn-outline-secondary silent" type="submit" onclick="next()" id="pcnext">次の動画</button>
+			<button class="btn btn-outline-secondary silent" type="submit" id="pcclose">閉じる</button>
+			<button class="btn btn-outline-secondary silent" type="submit" id="pcnewtab">別タブで視聴</button>
+
 		</div>
 
 		<div id="random" class="alert">
