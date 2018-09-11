@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html>
 <head>
-<title>nicol;st</title>
+<title>nicol;st - playl;st</title>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
 <!-- bootstrap -->
@@ -20,6 +20,10 @@
 			<button class="btn btn-outline-secondary mb-1 mt-1 silent" type="submit" onclick="next()" id="pcnext">次の動画へ</button>
 		</div>
 	</div>
+	<div class="silent" id="noquery">
+		<p>プレイリスト情報がないため動画は再生されません。</p>
+		<div><button class="btn btn-outline-secondary mb-1 mt-1 silent" type="submit" onclick="restore()" id="pcrestore">前回のプレイリストを復元して再生</button></div>
+	</div>
 
 <!-- jQuery -->
 <script src="https://code.jquery.com/jquery-3.2.1.min.js"></script>
@@ -27,13 +31,22 @@
 <script type="text/javascript" src="https://www.youtube.com/iframe_api"></script>
 <script type="text/javascript">
 var playlist = [];
+var _playlist_string = '';
 var playindex = 0;
 
 function init(){
 	var infoarray = window.location.search.match(/[^?&]+=[^?&]*/g);
 
 	if (infoarray == null){
-		$('#play').text('プレイリスト情報がないため動画は再生されません。');
+		$('#noquery').removeClass('silent');
+
+		var l = localStorage.getItem('nicolist_playlist_s');
+		if (l){
+			var ml = l.match(/[^?&]+=[^?&]*/g);
+			if (ml){
+				$('#pcrestore').removeClass('silent');
+			}
+		}
 		return;
 	}
 
@@ -42,6 +55,7 @@ function init(){
 		if (m) {
 			try {
 				playlist = JSON.parse(unescape(m[1]));
+				_playlist_string = m[1];
 			} catch(e) {
 				$('#play').text(e);
 				return;
@@ -59,8 +73,12 @@ function init(){
 		return;
 	}
 
+	if (playlist.length <= playindex || playindex < 0) playindex = 0;
+
 	refreshController();
 	createEmbedElem(playlist[playindex]);
+
+	savePlaylistData();
 }
 	
 var autoplay = false;
@@ -142,6 +160,7 @@ function next(){
 			}
 		}
 		refreshController();
+		savePlaylistData();
 	}
 }
 function hasNext(){
@@ -168,6 +187,7 @@ function previous(){
 			}
 		}
 		refreshController();
+		savePlaylistData();
 	}
 }
 function refreshController(){
@@ -190,6 +210,9 @@ function refreshController(){
 		}
 	}
 }
+function savePlaylistData(){
+	localStorage.setItem('nicolist_playlist_s', 'pl='+_playlist_string+'&i='+playindex);
+}
 $(window).resize(function() {
 	videoResize();
 });
@@ -204,6 +227,19 @@ function videoResize(){
 		'width': s[0],
 		'height': s[1]
 	});
+}
+function restore(){
+	var l = localStorage.getItem('nicolist_playlist_s');
+	if (l){
+		var m = l.match(/^pl=([^?&]+)&i=(\d+)$/);
+		if (m && m.length > 2){
+			playlist = JSON.parse(unescape(m[1]));
+			playindex = parseInt(m[2], 10);
+
+			refreshController();
+			createEmbedElem(playlist[playindex]);
+		}
+	}
 }
 </script>
 </body>
