@@ -8,7 +8,8 @@
 <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0-beta/css/bootstrap.min.css" integrity="sha384-/Y6pD6FV/Vv2HJnA6t+vslU6fwYXjCFtcEpHbNJ0lyAFsXTsjBbfaDjzALeQsN6M" crossorigin="anonymous">
 <style type="text/css">
 	.silent {display: none}
-	body{background-color: #223;padding: 1em;margin: 0;color: #ddd}
+	body{background-color: #112;padding: 1em 2em;margin: 0;color: #ddd}
+	button{cursor: pointer;}
 </style>
 </head>
 <body onload="init();">
@@ -76,10 +77,11 @@ function setupYoutubeIframe(id){
 	var div = $('<div>',{
 		"id": "playeriframeyoutube",
 	});
+	var s = videoSize();
 	$('#play').append(div);
 	player = new YT.Player('playeriframeyoutube', {
-		width: $('#play').innerWidth(),
-		height: Math.floor($('#play').innerWidth()*9/16),
+		width: s[0],
+		height: s[1],
 		videoId: id,
     	playerVars: { 'autoplay': (autoplay ? 1 : 0)},
 		events: {
@@ -97,10 +99,11 @@ function setupYoutubeIframe(id){
 }
 function setupNiconicoIframe(id){
 	$('#play').html('');
+	var s = videoSize();
 	var iframeElement = $('<iframe>',{
 		"id": "playeriframenicovideo",
-		"width": $('#play').innerWidth()+"",
-		"height": Math.floor($('#play').innerWidth()*9/16)+"",
+		"width": s[0]+"",
+		"height": s[1]+"",
 		"src": 'https://embed.nicovideo.jp/watch/'+id+'?jsapi=1&playerId='+playindex,
 		"frameborder": "0",
 		"allow": "autoplay; encrypted-media",
@@ -186,6 +189,21 @@ function refreshController(){
 			$('#pcprev').addClass('silent');
 		}
 	}
+}
+$(window).resize(function() {
+	videoResize();
+});
+function videoSize(){
+	var w = $('#play').innerWidth();
+	var h = Math.ceil(w * 9 / 16);
+	return [w, h];
+}
+function videoResize(){
+	var s = videoSize();
+	$('#play iframe').css({
+		'width': s[0],
+		'height': s[1]
+	});
 }
 </script>
 </body>

@@ -4,6 +4,7 @@
 <title>nicol;st</title>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+<link rel="shortcut icon" href="favicon.ico">
 <!-- bootstrap -->
 <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0-beta/css/bootstrap.min.css" integrity="sha384-/Y6pD6FV/Vv2HJnA6t+vslU6fwYXjCFtcEpHbNJ0lyAFsXTsjBbfaDjzALeQsN6M" crossorigin="anonymous">
 <style type="text/css">
@@ -139,10 +140,10 @@ div.sgdef{
 
 		<div id="play"></div>
 		<div id="controller">
-			<button class="btn btn-outline-secondary mb-1 mt-1 silent" type="submit" onclick="previous()" id="pcprev">前の動画へ</button>
-			<button class="btn btn-outline-secondary mb-1 mt-1 silent" type="submit" onclick="next()" id="pcnext">次の動画へ</button>
+			<button class="btn btn-outline-secondary mb-1 mt-1 silent" type="submit" onclick="previous()" id="pcprev">前の動画</button>
+			<button class="btn btn-outline-secondary mb-1 mt-1 silent" type="submit" onclick="next()" id="pcnext">次の動画</button>
 			<button class="btn btn-outline-secondary mb-1 mt-1 silent" type="submit" id="pcclose">閉じる</button>
-			<button class="btn btn-outline-secondary mb-1 mt-1 silent" type="submit" id="pcnewtab">別タブで連続再生 (Local限定)</button>
+			<button class="btn btn-outline-secondary mb-1 mt-1 silent" type="submit" id="pcnewtab">別タブで視聴</button>
 		</div>
 
 		<div id="random" class="alert">
@@ -386,6 +387,14 @@ div.sgdef{
 						<input type="checkbox" class="custom-control-input" id="nicolist_sort" onchange="refresh('v')" checked="">
 						<span class="custom-control-indicator"></span>
 						<span class="custom-control-description">新しいものが上に来るように表示</span>
+					</label>
+				</div>
+
+				<div>
+					<label class="custom-control custom-checkbox">
+						<input type="checkbox" class="custom-control-input" id="nicolist_cinematic" onchange="videoResize()">
+						<span class="custom-control-indicator"></span>
+						<span class="custom-control-description">ビデオをシネマティックモードで再生</span>
 					</label>
 				</div>
 

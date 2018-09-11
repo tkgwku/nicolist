@@ -1510,8 +1510,8 @@ function setupYoutubeIframe(id){
 	});
 	$('#play').append(div);
 	player = new YT.Player('playeriframeyoutube', {
-		width: 640,
-		height: 360,
+		width: s[0],
+		height: s[1],
 		videoId: id,
     	playerVars: { 'autoplay': (autoplay ? 1 : 0)},
 		events: {
@@ -1529,10 +1529,11 @@ function setupYoutubeIframe(id){
 }
 function setupNiconicoIframe(id){
 	$('#play').html('');
+	var s = videoSize();
 	var iframeElement = $('<iframe>',{
 		"id": "playeriframenicovideo",
-		"width": "640",
-		"height": "360",
+		"width": s[0]+'',
+		"height": s[1]+'',
 		"src": 'https://embed.nicovideo.jp/watch/'+id+'?jsapi=1&playerId='+playindex,
 		"frameborder": "0",
 		"allow": "autoplay; encrypted-media",
@@ -1551,6 +1552,22 @@ function setupNiconicoIframe(id){
 				autoplay = false;
 			}
 		}
+	});
+}
+function videoSize(){
+	if ($('#nicolist_cinematic').prop('checked')){
+		var w = $('#play').outerWidth();
+		var h = Math.ceil(w * 9 / 16);
+		return [w, h];
+	} else {
+		return [640, 360];
+	}
+}
+function videoResize(){
+	var s = videoSize();
+	$('#play iframe').css({
+		'width': s[0],
+		'height': s[1]
 	});
 }
 function next(){
@@ -1621,7 +1638,8 @@ function refreshController(){
 	if ($('#play').html() !== '' && $('#pcclose').hasClass('silent')){
 		$('#pcclose').removeClass('silent');
 	}
-	if (islocal && playlist.length > 0){
+	//if (islocal && playlist.length > 0){
+	if (playlist.length > 0){
 		if ($('#pcnewtab').hasClass('silent')){
 			$('#pcnewtab').removeClass('silent');
 		}
@@ -1650,9 +1668,14 @@ function reversePairList(list){
 	}
 	return _list;
 }
+$(window).resize(function() {
+	if ($('#nicolist_cinematic').prop('checked')){
+		videoResize();
+	}
+});
 /* TODO : 
  * - ランダム連続再生 (今のジャンル / 全ジャンル)
- * - 再生に関する設定
+ * - (half done) 再生に関する設定
  * - 一覧に項目が多い場合、スクロール時に情報をロード (configurable)
  * - 画像のキャッシュを作成
  * - add configuration which disables 'already-registered' popdown
@@ -1660,7 +1683,8 @@ function reversePairList(list){
  * - 次に再生 (キューに追加)
  * - プレイリストを表示
  * - プレイリストをジャンルとして保存
- * - if location.protocol === 'file:' then disable video player and provide player.html instead
+ * - (done)  if location.protocol === 'file:' then disable video player and provide player.html instead
  * - 登録件数が多い順にジャンルを並び替え
  * - 更新が新しい順にジャンルを並び替え
+ * - お気に入り
  */
