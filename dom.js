@@ -1,4 +1,5 @@
 
+const domain = 'https://tkgwku.github.io/n';
 const MESSAGE_TYPES = ['primary', 'secondary', 'success', 'danger', 'warning', 'info', 'light', 'dark'];
 var y = {"とりあえず":[]};
 var prevy = {"とりあえず":[]};
@@ -1618,7 +1619,7 @@ $('#pcclose').on('click', function(){
 	playlist = [];
 });
 $('#pcnewtab').on('click', function(){
-	window.open('http://jar.oiran.org/app/nicolist/player.html?pl='+escape(JSON.stringify(playlist))+'&i='+playindex, 'nlplayer');
+	window.open(domain+'/player.html?pl='+escape(JSON.stringify(playlist))+'&i='+playindex, 'nlplayer');
 });
 function reversePairList(list){
 	var _list = [];

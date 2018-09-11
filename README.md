@@ -5,11 +5,11 @@
 公式のマイリストではできないマイリスト内検索など、面白い機能や便利なツールを自由に追加できる(ようにしていきたい)  
 
 ### デモページ
-[http://jar.oiran.org/app/nicolist/](http://jar.oiran.org/app/nicolist/)
+[https://tkgwku.github.io/n/index.html](https://tkgwku.github.io/n/index.html)
 ~~Downloadし、index.htmlを開いても良い~~ file:///ドメイン下ではnicolistページ内で動画を見ることができない
 
 ### 基本的な使い方
-1. [デモページ](http://jar.oiran.org/app/nicolist/)をGoogle Chromeなどで開く
+1. [nicolist](https://tkgwku.github.io/n/index.html)をGoogle Chromeなどで開く
 2. 動画のリンクをコピーペースト、またはドラッグ&ドロップ(以降D&Dと略記)
 3. 「追加」を押し保存
 
@@ -55,7 +55,6 @@
 * Ctrlによる選択
 * itunesのような便利なプレイリストで連続再生
 * ランダム連続再生
-* 動画再生のサイズなどの設定
 
 ### 追加しなさそうな機能 / 追加が難しい機能
 * トップ画面で選択モード
