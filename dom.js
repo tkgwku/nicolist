@@ -601,8 +601,7 @@ function search() {
 				'data-id' : _id,
 				'data-title' : _t,
 				contextmenu: function(e){
-					var _b = $('#nicolist_randomplay').prop('checked') ? 'search_random' : 'search'; 
-					showMenu(e.pageX, e.pageY, $(this), _b);
+					showMenu(e.pageX, e.pageY, $(this), 'search');
 					return false;
 				}
 			});
@@ -981,7 +980,7 @@ function refresh(whatChanged){
 	    		'data-title' : title,
 	    		'class': 'rightvideo',
 	    		contextmenu: function(e){
-	    			var _b = $('#nicolist_randomplay').prop('checked') ? 'right_random' : ($('#nicolist_sort').prop('checked') ? 'right_reversed' : 'right');
+	    			var _b = $('#nicolist_sort').prop('checked') ? 'right_reversed' : 'right';
 	    			showMenu(e.pageX, e.pageY, $(this), _b);
 	    			return false;
 	    		}
@@ -1382,8 +1381,7 @@ function random(genre, showGenre){
 		'data-id' : id,
 		'data-title' : title,
 		contextmenu: function(e){
-			var _b = $('#nicolist_randomplay').prop('checked') ? 'random_random' : 'random';
-			showMenu(e.pageX, e.pageY, $(this), _b);
+			showMenu(e.pageX, e.pageY, $(this), 'random');
 			return false;
 		}
 	});
