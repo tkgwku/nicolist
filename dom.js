@@ -1082,11 +1082,6 @@ function showMenu(coord_x, coord_y, cont, mode){
 				showEditModal(cont);
 				closeMenu();
 			});
-		} else if (role === 'open'){
-			$(elem).on('click', function(){
-				window.open(getVideoURL(id), '_blank');
-				closeMenu();
-			});
 		} else if (role === 'play'){
 			$(elem).on('click', function(){
 				$('#play').html('');
@@ -1096,10 +1091,10 @@ function showMenu(coord_x, coord_y, cont, mode){
 				refreshController();
 				closeMenu();
 			});
-		} else if (role === 'playall'){
+		} else if (role === 'playall' || role === 'playall-random'){
 			$(elem).on('click', function(){
 				$('#play').html('');
-				if (mode === 'right' || mode === 'right_reversed' || mode === 'right_random'){
+				if (mode === 'right' || mode === 'right_reversed'){
 					if ($(elem).hasClass('disabled')){
 						$(elem).removeClass('disabled');
 					}
@@ -1108,7 +1103,7 @@ function showMenu(coord_x, coord_y, cont, mode){
 					for (var i = 0; i < list.length; i+=2) {
 						ids.push(list[i]);
 					}
-					if (mode === 'right_random'){
+					if (role === 'playall-random'){
 						playlist = randomize(ids);
 					} else {
 						if (mode === 'right_reversed'){
@@ -1117,7 +1112,7 @@ function showMenu(coord_x, coord_y, cont, mode){
 							playlist = ids;
 						}
 					}
-				} else if (mode === 'random' || mode === 'random_random'){
+				} else if (mode === 'random'){
 					if ($(elem).hasClass('disabled')){
 						$(elem).removeClass('disabled');
 					}
@@ -1125,10 +1120,10 @@ function showMenu(coord_x, coord_y, cont, mode){
 					$('#randomVideo a[data-id]').each(function(i, elem2){
 						playlist.push($(elem2).attr('data-id'));
 					});
-					if (mode === 'random_random'){
+					if (role === 'playall-random'){
 						playlist = randomize(playlist);
 					}
-				} else if (mode === 'search' || mode === 'search_random'){
+				} else if (mode === 'search'){
 					if ($(elem).hasClass('disabled')){
 						$(elem).removeClass('disabled');
 					}
@@ -1136,7 +1131,7 @@ function showMenu(coord_x, coord_y, cont, mode){
 					$('#sr a[data-id]').each(function(i, elem2){
 						playlist.push($(elem2).attr('data-id'));
 					});
-					if (mode === 'search_random'){
+					if (role === 'playall-random'){
 						playlist = randomize(playlist);
 					}
 				} else {
@@ -1159,19 +1154,12 @@ function showMenu(coord_x, coord_y, cont, mode){
 }
 function randomize(array){
 	for(var i = array.length - 1; i > 0; i--){
-	    var r = Math.floor(Math.random() * (i + 1));
+	    var r = 1 + Math.floor(Math.random() * i);
 	    var tmp = array[i];
 	    array[i] = array[r];
 	    array[r] = tmp;
 	}
 	return array;
-}
-function randomPlayCheckBoxChange(){
-	var id = playlist[playindex];
-	playlist = randomize(playlist);
-	playindex = playlist.indexOf(id);
-	refreshController();
-	$('html,body').stop().animate({scrollTop:0}, 'swing');
 }
 function showEditModal(cont){
 	var id = cont.attr('data-id');
@@ -1644,6 +1632,7 @@ $('#pcclose').on('click', function(){
 	$('#pcclose').addClass('silent');
 	$('#pcnext').addClass('silent');
 	$('#pcprev').addClass('silent');
+	$('#pcnewtab').addClass('silent');
 	playindex = -1;
 	playlist = [];
 });

@@ -102,6 +102,12 @@ div.sgg{
 div.sgdef{
 	background-color: #eee;
 }
+.dropdown-item:hover{background-color: #ccc}
+.dropdown-menu{
+	-webkit-box-shadow: 0 0 3px 3px rgba(0,0,0,0.05);
+	-moz-box-shadow: 0 0 3px 3px rgba(0,0,0,0.05);
+	box-shadow: 0 0 3px 3px rgba(0,0,0,0.05);
+}
 </style>
 </head>
 
@@ -400,14 +406,6 @@ div.sgdef{
 					</label>
 				</div>
 
-				<div>
-					<label class="custom-control custom-checkbox">
-						<input type="checkbox" class="custom-control-input" id="nicolist_randomplay" onchange="randomPlayCheckBoxChange()">
-						<span class="custom-control-indicator"></span>
-						<span class="custom-control-description">ランダム再生</span>
-					</label>
-				</div>
-
 				<hr>
 
 				<div class="mt-4 mb-1 form-inline">
@@ -448,7 +446,7 @@ div.sgdef{
 	<div class="dropdown-divider"></div>
 	<a class="dropdown-item pointer" role="play">このページで視聴</a>
 	<a class="dropdown-item pointer" role="playall">ここから連続再生</a>
-	<a class="dropdown-item pointer" role="open">新しいタブで開く</a>
+	<a class="dropdown-item pointer" role="playall-random">ここからランダム連続再生</a>
 	<a class="dropdown-item pointer" role="edit">編集する</a>
 	<a class="dropdown-item pointer" role="remove">削除する</a>
 </div>
