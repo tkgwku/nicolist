@@ -8,7 +8,8 @@ var selectedGenre = '';
 var showingMenu = false;
 var playlist = [];
 var playindex = -1;
-var islocal = window.location.protocol === 'file:';
+var islocal = window.location.protocol === 'file:';//unused
+var supportLocalStorage = window.localStorage ? true: false;//unused
 $('input[type=checkbox]').on('change', function(){
 	var id = $(this).attr('id');
 	if (typeof id != 'undefined'){
@@ -126,19 +127,19 @@ $('#addgenre').on('click', function (e){
 	}
 });
 $('#genrename').on("keypress", function(e) {
-if (e.keyCode == 13) { // Enter
-	e.preventDefault();
-	e.stopPropagation();
-	if (addGenre($('#genrename').val())){
-		setSelGen($('#genrename').val());
-		$('#genreModal').modal('hide');
-		$('#genrename').val('');
-		refresh('gs');
-	} else {
-		$('#genrename').blur();
-		$('#genrename').focus();
+	if (e.keyCode == 13) { // Enter
+		e.preventDefault();
+		e.stopPropagation();
+		if (addGenre($('#genrename').val())){
+			setSelGen($('#genrename').val());
+			$('#genreModal').modal('hide');
+			$('#genrename').val('');
+			refresh('gs');
+		} else {
+			$('#genrename').blur();
+			$('#genrename').focus();
+		}
 	}
-}
 });
 $('#button').on('click', function (e){
 	sub();
@@ -600,7 +601,8 @@ function search() {
 				'data-id' : _id,
 				'data-title' : _t,
 				contextmenu: function(e){
-					showMenu(e.pageX, e.pageY, $(this), 'search');
+					var _b = $('#nicolist_randomplay').prop('checked') ? 'search_random' : 'search'; 
+					showMenu(e.pageX, e.pageY, $(this), _b);
 					return false;
 				}
 			});
@@ -979,7 +981,7 @@ function refresh(whatChanged){
 	    		'data-title' : title,
 	    		'class': 'rightvideo',
 	    		contextmenu: function(e){
-	    			var _b = $('#nicolist_sort').prop('checked') ? 'right_reversed' : 'right';
+	    			var _b = $('#nicolist_randomplay').prop('checked') ? 'right_random' : ($('#nicolist_sort').prop('checked') ? 'right_reversed' : 'right');
 	    			showMenu(e.pageX, e.pageY, $(this), _b);
 	    			return false;
 	    		}
@@ -1097,7 +1099,7 @@ function showMenu(coord_x, coord_y, cont, mode){
 		} else if (role === 'playall'){
 			$(elem).on('click', function(){
 				$('#play').html('');
-				if (mode === 'right' || mode === 'right_reversed'){
+				if (mode === 'right' || mode === 'right_reversed' || mode === 'right_random'){
 					if ($(elem).hasClass('disabled')){
 						$(elem).removeClass('disabled');
 					}
@@ -1106,12 +1108,16 @@ function showMenu(coord_x, coord_y, cont, mode){
 					for (var i = 0; i < list.length; i+=2) {
 						ids.push(list[i]);
 					}
-					if (mode === 'right_reversed'){
-						playlist = ids.reverse();
+					if (mode === 'right_random'){
+						playlist = randomize(ids);
 					} else {
-						playlist = ids;
+						if (mode === 'right_reversed'){
+							playlist = ids.reverse();
+						} else {
+							playlist = ids;
+						}
 					}
-				} else if (mode === 'random'){
+				} else if (mode === 'random' || mode === 'random_random'){
 					if ($(elem).hasClass('disabled')){
 						$(elem).removeClass('disabled');
 					}
@@ -1119,14 +1125,20 @@ function showMenu(coord_x, coord_y, cont, mode){
 					$('#randomVideo a[data-id]').each(function(i, elem2){
 						playlist.push($(elem2).attr('data-id'));
 					});
-				} else if (mode === 'search'){
+					if (mode === 'random_random'){
+						playlist = randomize(playlist);
+					}
+				} else if (mode === 'search' || mode === 'search_random'){
 					if ($(elem).hasClass('disabled')){
 						$(elem).removeClass('disabled');
 					}
 					playlist = [];
 					$('#sr a[data-id]').each(function(i, elem2){
 						playlist.push($(elem2).attr('data-id'));
-					})
+					});
+					if (mode === 'search_random'){
+						playlist = randomize(playlist);
+					}
 				} else {
 					$(elem).addClass('disabled');
 				}
@@ -1144,6 +1156,22 @@ function showMenu(coord_x, coord_y, cont, mode){
 		'left': coord_x
 	});
 	showingMenu = true;
+}
+function randomize(array){
+	for(var i = array.length - 1; i > 0; i--){
+	    var r = Math.floor(Math.random() * (i + 1));
+	    var tmp = array[i];
+	    array[i] = array[r];
+	    array[r] = tmp;
+	}
+	return array;
+}
+function randomPlayCheckBoxChange(){
+	var id = playlist[playindex];
+	playlist = randomize(playlist);
+	playindex = playlist.indexOf(id);
+	refreshController();
+	$('html,body').stop().animate({scrollTop:0}, 'swing');
 }
 function showEditModal(cont){
 	var id = cont.attr('data-id');
@@ -1366,7 +1394,8 @@ function random(genre, showGenre){
 		'data-id' : id,
 		'data-title' : title,
 		contextmenu: function(e){
-			showMenu(e.pageX, e.pageY, $(this), 'random');
+			var _b = $('#nicolist_randomplay').prop('checked') ? 'random_random' : 'random';
+			showMenu(e.pageX, e.pageY, $(this), _b);
 			return false;
 		}
 	});
@@ -1619,7 +1648,7 @@ $('#pcclose').on('click', function(){
 	playlist = [];
 });
 $('#pcnewtab').on('click', function(){
-	window.open(domain+'/player.html?pl='+escape(JSON.stringify(playlist))+'&i='+playindex, 'nlplayer');
+	window.open(domain+'/player.html?pl='+escape(JSON.stringify(playlist))+'&i='+playindex);
 });
 function reversePairList(list){
 	var _list = [];
@@ -1713,20 +1742,4 @@ $('#fromRawFile').on('change', function (e){
 			$('#prefModal').modal('hide');
 		}
 	};
-})
-/* TODO : 
- * - ランダム連続再生 (今のジャンル / 全ジャンル)
- * - (half done) 再生に関する設定
- * - 一覧に項目が多い場合、スクロール時に情報をロード (configurable)
- * - 画像のキャッシュを作成
- * - add configuration which disables 'already-registered' popdown
- * - display how many videos are registered after each list in #left (configurable)
- * - 次に再生 (キューに追加)
- * - プレイリストを表示
- * - プレイリストをジャンルとして保存
- * - (done)  if location.protocol === 'file:' then disable video player and provide player.html instead
- * - 登録件数が多い順にジャンルを並び替え
- * - 更新が新しい順にジャンルを並び替え
- * - お気に入り
- * - 前回のプレイリストを表示
- */
+});
