@@ -354,6 +354,8 @@ div.sgdef{
 			<div class="modal-body">
 				<div id="prefalert"></div>
 
+				<h5 class="mb-3">UI</h5>
+
 				<div>
 					<label class="custom-control custom-checkbox">
 						<input type="checkbox" class="custom-control-input" id="nicolist_del">
@@ -361,6 +363,37 @@ div.sgdef{
 						<span class="custom-control-description">確認画面の表示を減らす</span>
 					</label>
 				</div>
+
+				<div>
+					<label class="custom-control custom-checkbox">
+						<input type="checkbox" class="custom-control-input" id="nicolist_rand" checked="">
+						<span class="custom-control-indicator"></span>
+						<span class="custom-control-description">前回のランダム選出を残さない</span>
+					</label>
+				</div>
+
+				<div>
+					<label class="custom-control custom-checkbox">
+						<input type="checkbox" class="custom-control-input" id="nicolist_sort" onchange="refresh('v')" checked="">
+						<span class="custom-control-indicator"></span>
+						<span class="custom-control-description">新しいものが上に来るように表示する</span>
+					</label>
+				</div>
+
+				<div>
+					<label class="custom-control custom-checkbox">
+						<input type="checkbox" class="custom-control-input" id="nicolist_multitab" onchange="$('#laert').fadeOut()">
+						<span class="custom-control-indicator"></span>
+						<span class="custom-control-description">複数タブで同時に閲覧している際警告を表示しない</span>
+					</label>
+				</div>
+				<div>
+					<span class="text-muted">(複数タブでリストの操作をすると正しい動作ができない可能性があります)</span>
+				</div>
+
+				<hr>
+
+				<h5 class="mt-4 mb-3">パフォーマンス</h5>
 
 				<div>
 					<label class="custom-control custom-checkbox">
@@ -378,12 +411,36 @@ div.sgdef{
 					</label>
 				</div>
 
+				<hr>
+
+				<h5 class="mt-4 mb-3">動画再生</h5>
+
 				<div>
 					<label class="custom-control custom-checkbox">
-						<input type="checkbox" class="custom-control-input" id="nicolist_rand" checked="">
+						<input type="checkbox" class="custom-control-input" id="nicolist_cinematic" onchange="videoResize()">
 						<span class="custom-control-indicator"></span>
-						<span class="custom-control-description">前回のランダム選出を残さない</span>
+						<span class="custom-control-description">動画をウィンドウサイズで再生する</span>
 					</label>
+				</div>
+
+				<div>
+					<label class="custom-control custom-checkbox">
+						<input type="checkbox" class="custom-control-input" id="nicolist_loop">
+						<span class="custom-control-indicator"></span>
+						<span class="custom-control-description">プレイリストをループして再生</span>
+					</label>
+				</div>
+
+				<hr>
+
+				<h5 class="mt-4 mb-3">検索</h5>
+
+				<div class="mb-1 form-inline">
+					<input type="number" name="" style="max-width: 5em" id="nicolist_historyCount" value="7" class="form-control" size="">個まで検索履歴を表示する
+				</div>
+
+				<div class="mb-1 form-inline">
+					<input type="number" name="" style="max-width: 5em" id="nicolist_msc" value="75" class="form-control" size="">個以上がヒットした場合表示しない
 				</div>
 
 				<div>
@@ -392,32 +449,6 @@ div.sgdef{
 						<span class="custom-control-indicator"></span>
 						<span class="custom-control-description">AND検索をする</span>
 					</label>
-				</div>
-
-				<div>
-					<label class="custom-control custom-checkbox">
-						<input type="checkbox" class="custom-control-input" id="nicolist_sort" onchange="refresh('v')" checked="">
-						<span class="custom-control-indicator"></span>
-						<span class="custom-control-description">新しいものが上に来るように表示する</span>
-					</label>
-				</div>
-
-				<div>
-					<label class="custom-control custom-checkbox">
-						<input type="checkbox" class="custom-control-input" id="nicolist_cinematic" onchange="videoResize()">
-						<span class="custom-control-indicator"></span>
-						<span class="custom-control-description">動画をシネマティックモードで再生する</span>
-					</label>
-				</div>
-
-				<hr>
-
-				<div class="mt-4 mb-1 form-inline">
-					<input type="number" name="" style="max-width: 5em" id="nicolist_historyCount" value="7" class="form-control" size="">個まで検索履歴を表示する
-				</div>
-
-				<div class="mb-4 form-inline">
-					<input type="number" name="" style="max-width: 5em" id="nicolist_msc" value="75" class="form-control" size="">個以上がヒットした場合表示しない
 				</div>
 
 				<hr>
@@ -430,12 +461,15 @@ div.sgdef{
 					<textarea class="form-control" id="out" rows="3" onclick="this.focus();this.select()" readonly="readonly"></textarea>
 				</div>
 
+				<p class="text-muted mt-3">nicol;stはブラウザのローカルストレージにデータを保存しています。ローカルストレージは、<u>CClearnerといったクリーナーソフト</u>や<u>ブラウザの閲覧データ消去</u>によって<u>初期化してしまう</u>場合があります。クリーナーソフトを使う前・閲覧データを削除する前に、バックアップを取るようにしてください。</p>
+
 				<hr>
 
 				<p>インポート</p>
 				<div>
 					<input type="file" class="btn btn-outline-primary" id="fromRawFile">
 				</div>
+
 				<hr>
 				<button type="button" class="btn btn-outline-secondary" data-dismiss="modal">閉じる</button>
 			</div>

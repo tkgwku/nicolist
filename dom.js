@@ -851,8 +851,34 @@ function init(){
 	var tabs = localStorage.getItem('_nicolistTabCount');
 	if (tabs != null){
 		tabs = int(tabs);
-		message('複数タブで同時に閲覧している可能性があります', 'danger', null, true);
-		localStorage.setItem('_nicolistTabCount', tabs+1);
+		if (!isNaN(tabs)){
+			if (!$('#nicolist_multitab').prop('checked')){
+				var errorspan = $('<span>');
+				$('<span>', {
+					text: '正しく終了されませんでしたか？',
+					'class': 'undo ml-1 mr-1',
+					'click': function(){
+						localStorage.setItem('_nicolistTabCount', 1);
+						$('#alert').fadeOut('slow', refreshStyle);
+					}
+				}).appendTo(errorspan);
+				$('<span>', {
+					text: '/',
+					'class': 'ml-1 mr-1'
+				}).appendTo(errorspan);
+				$('<span>', {
+					text: 'このアラートが常に表示される場合',
+					'class': 'undo ml-1',
+					'click': function(){
+						$('#nicolist_multitab').prop('checked', true);
+						localStorage.setItem('nicolist_multitab', 'true');
+						$('#laert').fadeOut('slow', refreshStyle);
+					}
+				}).appendTo(errorspan);
+				message('複数タブで同時に閲覧している可能性があります。', 'danger', null, true, errorspan);
+			}
+			localStorage.setItem('_nicolistTabCount', tabs+1);
+		}
 	} else {
 		localStorage.setItem('_nicolistTabCount', 1);
 	}
@@ -1184,7 +1210,7 @@ function showMenu(coord_x, coord_y, cont, mode){
 	showingMenu = true;
 }
 function randomize(array, first){
-	if (array.lentgh <= 1) return array;
+	if (array.length <= 1) return array;
 	if (first){
 		var x = array.indexOf(first);
 		if (x !== -1){
@@ -1607,10 +1633,15 @@ function next(){
 	if (hasNext()){
 		playindex++;
 		refreshPlayer();
+	} else {
+		if ($('#nicolist_loop').prop('checked')){
+			playindex = 0;
+			refreshPlayer();
+		}
 	}
 }
 function hasNext(){
-	return playindex !== -1 && playlist.length > playindex + 1;
+	return playindex > -1 && playlist.length > playindex + 1;
 }
 function hasPrevious(){
 	return playindex > 0;
@@ -1619,6 +1650,11 @@ function previous(){
 	if (hasPrevious()){
 		playindex--;
 		refreshPlayer();
+	} else {
+		if ($('#nicolist_loop').prop('checked')){
+			playindex = playlist.length - 1;
+			refreshPlayer();
+		}
 	}
 }
 function refreshPlayer(){
@@ -1639,7 +1675,7 @@ function refreshPlayer(){
 	refreshController();
 }
 function refreshController(){
-	if (hasNext()){
+	if (hasNext() || $('#nicolist_loop').prop('checked')){
 		if ($('#pcnext').hasClass('disabled')){
 			$('#pcnext').removeClass('disabled');
 		}
@@ -1648,7 +1684,7 @@ function refreshController(){
 			$('#pcnext').addClass('disabled');
 		}
 	}
-	if (hasPrevious()){
+	if (hasPrevious() || $('#nicolist_loop').prop('checked')){
 		if ($('#pcprev').hasClass('disabled')){
 			$('#pcprev').removeClass('disabled');
 		}
