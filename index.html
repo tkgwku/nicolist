@@ -108,6 +108,10 @@ div.sgdef{
 	-moz-box-shadow: 0 0 3px 3px rgba(0,0,0,0.05);
 	box-shadow: 0 0 3px 3px rgba(0,0,0,0.05);
 }
+#pclist{
+	max-width: 500px;
+}
+.disabled {cursor: default;}
 </style>
 </head>
 
@@ -122,9 +126,9 @@ div.sgdef{
 		<!-- ALERT ends -->
 
 		<div class="form-group input-group">
-			<span class="input-group-addon" id="basic-addon1">url</span>
+			<span class="input-group-addon" id="basic-addon1">URL</span>
 			<input type="text" class="form-control" id="url" aria-describedby="basic-addon1">
-			<span class="input-group-addon" id="basic-addon2">title</span>
+			<span class="input-group-addon" id="basic-addon2">タイトル</span>
 			<input type="text" class="form-control" id="title" aria-describedby="basic-addon2">
 		</div>
 
@@ -145,12 +149,12 @@ div.sgdef{
 		</div>
 
 		<div id="play"></div>
-		<div id="controller" class="mb-3 mt-1">
-			<button class="btn btn-outline-secondary silent" type="submit" onclick="previous()" id="pcprev">前の動画</button>
-			<button class="btn btn-outline-secondary silent" type="submit" onclick="next()" id="pcnext">次の動画</button>
-			<button class="btn btn-outline-secondary silent" type="submit" id="pcclose">閉じる</button>
-			<button class="btn btn-outline-secondary silent" type="submit" id="pcnewtab">別タブで視聴</button>
-
+		<div id="controller" class="mb-2">
+			<button class="btn btn-outline-secondary silent mb-1 mt-1" type="submit" id="pcprev">前の動画</button>
+			<button class="btn btn-outline-secondary silent mb-1 mt-1" type="submit" id="pcnext">次の動画</button>
+			<button class="btn btn-outline-secondary silent mb-1 mt-1" type="submit" id="pcclose">閉じる</button>
+			<button class="btn btn-outline-secondary silent mb-1 mt-1" type="submit" id="pcnewtab">別タブで視聴</button>
+			<select class="form-control custom-select silent mb-1 mt-1" id="pclist"></select>
 		</div>
 
 		<div id="random" class="alert">
@@ -354,7 +358,7 @@ div.sgdef{
 					<label class="custom-control custom-checkbox">
 						<input type="checkbox" class="custom-control-input" id="nicolist_del">
 						<span class="custom-control-indicator"></span>
-						<span class="custom-control-description">確認画面を表示しない</span>
+						<span class="custom-control-description">確認画面の表示を減らす</span>
 					</label>
 				</div>
 
