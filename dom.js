@@ -957,7 +957,12 @@ function refresh(whatChanged){
 	    if (selectedGenre === 'とりあえず'){
 	    	$("<h4>", {
 	    		text: selectedGenre
-	    	}).appendTo("#right");
+	    	}).append(
+		    	$('<small>', {
+		    		'class': 'text-muted ml-2',
+		    		text: '('+(y[selectedGenre].length/2)+')'
+		    	})
+	    	).appendTo("#right");
 	    } else {
 	    	$("<h4>", {
 	    		text: selectedGenre
