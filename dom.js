@@ -169,8 +169,8 @@ $('#saveEdit').on('click', function(){
 		message('変更なしになっています', 'warning', '#emalert');
 		$('#editTitle').addClass('is-invalid');
 		$('#editGenre').addClass('is-invalid');
-	} else if ($.inArray(id, y[genre]) !== -1){
-		message('既に移動先のジャンルに登録されている動画です', 'warning', '#emalert');
+	//} else if ($.inArray(id, y[genre]) !== -1){
+		//message('既に移動先のジャンルに登録されている動画です', 'warning', '#emalert');
 	} else {
 		var mesElem = $('<div>');
 		var table = $('<table>', {'class':'mb-4'});
@@ -292,6 +292,7 @@ $('#ccopen').on('click', function(){
 					thisElem.parent().find('.ccgenrename').each(function(i, elem){
 						if ($(elem).text() !== thisElem.text() && $(elem).next().css('display') !== 'none'){
 							$(elem).next().css('display', 'none');
+							$(elem).find('.genre_indicator').text('-');
 						}
 					});
 					thisElem.find('.genre_indicator').text('+');
@@ -1055,9 +1056,40 @@ function refresh(whatChanged){
 			if ($('#nicolist_thumb').prop('checked')){
 				a.append(createThumbImgElem(id, false));
 			}
-			a.append($('<span>',{
-				text: restr2(title, 50)
-			}))
+			if ($('#nicolist_taggedtitle').prop('checked')){
+				var _ma = title.match(/【[^【】]+】/g);//【】
+				var _mb = title.match(/\[[^\[\]]+\]/g);//[]
+				var tags = [];
+				var converted_title = title;
+				if (_ma){
+					for (var j = 0; j < _ma.length; j++) {
+						tags.push(_ma[j]);
+					}
+					converted_title = converted_title.replace(/【[^【】]+】/g, '');
+				}
+				if (_mb){
+					for (var j = 0; j < _mb.length; j++) {
+						tags.push(_mb[j]);
+					}
+					converted_title = converted_title.replace(/\[[^\[\]]+\]/g, '');
+				}
+				converted_title = converted_title.replace(/^\s+/g, '').replace(/\s+$/g, '');
+				a.append($('<span>',{
+					text: converted_title,
+					'class': 'mr-2'
+				}));
+				if (!$('#nicolist_thumb').prop('checked')) div.addClass('mt-1');
+				for (var j = 0; j < tags.length; j++) {
+					a.append($('<span>',{
+						text: tags[j].slice(1, -1),
+						'class': 'titletag ml-1'
+					}))
+				}
+			} else {
+				a.append($('<span>',{
+					text: restr2(title, 50)
+				}));
+			}
 			a.appendTo(div);
 			div.appendTo("#right");
 		}
@@ -1115,8 +1147,22 @@ function refresh(whatChanged){
 		}
 		$('#out').val(JSON.stringify(y, null, '    '));
 		localStorage.setItem('nicolist', JSON.stringify(y));
-		$('#length').text('('+bytesize(JSON.stringify(y))+'byte)');
+		$('#length').text('('+sizeString(bytesize(JSON.stringify(y)))+')');
 	}
+}
+function sizeString(byte){
+    if (byte < 500){
+        return byte + " byte";
+    } else if (byte < 500000){
+        var a = Math.round( byte * 100 / 1024 ) / 100;
+        return a + " KB";
+    } else if (byte < 500000000){
+        var a = Math.round( (byte * 100 / 1024) / 1024 ) / 100;
+        return a + " MB";
+    } else {
+        var a = Math.round( ((byte * 100 / 1024) / 1024) / 1024 ) / 100;
+        return a + " GB";
+    }
 }
 function showMenu(coord_x, coord_y, cont, mode){
 	var id = cont.attr('data-id');
@@ -1881,7 +1927,7 @@ $('#fromRawFile').on('change', function (e){
 				}
 			}
 		}
-		if (videocount===0&&genrecount===0){
+		if (videocount === 0 && genrecount === 0){
 			message('すべて登録済みの動画です', 'warning', '#prefalert');
 		} else {
 			pushPrev();

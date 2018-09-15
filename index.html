@@ -58,6 +58,12 @@ button.close span{font-size: 16px !important}
 .badge-secondary2{
 	background-color: #aad;
 }
+.titletag{
+	border:1px solid #ddd;
+	padding: 0 5px;
+	color: #777;
+	border-radius: 3px;
+}
 .ccvideo{
 	border-left:2px solid transparent;
 	border-right:2px solid transparent;
@@ -245,9 +251,7 @@ div.sgdef{
 				</div>
 				<hr>
 				<p class="text-muted">移動する動画をクリックして選択してください。</p>
-				<div id="ccvideos">
-
-				</div>
+				<div id="ccvideos"></div>
 			</div>
 			<div class="modal-footer">
 				<button type="button" class="btn btn-primary" id="createcopy">コピー/移動</button>
@@ -386,6 +390,14 @@ div.sgdef{
 
 				<div>
 					<label class="custom-control custom-checkbox">
+						<input type="checkbox" class="custom-control-input" id="nicolist_taggedtitle" onchange="refresh('v')">
+						<span class="custom-control-indicator"></span>
+						<span class="custom-control-description">動画タイトルの【】や [] を消去し、代わりにタグとして表示する</span>
+					</label>
+				</div>
+
+				<div>
+					<label class="custom-control custom-checkbox">
 						<input type="checkbox" class="custom-control-input" id="nicolist_multitab" onchange="$('#laert').fadeOut()">
 						<span class="custom-control-indicator"></span>
 						<span class="custom-control-description">複数タブで同時に閲覧している際警告を表示しない</span>
@@ -447,7 +459,7 @@ div.sgdef{
 					<input type="number" name="" style="max-width: 5em" id="nicolist_msc" value="75" class="form-control" size="">個以上がヒットした場合表示しない
 				</div>
 
-				<div>
+				<div class="mt-3">
 					<label class="custom-control custom-checkbox">
 						<input type="checkbox" class="custom-control-input" id="nicolist_and" checked="">
 						<span class="custom-control-indicator"></span>
@@ -465,7 +477,7 @@ div.sgdef{
 					<textarea class="form-control" id="out" rows="3" onclick="this.focus();this.select()" readonly="readonly"></textarea>
 				</div>
 
-				<p class="text-muted mt-3">nicol;stはブラウザのローカルストレージにデータを保存しています。ローカルストレージは、<u>CClearnerといったクリーナーソフト</u>や<u>ブラウザの閲覧データ消去</u>によって<u>初期化してしまう</u>場合があります。クリーナーソフトを使う前・閲覧データを削除する前に、バックアップを取るようにしてください。</p>
+				<p class="text-muted mt-3">nicol;stはブラウザのローカルストレージにデータを保存しています。ローカルストレージは、CClearnerといったクリーナーソフトやブラウザの閲覧データ消去によって<strong>初期化してしまう</strong>場合があります。クリーナーソフトを使う前・閲覧データを削除する前に、バックアップを取るようにしてください。</p>
 
 				<hr>
 
