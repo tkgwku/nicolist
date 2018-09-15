@@ -287,14 +287,14 @@ $('#ccopen').on('click', function(){
 						$(elem).attr('data-loadstatus', 'ready');
 					});
 				}
-				if ($(this).next().css('display') === 'none'){
+				if (thisElem.next().css('display') === 'none'){
 					thisElem.next().fadeIn();
 					thisElem.parent().find('.ccgenrename').each(function(i, elem){
 						if ($(elem).text() !== thisElem.text() && $(elem).next().css('display') !== 'none'){
 							$(elem).next().css('display', 'none');
 						}
 					});
-					thisElem.find('.genre_indicator').text('*');
+					thisElem.find('.genre_indicator').text('+');
 				} else {
 					thisElem.next().fadeOut();
 					thisElem.find('.genre_indicator').text('-');
@@ -1590,6 +1590,11 @@ function setupYoutubeIframe(id){
 					player.playVideo();
 					autoplay = false;
 				}
+	        },
+	        'onError': function(event){
+				addToDeletedVideoList(id);
+				autoplay = true;
+				next();
 	        }
 	    }
 	});
@@ -1609,10 +1614,9 @@ function setupNiconicoIframe(id){
 	$('#play').append(iframeElement);
 	window.addEventListener('message', function (event) {
 		if (event.origin === 'https://embed.nicovideo.jp'){
-			console.log(event);
 			if (event.data.eventName === 'error'){
 				//if the video has been dead
-				detectDeletedVideo(id);
+				addToDeletedVideoList(id);
 				autoplay = true;
 				next();
 			} else if (event.data.eventName === 'playerStatusChange'){
@@ -1627,7 +1631,7 @@ function setupNiconicoIframe(id){
 		}
 	});
 }
-function detectDeletedVideo(id){
+function addToDeletedVideoList(id){
 	if (deletedVideoArray.indexOf(id) !== -1){
 		deletedVideoArray.push(id);
 		localStorage.setItem('nicolist_deleted', JSON.stringify(deletedVideoArray));
