@@ -44,15 +44,19 @@ button.close span{font-size: 16px !important}
 	font-style: italic;
 	display: inline-block;
 }
-.ccgenrename{color: #2c6cd3;margin: 0.5em;cursor: pointer;transition: color 0.1s ease-in-out 0s;}
+.ccgenrename{color: #2c6cd3;margin: 0.5em;cursor: pointer;}
 .ccgenrename:hover{color: #9fbff2}
-.ccgenrename span{color: #000!important}
+.ccgenrename:hover .badge-secondary2{background-color: #cce;}
+.genre_indicator{color: #aac}
 .ccwrapper{
 	display: none;
 	border-radius: 5px;
 	border:1px solid #eee;
 	padding: 8px;
 	margin:5px 0;
+}
+.badge-secondary2{
+	background-color: #aad;
 }
 .ccvideo{
 	border-left:2px solid transparent;
@@ -190,7 +194,7 @@ div.sgdef{
 				<div id="alert-genre">
 				</div>
 				<div class="form-group">
-					<input type="text" class="form-control" id="genrename" placeholder="genre name">
+					<input type="text" class="form-control" id="genrename" placeholder="ジャンル名を入力...">
 				</div>
 			</div>
 			<div class="modal-footer">
@@ -338,7 +342,7 @@ div.sgdef{
 		</div>
 	</div>
 </div>
-<!-- CONFIRM MODAL ends -->
+<!-- GENRE SORT MODAL ends -->
 
 
 <!-- PREFERENCE MODAL -->
