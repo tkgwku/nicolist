@@ -101,7 +101,7 @@ function setupYoutubeIframe(id){
 		width: s[0],
 		height: s[1],
 		videoId: id,
-    	playerVars: { 'autoplay': (autoplay ? 1 : 0)},
+		playerVars: { 'autoplay': (autoplay ? 1 : 0)},
 		events: {
 			'onStateChange': function(event){
 				if (event.data === YT.PlayerState.ENDED){
@@ -111,8 +111,8 @@ function setupYoutubeIframe(id){
 					player.playVideo();
 					autoplay = false;
 				}
-	        }
-	    }
+			}
+		}
 	});
 }
 function setupNiconicoIframe(id){
