@@ -593,7 +593,7 @@ function registerEventListener(){
 				}
 				pushPrev();
 				y = _y;
-				messageUndoable('動画「'+title+'」を編集しました', 'info');
+				messageUndoable('動画「'+title+'」の動画情報を更新しました', 'info');
 				refresh('v');
 				$('#editModal').modal('hide');
 			});
