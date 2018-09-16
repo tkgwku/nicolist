@@ -125,7 +125,7 @@ div.sgdef{
 </style>
 </head>
 
-<body onload="init()" onunload="unload()">
+<body>
 <div id="body">
 	<div class="container">
 		<h1>nicol;st</h1>
@@ -441,7 +441,7 @@ div.sgdef{
 
 				<div>
 					<label class="custom-control custom-checkbox">
-						<input type="checkbox" class="custom-control-input" id="nicolist_loop">
+						<input type="checkbox" class="custom-control-input" id="nicolist_loop" onchange="refreshController()">
 						<span class="custom-control-indicator"></span>
 						<span class="custom-control-description">プレイリストをループして再生</span>
 					</label>
@@ -524,5 +524,8 @@ div.sgdef{
 <!-- Youtube iframe api-->
 <script type="text/javascript" src="https://www.youtube.com/iframe_api"></script>
 <script type="text/javascript" src="dom.js"></script>
+<script type="text/javascript">
+	$(init);
+</script>
 </body>
 </html>

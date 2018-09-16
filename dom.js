@@ -12,364 +12,7 @@ var playindex = -1;
 var islocal = window.location.protocol === 'file:';//unused
 var supportLocalStorage = window.localStorage ? true: false;//unused
 var deletedVideoArray = [];
-$('input[type=checkbox]').on('change', function(){
-	var id = $(this).attr('id');
-	if (typeof id != 'undefined'){
-		window.localStorage.setItem(id, $(this).prop('checked'));
-	}
-});
-$('#body').on('dragenter', function (e) {
-	e.stopPropagation();
-	e.preventDefault();
-	if ($('html,body').scrollTop() > 100){
-		$('html,body').stop().animate({scrollTop:0}, 'swing');
-	}
-});
-$('#body').on('dragover', function (e) {
-	e.stopPropagation();
-	e.preventDefault();
-	if (e.pageX > $('body').outerWidth(true)/2) {
-		$('#title').addClass('dragging');
-		if ($('#url').hasClass('dragging')) $('#url').removeClass('dragging');
-	} else {
-		$('#url').addClass('dragging');
-		if ($('#title').hasClass('dragging')) $('#title').removeClass('dragging');
-	}
-});
-$('#body').on('dragleave', function (e){
-	e.stopPropagation();
-	e.preventDefault();
-	if ($('#url, #title').hasClass('dragging')){
-		$('#url, #title').removeClass('dragging');
-	}
-});
-$('#body').on('drop', function (e){
-	e.preventDefault();
-	var sel = '#url';
-	if (e.pageX > $('body').outerWidth(true)/2) {
-		sel = '#title';
-		if ($('#registry').css('display') != 'none'){
-			$('#registry').css('display', 'none');
-		}
-	}
-	var data = e.originalEvent.dataTransfer.items;
-	for (var i = 0; i < data.length; i += 1) {
-		if ((data[i].kind == 'string') && (data[i].type.match('^text/plain'))) {
-			data[i].getAsString(function (s){
-				$(sel).val(s);
-				checkValidity();
-			});
-		} else if ((data[i].kind == 'string') &&  (data[i].type.match('^text/html'))) {
-			data[i].getAsString(function (s){
-				var m = s.match(/<[^><]+>[^><]*(?=<)/g);
-				var s2 = null;
-				if (m != null){
-					for (j = 0; j < m.length; j++){
-						if (m[j].match(/<span id="video-title"/) != null){
-							s2 = m[j].replace(/<[^><]+>/g, '').replace(/^\s+/, '').replace(/\s+$/, '').replace(/\n/g, '');
-							$('#title').val(s2);
-						}
-					}
-				}
-				if (s2 == null){
-					var s2 = s.replace(/<[^><]+>/g, '').replace(/^\s+/, '').replace(/\s+$/, '').replace(/\n/g, '');
-					$('#title').val(s2);
-				}
-				checkValidity();
-			});
-		} else if ((data[i].kind == 'string') && (data[i].type.match('^text/uri-list'))) {
-			data[i].getAsString(function (s){
-				$('#url').val(s);
-				checkValidity();
-			});
-		}
-	} 
-	$(sel).removeClass('dragging');
-	$('html,body').stop();
-});
-$('#url, #title').on('input', function(e){
-	checkValidity();
-});
-$('#genre').on('mousedown', function(){
-	if ($('#registry').css('display') != 'none'){
-		$('#registry').css('display', 'none');
-	}
-});
-$('#url').on('click', function(){
-	if ($(this).hasClass('is-valid') && $('#registry').css('display') === 'none' && $('#registry').html() !== ''){
-		showAlready();
-	}
-});
-$('#title').on('click', function(){
-	if ($('#registry').css('display') != 'none'){
-		$('#registry').css('display', 'none');
-	}
-});
-$('body').on('click', function(e){
-	if (showingMenu){
-		closeMenu();
-	}
-	if ($('#history').css('display') != 'none'){
-		$('#history').css('display', 'none');
-	}
-});
-$('#menu').on('click', function(e){
-	e.stopPropagation();
-});
-$('#addgenre').on('click', function (e){
-	e.stopPropagation();
-	if (addGenre($('#genrename').val())){
-		setSelGen($('#genrename').val());
-		$('#genreModal').modal('hide');
-		$('#genrename').val('');
-		refresh('gs');
-	} else {
-		$('#genrename').blur();
-		$('#genrename').focus();
-	}
-});
-$('#genrename').on("keypress", function(e) {
-	if (e.keyCode == 13) { // Enter
-		e.preventDefault();
-		e.stopPropagation();
-		if (addGenre($('#genrename').val())){
-			setSelGen($('#genrename').val());
-			$('#genreModal').modal('hide');
-			$('#genrename').val('');
-			refresh('gs');
-		} else {
-			$('#genrename').blur();
-			$('#genrename').focus();
-		}
-	}
-});
-$('#button').on('click', function (e){
-	sub();
-});
-$('#genreModal').on('shown.bs.modal', function () {
-	$('#genrename').focus();
-});
-$('#genre').on('change', function (){
-	setSelGen($(this).val());
-	refresh('s');
-});
-$('#saveEdit').on('click', function(){
-	var id = $('#editUrl').text();
-	var title = $('#editTitle').val();
-	var genre = $('#editGenre').val();
-	var oldtitle = $(this).attr('data-title');
-	var oldgenre = $(this).attr('data-genre');
-	if (title == ''){
-		message('タイトルが空欄です', 'warning', '#emalert');
-		$('#editTitle').addClass('is-invalid');
-	} else if (genre == ''){
-		message('ジャンルが正しく選択されていません', 'warning', '#emalert');
-		$('#editGenre').addClass('is-invalid');
-	} else if (title == oldtitle && genre == oldgenre){
-		message('変更なしになっています', 'warning', '#emalert');
-		$('#editTitle').addClass('is-invalid');
-		$('#editGenre').addClass('is-invalid');
-	//} else if ($.inArray(id, y[genre]) !== -1){
-		//message('既に移動先のジャンルに登録されている動画です', 'warning', '#emalert');
-	} else {
-		var mesElem = $('<div>');
-		var table = $('<table>', {'class':'mb-4'});
-		var tr1 = $('<tr>');
-		tr1.append($('<td>', {text: 'タイトル: '}));
-		var td1 = $('<td>');
-		td1.append($('<strong>', {text: title}));
-		if (oldtitle==title) td1.append($('<span>', {text: ' (変更なし)'}))
-			td1.appendTo(tr1);
-		tr1.appendTo(table);
-		if (oldtitle!=title){
-			var tr2 = $('<tr>', {'class': 'gray'});
-			tr2.append($('<td>', {text: '変更前: '}));
-			tr2.append($('<td>', {text: oldtitle}))
-			tr2.appendTo(table);
-		}
-		var tr3 = $('<tr>');
-		tr3.append($('<td>', {text: 'ジャンル: ','class':'confirmedit'}));
-		var td2 = $('<td>',{'class':'confirmedit'});
-		td2.append($('<strong>', {text: genre}));
-		if (oldgenre==genre) td2.append($('<span>', {text: ' (変更なし)'}))
-			td2.appendTo(tr3);
-		tr3.appendTo(table);
-		if (oldgenre!=genre){
-			var tr4 = $('<tr>', {'class': 'gray'});
-			tr4.append($('<td>', {text: '変更前: '}));
-			tr4.append($('<td>', {text: oldgenre}))
-			tr4.appendTo(table);
-		}
-		mesElem.append(table);
-		mesElem.append($('<span>', {text:'変更を保存しますか?'}));
-		conf(mesElem, function(){
-			var _y = copy(y);
-			var list = _y[oldgenre];
-			var newlist = [];
-			for (var i = 0; i < list.length/2; i++){
-				if (list[2*i] != id){
-					newlist.push(list[2*i]);
-					newlist.push(list[2*i+1]);
-				} else if (oldgenre == genre){
-					newlist.push(id);
-					newlist.push(title);
-				}
-			}
-			_y[oldgenre] = newlist;
-			if (oldgenre != genre){
-				_y[genre].push(id);
-				_y[genre].push(title);
-			}
-			pushPrev();
-			y = _y;
-			messageUndoable('動画「'+title+'」を編集しました', 'info');
-			refresh('v');
-			$('#editModal').modal('hide');
-		});
-	}
-});
-$('#editModal').on('hidden.bs.modal', function(){
-	$('#editTitle').removeClass('is-invalid');
-	$('#editGenre').removeClass('is-invalid');
-	$('#emalert').html('');
-})
-$('#nicolist_historyCount').on('change', function(){
-	var sh = $(this).val();
-	if (int(sh) > 0){
-		localStorage.setItem('nicolist_historyCount', sh);
-	}
-});
-$('#nicolist_msc').on('change', function(){
-	var sh = $(this).val();
-	if (int(sh) > 0){
-		localStorage.setItem('nicolist_msc', sh);
-	}
-});
-$('#searchQuery').on('focus', function (e) {
-	if (searchHistory.length === 0) return;
-	$('#history').html('');
-	for (var item of searchHistory) {
-		$('<a>', {
-			text: item,
-			'class': 'dropdown-item pointer',
-			click: function(e){
-				$('#searchQuery').val($(this).text());
-				search();
-			}
-		}).appendTo('#history');
-	}
-	$('#history').outerWidth($(this).outerWidth());
-	$('#history').css({
-		'display': 'inline-block',
-		'top': $(this).offset().top + $(this).outerHeight(),
-		'left': $(this).offset().left
-	});
-});
-$('#searchQuery').on('click', function (e) {
-	e.stopPropagation();
-});
-$('#search').on('click', function(e){
-	search();
-});
-$('#ccopen').on('click', function(){
-	$('#ccvideos').html('');
-	$('#ccalert').html('');
-	for(var genre in y){
-		var genre_name = $('<p>',{
-			click: function(){
-				var thisElem = $(this);
-				if ($('#nicolist_thumb_cc').prop('checked')){
-					thisElem.next().find('.img-thumbnail').each(function(i, elem){
-						loadImg($(elem));
-					});
-				} else {
-					thisElem.next().find('.img-thumbnail').each(function(i, elem){
-						$(elem).attr('data-loadstatus', 'ready');
-					});
-				}
-				if (thisElem.next().css('display') === 'none'){
-					thisElem.next().fadeIn();
-					thisElem.parent().find('.ccgenrename').each(function(i, elem){
-						if ($(elem).text() !== thisElem.text() && $(elem).next().css('display') !== 'none'){
-							$(elem).next().css('display', 'none');
-							$(elem).find('.genre_indicator').text('-');
-						}
-					});
-					thisElem.find('.genre_indicator').text('+');
-				} else {
-					thisElem.next().fadeOut();
-					thisElem.find('.genre_indicator').text('-');
-				}
-				return false;
-			},
-			text: genre,
-			'class':'ccgenrename'
-		});
-		genre_name.prepend($('<span>', {
-			text: '-',
-			'class': 'genre_indicator mr-1'
-		}));
-		var genre_count = $('<span>',{
-			'data-count':'0',
-			'class': 'badge badge-pill badge-secondary2 ml-2'
-		});
-		var ccwrapper = $('<div>', {
-			'class':'ccwrapper'
-		})
-		var videos_table = $('<table>',{
-			'class':'cctable'
-		});
-		var list = y[genre];
-		if ($('#nicolist_sort').prop('checked')){
-			list = reversePairList(list);
-		}
-		for (var i = 0; i < list.length/2; i++) {
-			var id = list[2*i];
-			var title = list[2*i+1];
-			var tr = $('<tr>', {
-				'class':'ccvideo',
-				'data-title': title,
-				'data-id':id,
-				'data-genre':genre,
-				click: function(){
-					var elem = $(this).parent().parent().prev().find('span[data-count]');
-					var count = int(elem.attr('data-count'));
-					if ($(this).hasClass('alert-success')){
-						$(this).removeClass('alert-success');
-						count--;
-					} else {
-						$(this).addClass('alert-success');
-						count++;
-					}
-					elem.attr('data-count', count);
-					if (count === 0) {
-						elem.css('display', 'none');
-					} else {
-						elem.css('display', 'inline-block');
-						elem.text(count+'');
-					}
-				}
-			});
-			var td1 = $('<td>');
-			var img = createStayUnloadedTNI(id, false);
-			if (!$('#nicolist_thumb_cc').prop('checked')){
-				img.addClass('silent');
-			}
-			td1.append(img);
-			tr.append(td1);
-			var td2 = $('<td>',{
-				text: title
-			});
-			tr.append(td2);
-			videos_table.append(tr);
-		}
-		genre_name.append(genre_count);
-		$('#ccvideos').append(genre_name);
-		ccwrapper.append(videos_table);
-		$('#ccvideos').append(ccwrapper);
-	}
-	$('#ccModal').modal('show');
-});
+
 function cctntoggle(){
 	$('#ccvideos .img-thumbnail').each(function(){
 		if ($(this).hasClass('silent')){
@@ -387,103 +30,6 @@ function loadImg(elem){
 		elem.attr('src', srcurl);
 	}
 }
-$('#createcopy').on('click', function(){
-	if ($('#ccvideos tr.alert-success').length === 0){
-		message('動画が選択されていません。', 'warning', '#ccalert');
-		$('#ccModal').stop().animate({scrollTop:0}, 'slow');
-		return;
-	}
-	var mode = $('#ccnew').val();
-	if (mode === 'copytoold' || mode === 'movetoold') {
-		var targetgenre = $('#ccoldsel').val();
-		if ($.inArray(targetgenre, Object.keys(y)) === -1){
-			message('ジャンルを選択してください。', 'warning', '#ccalert');
-			return;
-		}
-		var remove_cc = mode === 'movetoold';
-		var failcount = 0;
-		var successcount = 0;
-		var _y = copy(y);
-		$('#ccvideos tr.alert-success').each(function(){
-			var id = $(this).attr('data-id');
-			var title = $(this).attr('data-title');
-			if ($.inArray(id, _y[targetgenre]) === -1){
-				_y[targetgenre].push(id);
-				_y[targetgenre].push(title);
-				if (remove_cc){
-					var genre = $(this).attr('data-genre');
-					var list2 = _y[genre];
-					var newlist = [];
-					for (var i = 0; i < list2.length/2; i++){
-						if (list2[2*i] != id){
-							newlist.push(list2[2*i]);
-							newlist.push(list2[2*i+1]);
-						}
-					}
-					_y[genre] = newlist;
-				}
-				successcount++;
-			} else {
-				failcount++;
-			}
-		});
-		var __a = remove_cc?'移動':'コピー';
-		if (successcount > 0){
-			pushPrev();
-			y = _y;
-			messageUndoable(successcount+'個の動画を「'+targetgenre+'」に'+__a+'しました'+(failcount>0?' ('+failcount+'個の動画は既に登録されているため'+__a+'されません)':''), 'success');
-		} else {
-			message('すべて「'+targetgenre+'」に登録済みの動画です', 'warning', '#ccalert');
-			$('#ccModal').stop().animate({scrollTop:0}, 'slow');
-			return;
-		}
-		setSelGen(targetgenre);
-		refresh('gvs');
-		$('#ccModal').modal('hide');
-	} else if (mode === 'copytonew' || mode === 'movetonew') {
-		var remove_cb = mode === 'movetonew';
-		var ccname = $('#ccname').val();
-		if (ccname === ''){
-			message('作成するジャンルの名前を入力してください。', 'warning', '#ccalert');
-			$('#ccModal').stop().animate({scrollTop:0}, 'slow');
-			return;
-		} else if (Object.keys(y).indexOf(ccname) !== -1){
-			message('既に存在するジャンル名です。', 'warning', '#ccalert');
-			$('#ccModal').stop().animate({scrollTop:0}, 'slow');
-			return;
-		} else {
-			pushPrev();
-			var list = new Array();
-			$('#ccvideos tr.alert-success').each(function(){
-				var title = $(this).attr('data-title');
-				var id = $(this).attr('data-id');
-				if (remove_cb){
-					var genre = $(this).attr('data-genre');
-					var list2 = y[genre];
-					var newlist = [];
-					for (var i = 0; i < list2.length/2; i++){
-						if (list2[2*i] != id){
-							newlist.push(list2[2*i]);
-							newlist.push(list2[2*i+1]);
-						}
-					}
-					y[genre] = newlist;
-				}
-				if ($.inArray(id, list) === -1){
-					list.push(id);
-					list.push(title);
-				}
-			});
-			y[ccname] = list;
-			var __a = remove_cc?'移動':'コピー';
-			messageUndoable('「'+ccname+'」に'+(list.length/2)+'個の動画を'+__a+'しました', 'success');
-			setSelGen(ccname);
-			refresh('gvs');
-			$('#ccModal').modal('hide');
-			$('#ccname').val('');
-		}
-	}
-});
 function ccnew(){
 	var val = $('#ccnew').val();
 	localStorage.setItem('nicolist_ccnewval', val);
@@ -500,36 +46,6 @@ function ccnew(){
 		$('#createcopy').text('移動');
 	}
 }
-$('#sgopen').on('click', function(){
-	$('#sggenre').html('');
-	var gs = Object.keys(y);
-	for (i = 0; i< gs.length; i++){
-		var g = gs[i];
-		var clazz = 'sgg '+(i != 0 ? 'sgtarget' : 'sgdef');
-		var div = $('<div>',{
-			text: g,
-			'class': clazz
-		});
-		$('#sggenre').append(div);
-	}
-	$('#genreSortModal').modal('show');
-	Sortable.create(sggenre, {
-		draggable: '.sgtarget',
-		animation: 300
-	});
-});
-$('#submitGenreSort').on('click', function(){
-	pushPrev();
-	var _y = {};
-	$('.sgg').each(function(i, elem){
-		var g = $(elem).text();
-		_y[g] = y[g];
-	});
-	y = _y;
-	refresh('g');
-	messageUndoable('ジャンルを並び替えしました', 'success');
-	$('#genreSortModal').modal('hide');
-});
 function search() {
 	var value = $('#searchQuery').val();
 	var sq = value.replace(/[\-^\\\[;:\],./=~|`{+\*}<>?_!"#$%&'()"！”＃＄％＆’（）＝～｜｀｛＋＊｝＜＞？＿【】『』「」［］〈〉《》ー＾￥；：」、。・／＼]/g, '$').replace(/\$+/g, '$').replace(/\$$|^\$/g, '').split('$');
@@ -857,7 +373,598 @@ function pushHistory(queryStr) {
 	}
 	localStorage.setItem('searchhistory', JSON.stringify(searchHistory));
 }
+function registerEventListener(){
+	$(window).resize(function() {
+		if ($('#nicolist_cinematic').prop('checked')){
+			videoResize();
+		}
+	});
+	$(window).on('unload', function(){
+		unload();
+	});
+	$('input[type=checkbox]').on('change', function(){
+		var id = $(this).attr('id');
+		if (typeof id != 'undefined'){
+			window.localStorage.setItem(id, $(this).prop('checked'));
+		}
+	});
+	$('#body').on('dragenter', function (e) {
+		e.stopPropagation();
+		e.preventDefault();
+		if ($('html,body').scrollTop() > 100){
+			$('html,body').stop().animate({scrollTop:0}, 'swing');
+		}
+	});
+	$('#body').on('dragover', function (e) {
+		e.stopPropagation();
+		e.preventDefault();
+		if (e.pageX > $('body').outerWidth(true)/2) {
+			$('#title').addClass('dragging');
+			if ($('#url').hasClass('dragging')) $('#url').removeClass('dragging');
+		} else {
+			$('#url').addClass('dragging');
+			if ($('#title').hasClass('dragging')) $('#title').removeClass('dragging');
+		}
+	});
+	$('#body').on('dragleave', function (e){
+		e.stopPropagation();
+		e.preventDefault();
+		if ($('#url, #title').hasClass('dragging')){
+			$('#url, #title').removeClass('dragging');
+		}
+	});
+	$('#body').on('drop', function (e){
+		e.preventDefault();
+		var sel = '#url';
+		if (e.pageX > $('body').outerWidth(true)/2) {
+			sel = '#title';
+			if ($('#registry').css('display') != 'none'){
+				$('#registry').css('display', 'none');
+			}
+		}
+		var data = e.originalEvent.dataTransfer.items;
+		for (var i = 0; i < data.length; i += 1) {
+			if ((data[i].kind == 'string') && (data[i].type.match('^text/plain'))) {
+				data[i].getAsString(function (s){
+					$(sel).val(s);
+					checkValidity();
+				});
+			} else if ((data[i].kind == 'string') &&  (data[i].type.match('^text/html'))) {
+				data[i].getAsString(function (s){
+					var m = s.match(/<[^><]+>[^><]*(?=<)/g);
+					var s2 = null;
+					if (m != null){
+						for (j = 0; j < m.length; j++){
+							if (m[j].match(/<span id="video-title"/) != null){
+								s2 = m[j].replace(/<[^><]+>/g, '').replace(/^\s+/, '').replace(/\s+$/, '').replace(/\n/g, '');
+								$('#title').val(s2);
+							}
+						}
+					}
+					if (s2 == null){
+						var s2 = s.replace(/<[^><]+>/g, '').replace(/^\s+/, '').replace(/\s+$/, '').replace(/\n/g, '');
+						$('#title').val(s2);
+					}
+					checkValidity();
+				});
+			} else if ((data[i].kind == 'string') && (data[i].type.match('^text/uri-list'))) {
+				data[i].getAsString(function (s){
+					$('#url').val(s);
+					checkValidity();
+				});
+			}
+		} 
+		$(sel).removeClass('dragging');
+		$('html,body').stop();
+	});
+	$('#url, #title').on('input', function(e){
+		checkValidity();
+	});
+	$('#genre').on('mousedown', function(){
+		if ($('#registry').css('display') != 'none'){
+			$('#registry').css('display', 'none');
+		}
+	});
+	$('#url').on('click', function(){
+		if ($(this).hasClass('is-valid') && $('#registry').css('display') === 'none' && $('#registry').html() !== ''){
+			showAlready();
+		}
+	});
+	$('#title').on('click', function(){
+		if ($('#registry').css('display') != 'none'){
+			$('#registry').css('display', 'none');
+		}
+	});
+	$('body').on('click', function(e){
+		if (showingMenu){
+			closeMenu();
+		}
+		if ($('#history').css('display') != 'none'){
+			$('#history').css('display', 'none');
+		}
+	});
+	$('#menu').on('click', function(e){
+		e.stopPropagation();
+	});
+	$('#addgenre').on('click', function (e){
+		e.stopPropagation();
+		if (addGenre($('#genrename').val())){
+			setSelGen($('#genrename').val());
+			$('#genreModal').modal('hide');
+			$('#genrename').val('');
+			refresh('gs');
+		} else {
+			$('#genrename').blur();
+			$('#genrename').focus();
+		}
+	});
+	$('#genrename').on("keypress", function(e) {
+		if (e.keyCode == 13) { // Enter
+			e.preventDefault();
+			e.stopPropagation();
+			if (addGenre($('#genrename').val())){
+				setSelGen($('#genrename').val());
+				$('#genreModal').modal('hide');
+				$('#genrename').val('');
+				refresh('gs');
+			} else {
+				$('#genrename').blur();
+				$('#genrename').focus();
+			}
+		}
+	});
+	$('#button').on('click', function (e){
+		sub();
+	});
+	$('#genreModal').on('shown.bs.modal', function () {
+		$('#genrename').focus();
+	});
+	$('#genre').on('change', function (){
+		setSelGen($(this).val());
+		refresh('s');
+	});
+	$('#saveEdit').on('click', function(){
+		var id = $('#editUrl').text();
+		var title = $('#editTitle').val();
+		var genre = $('#editGenre').val();
+		var oldtitle = $(this).attr('data-title');
+		var oldgenre = $(this).attr('data-genre');
+		if (title == ''){
+			message('タイトルが空欄です', 'warning', '#emalert');
+			$('#editTitle').addClass('is-invalid');
+		} else if (genre == ''){
+			message('ジャンルが正しく選択されていません', 'warning', '#emalert');
+			$('#editGenre').addClass('is-invalid');
+		} else if (title == oldtitle && genre == oldgenre){
+			message('変更なしになっています', 'warning', '#emalert');
+			$('#editTitle').addClass('is-invalid');
+			$('#editGenre').addClass('is-invalid');
+		//} else if ($.inArray(id, y[genre]) !== -1){
+			//message('既に移動先のジャンルに登録されている動画です', 'warning', '#emalert');
+		} else {
+			var mesElem = $('<div>');
+			var table = $('<table>', {'class':'mb-4'});
+			var tr1 = $('<tr>');
+			tr1.append($('<td>', {text: 'タイトル: '}));
+			var td1 = $('<td>');
+			td1.append($('<strong>', {text: title}));
+			if (oldtitle==title) td1.append($('<span>', {text: ' (変更なし)'}))
+				td1.appendTo(tr1);
+			tr1.appendTo(table);
+			if (oldtitle!=title){
+				var tr2 = $('<tr>', {'class': 'gray'});
+				tr2.append($('<td>', {text: '変更前: '}));
+				tr2.append($('<td>', {text: oldtitle}))
+				tr2.appendTo(table);
+			}
+			var tr3 = $('<tr>');
+			tr3.append($('<td>', {text: 'ジャンル: ','class':'confirmedit'}));
+			var td2 = $('<td>',{'class':'confirmedit'});
+			td2.append($('<strong>', {text: genre}));
+			if (oldgenre==genre) td2.append($('<span>', {text: ' (変更なし)'}))
+				td2.appendTo(tr3);
+			tr3.appendTo(table);
+			if (oldgenre!=genre){
+				var tr4 = $('<tr>', {'class': 'gray'});
+				tr4.append($('<td>', {text: '変更前: '}));
+				tr4.append($('<td>', {text: oldgenre}))
+				tr4.appendTo(table);
+			}
+			mesElem.append(table);
+			mesElem.append($('<span>', {text:'変更を保存しますか?'}));
+			conf(mesElem, function(){
+				var _y = copy(y);
+				var list = _y[oldgenre];
+				var newlist = [];
+				for (var i = 0; i < list.length/2; i++){
+					if (list[2*i] != id){
+						newlist.push(list[2*i]);
+						newlist.push(list[2*i+1]);
+					} else if (oldgenre == genre){
+						newlist.push(id);
+						newlist.push(title);
+					}
+				}
+				_y[oldgenre] = newlist;
+				if (oldgenre != genre){
+					_y[genre].push(id);
+					_y[genre].push(title);
+				}
+				pushPrev();
+				y = _y;
+				messageUndoable('動画「'+title+'」を編集しました', 'info');
+				refresh('v');
+				$('#editModal').modal('hide');
+			});
+		}
+	});
+	$('#editModal').on('hidden.bs.modal', function(){
+		$('#editTitle').removeClass('is-invalid');
+		$('#editGenre').removeClass('is-invalid');
+		$('#emalert').html('');
+	})
+	$('#nicolist_historyCount').on('change', function(){
+		var sh = $(this).val();
+		if (int(sh) > 0){
+			localStorage.setItem('nicolist_historyCount', sh);
+		}
+	});
+	$('#nicolist_msc').on('change', function(){
+		var sh = $(this).val();
+		if (int(sh) > 0){
+			localStorage.setItem('nicolist_msc', sh);
+		}
+	});
+	$('#searchQuery').on('focus', function (e) {
+		if (searchHistory.length === 0) return;
+		$('#history').html('');
+		for (var item of searchHistory) {
+			$('<a>', {
+				text: item,
+				'class': 'dropdown-item pointer',
+				click: function(e){
+					$('#searchQuery').val($(this).text());
+					search();
+				}
+			}).appendTo('#history');
+		}
+		$('#history').outerWidth($(this).outerWidth());
+		$('#history').css({
+			'display': 'inline-block',
+			'top': $(this).offset().top + $(this).outerHeight(),
+			'left': $(this).offset().left
+		});
+	});
+	$('#searchQuery').on('click', function (e) {
+		e.stopPropagation();
+	});
+	$('#search').on('click', function(e){
+		search();
+	});
+	$('#ccopen').on('click', function(){
+		$('#ccvideos').html('');
+		$('#ccalert').html('');
+		for(var genre in y){
+			var genre_name = $('<p>',{
+				click: function(){
+					var thisElem = $(this);
+					if ($('#nicolist_thumb_cc').prop('checked')){
+						thisElem.next().find('.img-thumbnail').each(function(i, elem){
+							loadImg($(elem));
+						});
+					} else {
+						thisElem.next().find('.img-thumbnail').each(function(i, elem){
+							$(elem).attr('data-loadstatus', 'ready');
+						});
+					}
+					if (thisElem.next().css('display') === 'none'){
+						thisElem.next().fadeIn();
+						thisElem.parent().find('.ccgenrename').each(function(i, elem){
+							if ($(elem).text() !== thisElem.text() && $(elem).next().css('display') !== 'none'){
+								$(elem).next().css('display', 'none');
+								$(elem).find('.genre_indicator').text('-');
+							}
+						});
+						thisElem.find('.genre_indicator').text('+');
+					} else {
+						thisElem.next().fadeOut();
+						thisElem.find('.genre_indicator').text('-');
+					}
+					return false;
+				},
+				text: genre,
+				'class':'ccgenrename'
+			});
+			genre_name.prepend($('<span>', {
+				text: '-',
+				'class': 'genre_indicator mr-1'
+			}));
+			var genre_count = $('<span>',{
+				'data-count':'0',
+				'class': 'badge badge-pill badge-secondary2 ml-2'
+			});
+			var ccwrapper = $('<div>', {
+				'class':'ccwrapper'
+			})
+			var videos_table = $('<table>',{
+				'class':'cctable'
+			});
+			var list = y[genre];
+			if ($('#nicolist_sort').prop('checked')){
+				list = reversePairList(list);
+			}
+			for (var i = 0; i < list.length/2; i++) {
+				var id = list[2*i];
+				var title = list[2*i+1];
+				var tr = $('<tr>', {
+					'class':'ccvideo',
+					'data-title': title,
+					'data-id':id,
+					'data-genre':genre,
+					click: function(){
+						var elem = $(this).parent().parent().prev().find('span[data-count]');
+						var count = int(elem.attr('data-count'));
+						if ($(this).hasClass('alert-success')){
+							$(this).removeClass('alert-success');
+							count--;
+						} else {
+							$(this).addClass('alert-success');
+							count++;
+						}
+						elem.attr('data-count', count);
+						if (count === 0) {
+							elem.css('display', 'none');
+						} else {
+							elem.css('display', 'inline-block');
+							elem.text(count+'');
+						}
+					}
+				});
+				var td1 = $('<td>');
+				var img = createStayUnloadedTNI(id, false);
+				if (!$('#nicolist_thumb_cc').prop('checked')){
+					img.addClass('silent');
+				}
+				td1.append(img);
+				tr.append(td1);
+				var td2 = $('<td>',{
+					text: title
+				});
+				tr.append(td2);
+				videos_table.append(tr);
+			}
+			genre_name.append(genre_count);
+			$('#ccvideos').append(genre_name);
+			ccwrapper.append(videos_table);
+			$('#ccvideos').append(ccwrapper);
+		}
+		$('#ccModal').modal('show');
+	});
+
+	$('#pcclose').on('click', function(){
+		$('#play').html('');
+		$('#pcclose').addClass('silent');
+		$('#pcnext').addClass('silent');
+		$('#pcprev').addClass('silent');
+		$('#pcnewtab').addClass('silent');
+		$('#pclist').addClass('silent').html('');
+		playindex = -1;
+		playlist = [];
+	});
+	$('#pcnewtab').on('click', function(){
+		window.open(domain+'/player.html?pl='+escape(JSON.stringify(playlist))+'&i='+playindex);
+	});
+	$('#pclist').on('change', function(){
+		playindex = parseInt($('#pclist').val(), 10);
+		if (isNaN(playindex)) playindex = 0;//wont happen
+		autoplay = false;
+		refreshPlayer();
+	});
+	$('#pcnext').on('click',function(){
+		if ($(this).hasClass('disabled')) return;
+		autoplay = true;
+		next();
+	});
+	$('#pcprev').on('click',function(){
+		if ($(this).hasClass('disabled')) return;
+		autoplay = true;
+		previous();
+	});
+
+	$('#sgopen').on('click', function(){
+		$('#sggenre').html('');
+		var gs = Object.keys(y);
+		for (i = 0; i< gs.length; i++){
+			var g = gs[i];
+			var clazz = 'sgg '+(i != 0 ? 'sgtarget' : 'sgdef');
+			var div = $('<div>',{
+				text: g,
+				'class': clazz
+			});
+			$('#sggenre').append(div);
+		}
+		$('#genreSortModal').modal('show');
+		Sortable.create(sggenre, {
+			draggable: '.sgtarget',
+			animation: 300
+		});
+	});
+	$('#submitGenreSort').on('click', function(){
+		pushPrev();
+		var _y = {};
+		$('.sgg').each(function(i, elem){
+			var g = $(elem).text();
+			_y[g] = y[g];
+		});
+		y = _y;
+		refresh('g');
+		messageUndoable('ジャンルを並び替えしました', 'success');
+		$('#genreSortModal').modal('hide');
+	});
+
+	$('#createcopy').on('click', function(){
+		if ($('#ccvideos tr.alert-success').length === 0){
+			message('動画が選択されていません。', 'warning', '#ccalert');
+			$('#ccModal').stop().animate({scrollTop:0}, 'slow');
+			return;
+		}
+		var mode = $('#ccnew').val();
+		if (mode === 'copytoold' || mode === 'movetoold') {
+			var targetgenre = $('#ccoldsel').val();
+			if ($.inArray(targetgenre, Object.keys(y)) === -1){
+				message('ジャンルを選択してください。', 'warning', '#ccalert');
+				return;
+			}
+			var remove_cc = mode === 'movetoold';
+			var failcount = 0;
+			var successcount = 0;
+			var _y = copy(y);
+			$('#ccvideos tr.alert-success').each(function(){
+				var id = $(this).attr('data-id');
+				var title = $(this).attr('data-title');
+				if ($.inArray(id, _y[targetgenre]) === -1){
+					_y[targetgenre].push(id);
+					_y[targetgenre].push(title);
+					if (remove_cc){
+						var genre = $(this).attr('data-genre');
+						var list2 = _y[genre];
+						var newlist = [];
+						for (var i = 0; i < list2.length/2; i++){
+							if (list2[2*i] != id){
+								newlist.push(list2[2*i]);
+								newlist.push(list2[2*i+1]);
+							}
+						}
+						_y[genre] = newlist;
+					}
+					successcount++;
+				} else {
+					failcount++;
+				}
+			});
+			var __a = remove_cc?'移動':'コピー';
+			if (successcount > 0){
+				pushPrev();
+				y = _y;
+				messageUndoable(successcount+'個の動画を「'+targetgenre+'」に'+__a+'しました'+(failcount>0?' ('+failcount+'個の動画は既に登録されているため'+__a+'されません)':''), 'success');
+			} else {
+				message('すべて「'+targetgenre+'」に登録済みの動画です', 'warning', '#ccalert');
+				$('#ccModal').stop().animate({scrollTop:0}, 'slow');
+				return;
+			}
+			setSelGen(targetgenre);
+			refresh('gvs');
+			$('#ccModal').modal('hide');
+		} else if (mode === 'copytonew' || mode === 'movetonew') {
+			var remove_cb = mode === 'movetonew';
+			var ccname = $('#ccname').val();
+			if (ccname === ''){
+				message('作成するジャンルの名前を入力してください。', 'warning', '#ccalert');
+				$('#ccModal').stop().animate({scrollTop:0}, 'slow');
+				return;
+			} else if (Object.keys(y).indexOf(ccname) !== -1){
+				message('既に存在するジャンル名です。', 'warning', '#ccalert');
+				$('#ccModal').stop().animate({scrollTop:0}, 'slow');
+				return;
+			} else {
+				pushPrev();
+				var list = new Array();
+				$('#ccvideos tr.alert-success').each(function(){
+					var title = $(this).attr('data-title');
+					var id = $(this).attr('data-id');
+					if (remove_cb){
+						var genre = $(this).attr('data-genre');
+						var list2 = y[genre];
+						var newlist = [];
+						for (var i = 0; i < list2.length/2; i++){
+							if (list2[2*i] != id){
+								newlist.push(list2[2*i]);
+								newlist.push(list2[2*i+1]);
+							}
+						}
+						y[genre] = newlist;
+					}
+					if ($.inArray(id, list) === -1){
+						list.push(id);
+						list.push(title);
+					}
+				});
+				y[ccname] = list;
+				var __a = remove_cc?'移動':'コピー';
+				messageUndoable('「'+ccname+'」に'+(list.length/2)+'個の動画を'+__a+'しました', 'success');
+				setSelGen(ccname);
+				refresh('gvs');
+				$('#ccModal').modal('hide');
+				$('#ccname').val('');
+			}
+		}
+	});
+	$('#issueRaw').on('click', function(){
+		var d = new Date();
+		promptWinExplorer('backup_'+d.getFullYear()+'_'+(d.getMonth()+1)+'_'+d.getDate()+'.json', JSON.stringify(y));
+	});
+	$('#fromRawFile').on('change', function (e){
+		var files = e.target.files;
+		if (files.length !== 1) {
+			message('正しいファイルを選択してください', 'warning', '#prefalert');
+			return;
+		}
+		if (!files[0].type.match(/json/)){
+			message('jsonファイルを選択してください', 'warning', '#prefalert');
+			return;
+		}
+
+		var reader = new FileReader();
+		reader.readAsText(files[0]);
+
+		reader.onload = function (){
+			try {
+				var toload = JSON.parse(reader.result);
+			} catch (e){
+				message('フォーマットが正しくありません', 'warning', '#prefalert');
+				return;
+			}
+			var videocount = 0;
+			var genrecount = 0;
+			if (!(toload instanceof Object)){
+				message('フォーマットが正しくありません', 'warning', '#prefalert');
+				return;
+			}
+			var _y = copy(y);
+			for (var genre in toload){
+				var list = toload[genre];
+				if (!(list instanceof Array)){
+					message('フォーマットが正しくありません', 'warning', '#prefalert');
+					return;
+				}
+				for (var i = 0; i < list.length/2; i++){
+					var id = list[2*i];
+					var title = list[2*i+1];
+					if (!_y.hasOwnProperty(genre)) {
+						_y[genre] = [];
+						genrecount++;
+					}
+					if ($.inArray(id, _y[genre]) === -1){
+						_y[genre].push(id);
+						_y[genre].push(title);
+						videocount++;
+					}
+				}
+			}
+			if (videocount === 0 && genrecount === 0){
+				message('すべて登録済みの動画です', 'warning', '#prefalert');
+			} else {
+				pushPrev();
+				y = _y;
+				messageUndoable('JSONから'+(videocount>0?videocount+'個の動画':'')+(genrecount>0&&videocount>0?'、':'')+(genrecount>0?genrecount+'個のジャンル':'')+'を新たに読み込みました', 'success');
+				refresh((genrecount>0?'g':'')+(videocount>0?'v':''));
+				$('#prefModal').modal('hide');
+			}
+		};
+	});
+}
 function init(){
+	registerEventListener();
 	$('input[type=checkbox]').each(function(){	
 		var id = $(this).attr('id');
 		if (typeof id != 'undefined'){
@@ -1816,35 +1923,6 @@ function initPlaylistSel(){
 		}
 	}
 }
-$('#pcclose').on('click', function(){
-	$('#play').html('');
-	$('#pcclose').addClass('silent');
-	$('#pcnext').addClass('silent');
-	$('#pcprev').addClass('silent');
-	$('#pcnewtab').addClass('silent');
-	$('#pclist').addClass('silent').html('');
-	playindex = -1;
-	playlist = [];
-});
-$('#pcnewtab').on('click', function(){
-	window.open(domain+'/player.html?pl='+escape(JSON.stringify(playlist))+'&i='+playindex);
-});
-$('#pclist').on('change', function(){
-	playindex = parseInt($('#pclist').val(), 10);
-	if (isNaN(playindex)) playindex = 0;//wont happen
-	autoplay = false;
-	refreshPlayer();
-});
-$('#pcnext').on('click',function(){
-	if ($(this).hasClass('disabled')) return;
-	autoplay = true;
-	next();
-});
-$('#pcprev').on('click',function(){
-	if ($(this).hasClass('disabled')) return;
-	autoplay = true;
-	previous();
-});
 function reversePairList(list){
 	var _list = [];
 	for (var i = list.length/2 - 1; i >= 0; i--) {
@@ -1853,11 +1931,6 @@ function reversePairList(list){
 	}
 	return _list;
 }
-$(window).resize(function() {
-	if ($('#nicolist_cinematic').prop('checked')){
-		videoResize();
-	}
-});
 function promptWinExplorer(filename, content){
 	var file = new Blob([content], {type: 'text/plane;'});
 	if (window.navigator.msSaveOrOpenBlob) {
@@ -1875,66 +1948,3 @@ function promptWinExplorer(filename, content){
 		}, 0); 
 	}
 }
-$('#issueRaw').on('click', function(){
-	var d = new Date();
-	promptWinExplorer('backup_'+d.getFullYear()+'_'+(d.getMonth()+1)+'_'+d.getDate()+'.json', JSON.stringify(y));
-});
-$('#fromRawFile').on('change', function (e){
-	var files = e.target.files;
-	if (files.length !== 1) {
-		message('正しいファイルを選択してください', 'warning', '#prefalert');
-		return;
-	}
-	if (!files[0].type.match(/json/)){
-		message('jsonファイルを選択してください', 'warning', '#prefalert');
-		return;
-	}
-
-	var reader = new FileReader();
-	reader.readAsText(files[0]);
-
-	reader.onload = function (){
-		try {
-			var toload = JSON.parse(reader.result);
-		} catch (e){
-			message('フォーマットが正しくありません', 'warning', '#prefalert');
-			return;
-		}
-		var videocount = 0;
-		var genrecount = 0;
-		if (!(toload instanceof Object)){
-			message('フォーマットが正しくありません', 'warning', '#prefalert');
-			return;
-		}
-		var _y = copy(y);
-		for (var genre in toload){
-			var list = toload[genre];
-			if (!(list instanceof Array)){
-				message('フォーマットが正しくありません', 'warning', '#prefalert');
-				return;
-			}
-			for (var i = 0; i < list.length/2; i++){
-				var id = list[2*i];
-				var title = list[2*i+1];
-				if (!_y.hasOwnProperty(genre)) {
-					_y[genre] = [];
-					genrecount++;
-				}
-				if ($.inArray(id, _y[genre]) === -1){
-					_y[genre].push(id);
-					_y[genre].push(title);
-					videocount++;
-				}
-			}
-		}
-		if (videocount === 0 && genrecount === 0){
-			message('すべて登録済みの動画です', 'warning', '#prefalert');
-		} else {
-			pushPrev();
-			y = _y;
-			messageUndoable('JSONから'+(videocount>0?videocount+'個の動画':'')+(genrecount>0&&videocount>0?'、':'')+(genrecount>0?genrecount+'個のジャンル':'')+'を新たに読み込みました', 'success');
-			refresh((genrecount>0?'g':'')+(videocount>0?'v':''));
-			$('#prefModal').modal('hide');
-		}
-	};
-});
