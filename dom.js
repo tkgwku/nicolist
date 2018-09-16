@@ -12,6 +12,7 @@ var playindex = -1;
 var islocal = window.location.protocol === 'file:';//unused
 var supportLocalStorage = window.localStorage ? true: false;//unused
 var deletedVideoArray = [];
+var volumemap = {};
 
 function cctntoggle(){
 	$('#ccvideos .img-thumbnail').each(function(){
@@ -862,7 +863,7 @@ function registerEventListener(){
 				message('作成するジャンルの名前を入力してください。', 'warning', '#ccalert');
 				$('#ccModal').stop().animate({scrollTop:0}, 'slow');
 				return;
-			} else if (Object.keys(y).indexOf(ccname) !== -1){
+			} else if (y.hasOwnProperty(ccname) !== -1){
 				message('既に存在するジャンル名です。', 'warning', '#ccalert');
 				$('#ccModal').stop().animate({scrollTop:0}, 'slow');
 				return;
@@ -971,7 +972,7 @@ function init(){
 			var bool = window.localStorage.getItem(id);
 			if (bool == 'true'){
 				$(this).prop('checked', true);
-			} else {
+			} else if (bool) {
 				$(this).prop('checked', false);
 			}
 		}
@@ -1054,6 +1055,17 @@ function init(){
 			deletedVideoArray = JSON.parse(ld);
 		} catch(e) {
 			console.log(e);
+		}
+	}
+	var lz = localStorage.getItem('nicolist_volumemap');
+	if (lz != null){
+		try {
+			lz = JSON.parse(lz);
+			if (lz instanceof Object){
+				volumemap = lz;
+			}
+		} catch(e) {
+			message(e, 'danger');
 		}
 	}
 	refresh('vgs');
@@ -1752,6 +1764,7 @@ function setupYoutubeIframe(id){
 		}
 	});
 }
+var skip_flag = false; 
 function setupNiconicoIframe(id){
 	$('#play').html('');
 	var s = videoSize();
@@ -1759,13 +1772,13 @@ function setupNiconicoIframe(id){
 		"id": "playeriframenicovideo",
 		"width": s[0]+'',
 		"height": s[1]+'',
-		"src": 'https://embed.nicovideo.jp/watch/'+id+'?jsapi=1&playerId='+playindex,
+		"src": 'https://embed.nicovideo.jp/watch/'+id+'?jsapi=1&playerId=0',
 		"frameborder": "0",
 		"allow": "autoplay; encrypted-media",
 		"allowfullscreen": ""
 	});
 	$('#play').append(iframeElement);
-	window.addEventListener('message', function (event) {
+	window.onmessage = function (event) {
 		if (event.origin === 'https://embed.nicovideo.jp'){
 			if (event.data.eventName === 'error'){
 				//if the video has been dead
@@ -1777,12 +1790,40 @@ function setupNiconicoIframe(id){
 					autoplay = true;
 					next();
 				}
-			} else if (autoplay && event.data.eventName === 'loadComplete'){
-				$('#play iframe').get(0).contentWindow.postMessage({eventName:'play',playerId:playindex+"",sourceConnectorType:1}, 'https://embed.nicovideo.jp');
-				autoplay = false;
+			} else if (event.data.eventName === 'loadComplete'){
+				if (autoplay){
+					$('#play iframe').get(0).contentWindow.postMessage({eventName:'play',playerId:"0",sourceConnectorType:1}, 'https://embed.nicovideo.jp');
+					autoplay = false;
+				}
+				//set volume
+				if ($('#nicolist_savevolume').prop('checked')){
+					var playing = playlist[playindex];
+					if (volumemap.hasOwnProperty(playing)){
+						$('#play iframe').get(0).contentWindow.postMessage({
+							eventName:'volumeChange',
+							playerId: "0",
+							sourceConnectorType: 1,
+							data: {
+								volume: volumemap[playing]
+							}
+						}, 'https://embed.nicovideo.jp');
+					}
+					skip_flag = true;
+				}
+			} else if ($('#nicolist_savevolume').prop('checked') && event.data.eventName === 'playerMetadataChange'){
+				if (skip_flag){
+					skip_flag = false;
+				} else {
+					var v = Math.round(event.data.data.volume * 1000)/1000;
+					var playing = playlist[playindex];
+					if (!volumemap.hasOwnProperty(playing) || volumemap[playing] !== v){
+						volumemap[playing] = v;
+						localStorage.setItem('nicolist_volumemap', JSON.stringify(volumemap));
+					}
+				}
 			}
 		}
-	});
+	}
 }
 function addToDeletedVideoList(id){
 	if (deletedVideoArray.indexOf(id) !== -1){
@@ -1840,7 +1881,7 @@ function refreshPlayer(){
 		if (!$('#play iframe').length || $('#play iframe').attr('id') === 'playeriframeyoutube'){
 			setupNiconicoIframe(id);
 		} else {
-			$('#play iframe').attr('src', 'https://embed.nicovideo.jp/watch/'+id+'?jsapi=1&playerId='+(playindex));
+			$('#play iframe').attr('src', 'https://embed.nicovideo.jp/watch/'+id+'?jsapi=1&playerId=0');
 		}
 	} else {
 		if (!$('#play iframe').length || $('#play iframe').attr('id') === 'playeriframenicovideo'){
@@ -1909,9 +1950,8 @@ function refreshController(){
 function initPlaylistSel(){
 	$('#pclist').html('');
 	var opt;
-	var mapkeys = Object.keys(playlistTitleMap);
 	for (var i = 0; i < playlist.length; i++) {
-		if (mapkeys.indexOf(playlist[i]) !== -1){
+		if (playlistTitleMap.hasOwnProperty(playlist[i]) !== -1){
 			opt = $('<option>', {
 				text: (i+1) + ': ' + playlistTitleMap[playlist[i]],
 				'value': i+''
