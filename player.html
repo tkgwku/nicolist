@@ -10,17 +10,19 @@
 	.silent {display: none}
 	body{background-color: #112;padding: 1em 2em;margin: 0;color: #ddd}
 	button{cursor: pointer;}
+	.disabled {cursor: default;}
 </style>
 </head>
 <body onload="init();">
+	<h1>nicol;st player</h1>
 	<div id="play"></div>
 	<div id="controller">
 		<div>
-			<button class="btn btn-outline-secondary mb-1 mt-1 silent" type="submit" onclick="previous()" id="pcprev">前の動画へ</button>
-			<button class="btn btn-outline-secondary mb-1 mt-1 silent" type="submit" onclick="next()" id="pcnext">次の動画へ</button>
+			<button class="btn btn-outline-secondary mb-1 mt-1 disabled silent" type="submit" onclick="if (!$(this).hasClass('disabled')) {previous();}" id="pcprev">前の動画へ</button>
+			<button class="btn btn-outline-secondary mb-1 mt-1 disabled silent" type="submit" onclick="if (!$(this).hasClass('disabled')) {next();}" id="pcnext">次の動画へ</button>
 		</div>
 	</div>
-	<div class="silent" id="noquery">
+	<div class="silent ml-2 mt-4" id="noquery">
 		<p>プレイリスト情報がないため動画は再生されません。</p>
 		<div><button class="btn btn-outline-secondary mb-1 mt-1 silent" type="submit" onclick="restore()" id="pcrestore">前回のプレイリストを復元して再生</button></div>
 	</div>
@@ -83,6 +85,8 @@ function init(){
 	
 var autoplay = false;
 function createEmbedElem(id){
+	$('#pcnext').removeClass('silent');
+	$('#pcprev').removeClass('silent');
 	if ((new RegExp("^sm\\d+$")).test(id)|| (new RegExp("^nm\\d+$")).test(id) || (new RegExp("^so\\d+$")).test(id) || (new RegExp("^\\d+$")).test(id)){
 		setupNiconicoIframe(id);
 	} else {
@@ -192,21 +196,21 @@ function previous(){
 }
 function refreshController(){
 	if (hasNext()){
-		if ($('#pcnext').hasClass('silent')){
-			$('#pcnext').removeClass('silent');
+		if ($('#pcnext').hasClass('disabled')){
+			$('#pcnext').removeClass('disabled');
 		}
 	} else {
-		if (!$('#pcnext').hasClass('silent')){
-			$('#pcnext').addClass('silent');
+		if (!$('#pcnext').hasClass('disabled')){
+			$('#pcnext').addClass('disabled');
 		}
 	}
 	if (hasPrevious()){
-		if ($('#pcprev').hasClass('silent')){
-			$('#pcprev').removeClass('silent');
+		if ($('#pcprev').hasClass('disabled')){
+			$('#pcprev').removeClass('disabled');
 		}
 	} else {
-		if (!$('#pcprev').hasClass('silent')){
-			$('#pcprev').addClass('silent');
+		if (!$('#pcprev').hasClass('disabled')){
+			$('#pcprev').addClass('disabled');
 		}
 	}
 }

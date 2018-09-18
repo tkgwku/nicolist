@@ -128,7 +128,7 @@ div.sgdef{
 <body>
 <div id="body">
 	<div class="container">
-		<h1>nicol;st</h1>
+		<h1>nicol;st<small class="text-muted silent ml-2" id="local_indicator" style="font-size: .6em">(local mode)</small></h1>
 
 		<!-- ALERT -->
 		<div id="alert">
@@ -374,7 +374,7 @@ div.sgdef{
 
 				<div>
 					<label class="custom-control custom-checkbox">
-						<input type="checkbox" class="custom-control-input" id="nicolist_rand" checked="">
+						<input type="checkbox" class="custom-control-input" id="nicolist_rand">
 						<span class="custom-control-indicator"></span>
 						<span class="custom-control-description">前回のランダム選出を残さない</span>
 					</label>
@@ -451,7 +451,7 @@ div.sgdef{
 					<label class="custom-control custom-checkbox">
 						<input type="checkbox" class="custom-control-input" id="nicolist_savevolume">
 						<span class="custom-control-indicator"></span>
-						<span class="custom-control-description">動画ごとに音量設定を保存</span>
+						<span class="custom-control-description">動画ごとに音量設定を保存 (ニコニコ動画のみ)</span>
 					</label>
 				</div>
 
@@ -475,6 +475,14 @@ div.sgdef{
 					</label>
 				</div>
 
+				<div>
+					<label class="custom-control custom-checkbox">
+						<input type="checkbox" class="custom-control-input" id="nicolist_hightlight" checked="">
+						<span class="custom-control-indicator"></span>
+						<span class="custom-control-description">一致した箇所をハイライトする</span>
+					</label>
+				</div>
+				
 				<hr>
 
 				<p>エクスポート <span id="length"></span></p>
@@ -533,7 +541,11 @@ div.sgdef{
 <script type="text/javascript" src="https://www.youtube.com/iframe_api"></script>
 <script type="text/javascript" src="dom.js"></script>
 <script type="text/javascript">
-	$(init);
+	if (typeof init === 'undefined') {
+		alert('Javascriptが読み込まれていません');
+	} else {
+		$(init);
+	}
 </script>
 </body>
 </html>
