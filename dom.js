@@ -82,7 +82,7 @@ function search() {
 						isMatched = false;
 						break;
 					}
-				}
+				}//j
 			} else {//or
 				isMatched = false;
 				for (var j = 0; j < sq.length; j++) {
@@ -91,7 +91,7 @@ function search() {
 						isMatched = true;
 						break;
 					}
-				}
+				}//j
 			}
 			if (isMatched){
 				count ++;
@@ -114,8 +114,8 @@ function search() {
 				mobj[genre].push(id);
 				mobj[genre].push(title);
 			}
-		}
-	}
+		}//l
+	}//i
 	var _mkeys = Object.keys(mobj);
 	if (_mkeys.length === 0) {
 		$('#sr').text('検索条件「'+sqDesc+'」に一致する動画はありませんでした。');
@@ -161,7 +161,7 @@ function search() {
 					_t = _t.replace(new RegExp(sq[j], 'gi'), function(x){
 						return '<mark>'+x+'</mark>';
 					});
-				}
+				}//j
 				span = $('<span>', {html: _t});
 			} else {
 				span = $('<span>', {text: _t});
@@ -169,8 +169,8 @@ function search() {
 			a.append(span);
 			a.appendTo(div);
 			div.appendTo('#sr');
-		}
-	}
+		}//k
+	}//i
 	$('<h4>', {
 		text: '「'+sqDesc+'」の検索結果'
 	}).append($('<small>',{
@@ -466,7 +466,7 @@ function registerEventListener(){
 							}
 						}
 					}
-					if (s2){
+					if (s2 == null){
 						var s2 = s.replace(/<[^><]+>/g, '').replace(/^\s+/, '').replace(/\s+$/, '').replace(/\n/g, '');
 						$('#title').val(s2);
 					}
@@ -654,7 +654,7 @@ function registerEventListener(){
 					search();
 				}
 			}).appendTo('#history');
-		}
+		}//i
 		$('#history').outerWidth($(this).outerWidth());
 		$('#history').css({
 			'display': 'inline-block',
@@ -761,12 +761,12 @@ function registerEventListener(){
 				});
 				tr.append(td2);
 				videos_table.append(tr);
-			}
+			}//i
 			genre_name.append(genre_count);
 			$('#ccvideos').append(genre_name);
 			ccwrapper.append(videos_table);
 			$('#ccvideos').append(ccwrapper);
-		}
+		}//j
 		$('#ccModal').modal('show');
 	});
 
@@ -983,7 +983,7 @@ function registerEventListener(){
 						videocount++;
 					}
 				}
-			}
+			}//j
 			if (videocount === 0 && genrecount === 0){
 				message('すべて登録済みの動画です', 'warning', '#prefalert');
 			} else {
@@ -1189,7 +1189,7 @@ function refresh(whatChanged){
 					}
 				}
 			}).appendTo("#left");
-		}
+		}//i
 		var g = localStorage.getItem('selectedgenre');
 		if (g){
 			$('select[role="genre"]').val(g);
@@ -1281,7 +1281,7 @@ function refresh(whatChanged){
 						text: tags[j].slice(1, -1),
 						'class': 'titletag ml-1'
 					}))
-				}
+				}//j
 			} else {
 				a.append($('<span>',{
 					text: restrLength(title, 50)
@@ -1289,7 +1289,7 @@ function refresh(whatChanged){
 			}
 			a.appendTo(div);
 			div.appendTo("#right");
-		}
+		}//i
 	}
 	//TODO : what this does?
 	if (genreChanged || videoChanged){
@@ -1299,7 +1299,9 @@ function refresh(whatChanged){
 				if (m !== lastId){
 					$('#registry').html('');
 					var already = false;
-					for (var genre in y){
+					var _keys = Object.keys(y);
+					for (var j = 0; j < _keys.length; j++) {
+						var genre = _keys[j];
 						var list = y[genre];
 						for (var i = 0; i < list.length/2; i++) {
 							var id = list[2*i];
@@ -1317,8 +1319,8 @@ function refresh(whatChanged){
 								}));
 								already = true;
 							}
-						}
-					}
+						}//i
+					}//j
 					if (already){
 						$('#registry').prepend($('<div>', {
 							'class': 'dropdown-divider'
