@@ -1257,7 +1257,6 @@ function refresh(whatChanged){
 			}//i
 		}
 	}
-	//TODO : what this does?
 	if (genreChanged || videoChanged){
 		$('#out').val(JSON.stringify(y, null, '    '));
 		localStorage.setItem('nicolist', JSON.stringify(y));
@@ -1414,6 +1413,7 @@ function rightVideoElem(id, title, genre){
 				'click': function(){
 					$('#search').val($(this).text());
 					search($(this).text());
+					$('html,body').stop().animate({scrollTop:0}, 'swing');
 				}
 			}))
 		}//j
