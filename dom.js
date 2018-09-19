@@ -1935,7 +1935,8 @@ function random(list, genre){
 	  		'class':'close',
 	  		'click': function(){
 	  			$(this).parent().fadeOut('slow', function(){
-	  				refreshStyle();$('#randomVideo').html('')
+	  				refreshStyle();
+	  				$('#randomVideo').html('');
 	  			});
 	  		}
 	  	}));
