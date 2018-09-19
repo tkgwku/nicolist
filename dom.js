@@ -111,7 +111,10 @@ function search(query) {
 						'class': 'close',
 						'aria-label': 'Close',
 						click: function(e){
-							$('#sr').fadeOut('slow', refreshStyle);
+							$('#sr').fadeOut('slow',function(){
+								refreshStyle();
+								$('#sr').html('');
+							});
 						}
 					}));
 					$('#sr').fadeIn();
@@ -1931,7 +1934,9 @@ function random(list, genre){
 	  		'type':'button',
 	  		'class':'close',
 	  		'click': function(){
-	  			$(this).parent().fadeOut('slow', function(){refreshStyle();$('#randomVideo').html('')});
+	  			$(this).parent().fadeOut('slow', function(){
+	  				refreshStyle();$('#randomVideo').html('')
+	  			});
 	  		}
 	  	}));
 	}
