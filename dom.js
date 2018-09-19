@@ -1284,71 +1284,9 @@ function refresh(whatChanged){
 			for (var i = 0; i < list.length/2; i++){
 				var id = list[2*i];
 				var title = list[2*i+1];
-				var div = $('<div>', {
-					'class': 'd-flex flex-row align-items-center'
-				});
 
-				var favIcon = createFavIcon(id, title);
+				var div = rightVideoElem(id, title, selectedGenre);
 
-				var a = $( "<a>", {
-					"href": getVideoURL(id),
-					'target': '_blank',
-					'data-genre' : selectedGenre,
-					'data-id' : id,
-					'data-title' : title,
-					'class': 'rightvideo',
-					contextmenu: function(e){
-						showMenu(e.pageX, e.pageY, $(this), 'right');
-						return false;
-					}
-				});
-
-				div.append(favIcon);
-
-				if ($('#nicolist_thumb').prop('checked')){
-					a.append(createThumbImgElem(id, false));
-				}
-				if ($('#nicolist_taggedtitle').prop('checked')){
-					var _ma = title.match(/【[^【】]+】/g);//【】
-					var _mb = title.match(/\[[^\[\]]+\]/g);//[]
-					var tags = [];
-					var converted_title = title;
-					if (_ma){
-						for (var j = 0; j < _ma.length; j++) {
-							tags.push(_ma[j]);
-						}
-						converted_title = converted_title.replace(/【[^【】]+】/g, '');
-					}
-					if (_mb){
-						for (var j = 0; j < _mb.length; j++) {
-							tags.push(_mb[j]);
-						}
-						converted_title = converted_title.replace(/\[[^\[\]]+\]/g, '');
-					}
-					converted_title = converted_title.replace(/^\s+/g, '').replace(/\s+$/g, '');
-					a.append($('<span>',{
-						text: converted_title,
-						'class': 'mr-2'
-					}));
-					if (!$('#nicolist_thumb').prop('checked')) div.addClass('mt-1');
-					a.appendTo(div);
-					for (var j = 0; j < tags.length; j++) {
-						div.append($('<span>',{
-							text: tags[j].slice(1, -1),
-							'class': 'titletag ml-1',
-							'click': function(){
-								$('#searchQuery').val($(this).text());
-								search($(this).text());
-								$('html,body').stop().animate({scrollTop:0}, 'swing');
-							}
-						}))
-					}//j
-				} else {
-					a.append($('<span>',{
-						text: title
-					}));
-					a.appendTo(div);
-				}
 				div.appendTo("#right");
 			}//i
 		}
@@ -1447,6 +1385,9 @@ function constructRightFav(){
 				if ($('#play').html() !== '') {
 					refreshController();
 				}
+				$('.favIcon').each(function(){
+					$(this).attr('src', UNSTAR_DATA_URL);
+				});
 				refresh('s');
 				localStorage.setItem('nicolist_star', JSON.stringify(starred));
 			});
@@ -1460,70 +1401,9 @@ function constructRightFav(){
 	for (var i = 0; i < list.length/2; i++){
 		var id = list[2*i];
 		var title = list[2*i+1];
-		var div = $('<div>', {
-			'class': 'd-flex flex-row align-items-center'
-		});
 
-		var favIcon = createFavIcon(id, title, true);
+		var div = rightVideoElem(id, title, '');
 
-		var a = $( "<a>", {
-			"href": getVideoURL(id),
-			'target': '_blank',
-			//'data-genre' : '',
-			'data-id' : id,
-			'data-title' : title,
-			'class': 'rightvideo',
-			contextmenu: function(e){
-				showMenu(e.pageX, e.pageY, $(this), 'right');
-				return false;
-			}
-		});
-
-		div.append(favIcon);
-
-		if ($('#nicolist_thumb').prop('checked')){
-			a.append(createThumbImgElem(id, false));
-		}
-		if ($('#nicolist_taggedtitle').prop('checked')){
-			var _ma = title.match(/【[^【】]+】/g);//【】
-			var _mb = title.match(/\[[^\[\]]+\]/g);//[]
-			var tags = [];
-			var converted_title = title;
-			if (_ma){
-				for (var j = 0; j < _ma.length; j++) {
-					tags.push(_ma[j]);
-				}
-				converted_title = converted_title.replace(/【[^【】]+】/g, '');
-			}
-			if (_mb){
-				for (var j = 0; j < _mb.length; j++) {
-					tags.push(_mb[j]);
-				}
-				converted_title = converted_title.replace(/\[[^\[\]]+\]/g, '');
-			}
-			converted_title = converted_title.replace(/^\s+/g, '').replace(/\s+$/g, '');
-			a.append($('<span>',{
-				text: converted_title,
-				'class': 'mr-2'
-			}));
-			if (!$('#nicolist_thumb').prop('checked')) div.addClass('mt-1');
-			a.appendTo(div);
-			for (var j = 0; j < tags.length; j++) {
-				div.append($('<span>',{
-					text: tags[j].slice(1, -1),
-					'class': 'titletag ml-1',
-					'click': function(){
-						$('#search').val($(this).text());
-						search($(this).text());
-					}
-				}))
-			}//j
-		} else {
-			a.append($('<span>',{
-				text: title
-			}));
-			a.appendTo(div);
-		}
 		div.appendTo('#right');
 	}//i
 }
@@ -1545,7 +1425,14 @@ function toggleFav(id, title){
 			startStarAnimation($(this));
 		});
 		if ($('#favs li').hasClass('selected')) {
-			constructRightFav();
+			var _l = $('#right a[data-id='+id+']').length;
+			if (isNullOrUndefined(_l) || _l === 0){
+				if ($('#nicolist_sort').prop('checked')){
+					rightVideoElem(id, title, '').insertAfter('#right h4');
+				} else {
+					$('#right').append(rightVideoElem(id, title, ''));
+				}
+			}
 		}
 		return true;
 	} else {
@@ -1555,6 +1442,74 @@ function toggleFav(id, title){
 		});
 		return false;
 	}
+}
+function rightVideoElem(id, title, genre){
+	var div = $('<div>', {
+		'class': 'd-flex flex-row align-items-center'
+	});
+
+	var favIcon = createFavIcon(id, title, true);
+
+	var a = $( "<a>", {
+		"href": getVideoURL(id),
+		'target': '_blank',
+		'data-genre' : genre,
+		'data-id' : id,
+		'data-title' : title,
+		'class': 'rightvideo',
+		contextmenu: function(e){
+			showMenu(e.pageX, e.pageY, $(this), 'right');
+			return false;
+		}
+	});
+
+	div.append(favIcon);
+	if (!$('#nicolist_thumb').prop('checked')) div.addClass('mt-1');
+
+	if ($('#nicolist_thumb').prop('checked')){
+		a.append(createThumbImgElem(id, false));
+	}
+	if ($('#nicolist_taggedtitle').prop('checked')){
+		var _ma = title.match(/【[^【】]+】/g);//【】
+		var _mb = title.match(/\[[^\[\]]+\]/g);//[]
+		var tags = [];
+		var converted_title = title;
+		if (_ma){
+			for (var j = 0; j < _ma.length; j++) {
+				tags.push(_ma[j]);
+			}
+			converted_title = converted_title.replace(/【[^【】]+】/g, '');
+		}
+		if (_mb){
+			for (var j = 0; j < _mb.length; j++) {
+				tags.push(_mb[j]);
+			}
+			converted_title = converted_title.replace(/\[[^\[\]]+\]/g, '');
+		}
+		converted_title = converted_title.replace(/^\s+/g, '').replace(/\s+$/g, '');
+		a.append($('<span>',{
+			text: converted_title,
+			'class': 'mr-2'
+		}));
+		a.appendTo(div);
+		for (var j = 0; j < tags.length; j++) {
+			div.append($('<span>',{
+				text: tags[j].slice(1, -1),
+				'class': 'titletag ml-1',
+				'click': function(){
+					$('#search').val($(this).text());
+					search($(this).text());
+				}
+			}))
+		}//j
+	} else {
+		a.append($('<span>',{
+			text: title
+		}));
+		a.appendTo(div);
+	}
+
+	return div;
 }
 function sizeString(byte){
     if (byte < 500){
@@ -1575,8 +1530,8 @@ function showMenu(coord_x, coord_y, cont, mode){
 	var genre = cont.attr('data-genre');
 	var title = cont.attr('data-title');
 	var url = cont.attr('href');
-	var hasurlattr = typeof url !== typeof undefined && url !== false;
-	var hasgenreattr = typeof genre !== typeof undefined && genre !== false;
+	var hasurlattr = typeof url !== typeof undefined && url !== false && url !== '';
+	var hasgenreattr = typeof genre !== typeof undefined && genre !== false && genre !== '';
 	$("#menu").children('a').each(function(i, elem){
 		var role = $(elem).attr('role');
 		if (role === 'title'){
@@ -2342,7 +2297,7 @@ function promptWinExplorer(filename, content){
 	}
 }
 function isNullOrUndefined(smthng){
-	return typeof smthng === 'undefined' || smthng === null;
+	return typeof smthng === 'undefined' || smthng == null;
 }
 function escapeHtmlSpecialChars(text) {
     return text.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;").replace(/'/g, "&#039;");
@@ -2378,21 +2333,17 @@ function startStarAnimation($elem){
 		$('#starAnime').remove();
 	});
 }
-function createFavIcon(id, title, skip_check){
-	var isStarred = true;
-	if (skip_check !== true){//accept if this flag is unset
-		var starIndex = -1;
-		for (var j = 0; j < starred.length; j+=2) {
-			var stId = starred[j];
-			if (stId === id){
-				starIndex = j;
-				break;
-			}
-		}//j
-		isStarred = starIndex !== -1;
-	}
+function createFavIcon(id, title){
+	var starIndex = -1;
+	for (var j = 0; j < starred.length; j+=2) {
+		var stId = starred[j];
+		if (stId === id){
+			starIndex = j;
+			break;
+		}
+	}//j
 
-	var favIcon = starImg(isStarred);
+	var favIcon = starImg(starIndex !== -1);
 
 	favIcon.addClass('mr-2 pointer').attr({
 		'title': 'お気に入り',
