@@ -270,16 +270,23 @@ function sub(){
 			y[genre].push(id);
 			y[genre].push(title);
 			refresh('v');//video change
-			messageUndoable('動画「'+restrBytesize(title, 50)+'」を追加しました', 'success');
 			$('#url').val("");
 			$('#title').val("");
 			$('#url, #title').removeClass('is-valid');
-			$('#registry').fadeOut('slow', function(){$(this).html('')});
+			if (!$('#registry').hasClass('silent')){
+				$('#registry').addClass('silent');
+			}
+			$('#registry').html('');
 			lastId = '';
 			dismissAllWarningAlerts();
+			if ($('#nicolist_stayopen').prop('checked')){
+				messageUndoable('動画「'+restrBytesize(title, 50)+'」を追加しました', 'success', '#alert-addvideo');
+			} else {
+				messageUndoable('動画「'+restrBytesize(title, 50)+'」を追加しました', 'success',);
+				$('#addVideoModal').modal('hide');
+			}
 		} else {
-			message('すでに登録されています');
-			$('#registry').fadeOut();
+			message('すでに登録されています', 'warning', '#alert-addvideo');
 		}
 	}
 }
@@ -310,7 +317,9 @@ function checkURLValidity(){
 		$('#url').addClass('is-valid');
 		if (m !== lastId){
 			$('#registry').html('');
-			var already = $('<div>');
+			var already = $('<ul>', {
+				'class': 'list-unstyled'
+			});
 			var _keys = Object.keys(y);
 			for (var j = 0; j < _keys.length; j++) {
 				var genre = _keys[j];
@@ -320,48 +329,37 @@ function checkURLValidity(){
 					var title = list[2*i+1];
 					if (id === m){
 						already.append(
-							$('<div>', {
-								text: genre,
-								'class': 'dropdown-item pointer',
-								'data-genre': genre,
-								click: function(){
-									setSelGen($(this).attr('data-genre'));
-									refresh('s');
-									$('#registry').fadeOut();
-								}
+							$('<li>', {
+								text: genre
 							}).append($('<span>', {
-								text: '('+restrBytesize(title, 50)+')',
+								text: '('+restrBytesize(title, 80)+')',
 								'class': 'ml-2 text-muted' 
 							}))
 						);
 					}
 				}
 			}
-			createThumbImgElem(m, false).addClass('ml-2').appendTo('#registry');
+			var div = $('<div>', {
+				'class': 'd-flex align-items-center flex-row'
+			});
+			div.append(createThumbImgElem(m, false));
 			if (already.html() !== ''){
-				$('#registry').append($('<div>', {
-					'class': 'dropdown-divider'
+				$('#registry').prepend($('<div>',{
+					text: 'この動画はすでに以下のジャンルに登録されています:',
+					'class': 'mb-2 text-muted'
 				}));
-				$('#registry').append($('<div>', {
-					text: 'この動画は以下のジャンルに登録されています:',
-					'class': 'bold dropdown-item'
+				div.append(already);
+				div.appendTo('#registry');
+			} else {
+				div.append($('<span>',{
+					text: 'サムネイルはこのように表示されます',
+					'class': 'text-muted'
 				}));
-				$('#registry').append($('<div>', {
-					'class': 'dropdown-divider'
-				}));
-				$('#registry').append(already);
-				$('#registry').append($('<div>', {
-					'class': 'dropdown-divider'
-				}));
-				$('#registry').append($('<div>', {
-					text: '閉じる',
-					click: function(){
-						$('#registry').fadeOut();
-					},
-					'class': 'dropdown-item pointer'
-				}));
+				div.appendTo('#registry');
 			}
-			showAlready();
+			if ($('#registry').hasClass('silent')) {
+				$('#registry').removeClass('silent');
+			}
 			lastId = m;
 		}
 		return true;
@@ -370,17 +368,11 @@ function checkURLValidity(){
 			$('#url').removeClass('is-valid');
 		}
 		$('#url').addClass('is-invalid');
+		if (!$('#registry').hasClass('silent')) {
+			$('#registry').addClass('silent');
+		}
 		return false;
 	}
-}
-function showAlready(){
-	//TODO add configuration which disables 'already-registered' popdown
-	$('#registry').css({
-		'display': 'inline-block',
-		'top': $('#url').offset().top + $('#url').outerHeight(),
-		'left': $('#url').offset().left,
-		'min-width': $('#url').outerWidth()
-	});
 }
 function checkGenreValidity(){
 	if ($('#genre').val() === ''){
@@ -436,14 +428,7 @@ function registerEventListener(){
 			window.localStorage.setItem(id, $(this).prop('checked'));
 		}
 	});
-	$('#body').on('dragenter', function (e) {
-		e.stopPropagation();
-		e.preventDefault();
-		if ($('html,body').scrollTop() > 100){
-			$('html,body').stop().animate({scrollTop:0}, 'swing');
-		}
-	});
-	$('#body').on('dragover', function (e) {
+	$('#addVideoModal').on('dragover', function (e) {
 		e.stopPropagation();
 		e.preventDefault();
 		if (e.pageX > $('body').outerWidth(true)/2) {
@@ -454,21 +439,18 @@ function registerEventListener(){
 			if ($('#title').hasClass('dragging')) $('#title').removeClass('dragging');
 		}
 	});
-	$('#body').on('dragleave', function (e){
+	$('#addVideoModal').on('dragleave', function (e){
 		e.stopPropagation();
 		e.preventDefault();
 		if ($('#url, #title').hasClass('dragging')){
 			$('#url, #title').removeClass('dragging');
 		}
 	});
-	$('#body').on('drop', function (e){
+	$('#addVideoModal').on('drop', function (e){
 		e.preventDefault();
 		var sel = '#url';
-		if (e.pageX > $('body').outerWidth(true)/2) {
+		if (e.pageX > $('#addVideoModal').outerWidth(true)/2) {
 			sel = '#title';
-			if ($('#registry').css('display') !== 'none'){
-				$('#registry').css('display', 'none');
-			}
 		}
 		var data = e.originalEvent.dataTransfer.items;
 		for (var i = 0; i < data.length; i += 1) {
@@ -503,25 +485,9 @@ function registerEventListener(){
 			}
 		} 
 		$(sel).removeClass('dragging');
-		$('html,body').stop();
 	});
 	$('#url, #title').on('input', function(e){
 		checkValidity();
-	});
-	$('#genre').on('mousedown', function(){
-		if ($('#registry').css('display') !== 'none'){
-			$('#registry').css('display', 'none');
-		}
-	});
-	$('#url').on('click', function(){
-		if ($(this).hasClass('is-valid') && $('#registry').css('display') === 'none' && $('#registry').html() !== ''){
-			showAlready();
-		}
-	});
-	$('#title').on('click', function(){
-		if ($('#registry').css('display') !== 'none'){
-			$('#registry').css('display', 'none');
-		}
 	});
 	$('body').on('click', function(e){
 		if (showingMenu){
@@ -1293,57 +1259,6 @@ function refresh(whatChanged){
 	}
 	//TODO : what this does?
 	if (genreChanged || videoChanged){
-		if ($('#registry').html() !== ''){
-			var m = videoIdMatch($('#url').val());
-			if (m){
-				if (m !== lastId){
-					$('#registry').html('');
-					var already = false;
-					var _keys = Object.keys(y);
-					for (var j = 0; j < _keys.length; j++) {
-						var genre = _keys[j];
-						var list = y[genre];
-						for (var i = 0; i < list.length/2; i++) {
-							var id = list[2*i];
-							var title = list[2*i+1];
-							if (id === m){
-								$('#registry').append($('<div>', {
-									text: genre+'<span class="ml-2 text-muted">('+restrLength(title, 50)+')</span>',
-									'class': 'dropdown-item pointer',
-									'data-genre': genre,
-									click: function(){
-										setSelGen($(this).attr('data-genre'));
-										refresh('s');
-										$('#registry').fadeOut();
-									}
-								}));
-								already = true;
-							}
-						}//i
-					}//j
-					if (already){
-						$('#registry').prepend($('<div>', {
-							'class': 'dropdown-divider'
-						}));
-						$('#registry').prepend($('<div>', {
-							text: 'この動画は以下のジャンルに登録されています:',
-							'class': 'bold dropdown-item'
-						}))
-						$('#registry').append($('<div>', {
-							'class': 'dropdown-divider'
-						}));
-						$('#registry').append($('<div>', {
-							text: '閉じる',
-							click: function(){
-								$('#registry').fadeOut();
-							},
-							'class': 'dropdown-item pointer'
-						}));
-					}
-					lastId = m;
-				}
-			}
-		}
 		$('#out').val(JSON.stringify(y, null, '    '));
 		localStorage.setItem('nicolist', JSON.stringify(y));
 		$('#length').text('('+sizeString(bytesize(JSON.stringify(y)))+')');
@@ -1952,13 +1867,6 @@ function refreshStyle(){
 			'top': $('#searchQuery').offset().top + $('#searchQuery').outerHeight(),
 			'left': $('#searchQuery').offset().left,
 			'min-width': $('#searchQuery').outerWidth()
-		});
-	}
-	if ($('#registry').css('display') !== 'none'){
-		$('#registry').css({
-			'top': $('#url').offset().top + $('#url').outerHeight(),
-			'left': $('#url').offset().left,
-			'min-width': $('#url').outerWidth()
 		});
 	}
 }
