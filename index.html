@@ -130,6 +130,18 @@ div.sgdef{
 .disabled #favlen{background-color: #bbb!important}
 .disabled .list-group-item:hover{background-color: #fafafa!important}
 #starAnime {position: absolute;top: 0;left: 0;display: inline-block;}
+#right {margin:0 1em}
+.container{max-width: 1140px;margin:.8em auto}
+@media (min-width: 576px) {
+	#right {
+		margin: 0;
+	}
+}
+@media (min-width: 650px) {
+  .modal-lg2 {
+    max-width: 600px;
+  }
+}
 </style>
 </head>
 
@@ -221,7 +233,7 @@ div.sgdef{
 
 <!-- CREATE COPY MODAL -->
 <div class="modal fade" id="ccModal" tabindex="-1" role="dialog" aria-hidden="true">
-	<div class="modal-dialog" role="document">
+	<div class="modal-dialog modal-lg2" role="document">
 		<div class="modal-content">
 			<div class="modal-header">
 				<h5 class="modal-title">COPY VIDEOS</h5>
@@ -358,7 +370,7 @@ div.sgdef{
 
 <!-- PREFERENCE MODAL -->
 <div class="modal fade" id="prefModal" tabindex="-1" role="dialog" aria-labelledby="prefModalLabel" aria-hidden="true">
-	<div class="modal-dialog" role="document">
+	<div class="modal-dialog modal-lg2" role="document">
 		<div class="modal-content">
 			<div class="modal-header">
 				<h5 class="modal-title">PREFERENCES</h5>

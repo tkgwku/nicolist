@@ -57,7 +57,7 @@ function ccnew(){
 	}
 }
 function search(query) {
-	var sq = query.replace(/\s/g, '$').replace(/[\-^\\\[;:\],./=~|`{+\*}<>?_!"#$%&'()"！”＃＄％＆’（）＝～｜｀｛＋＊｝＜＞？＿【】『』「」［］〈〉《》ー＾￥；：」、。・／＼]/g, '$').replace(/\$+/g, '$').replace(/\$$|^\$/g, '').split('$');
+	var sq = query.replace(/\s/g, '$').replace(/[\-^\\\[;:\],./=~|`{+\*}<>?_!"#$%&'()"！”＃＄％＆’（）＝～｜｀｛＋＊｝＜＞？＿【】『』「」［］〈〉《》＾￥；：」、。・／＼]/g, '$').replace(/\$+/g, '$').replace(/\$$|^\$/g, '').split('$');
 	if (sq[0] === '') {
 		message('検索クエリが空です。');
 		return;
@@ -1413,7 +1413,10 @@ function rightVideoElem(id, title, genre){
 				'click': function(){
 					$('#search').val($(this).text());
 					search($(this).text());
-					$('html,body').stop().animate({scrollTop:0}, 'swing');
+					var _s = $('#sr').offset().top-16;
+					if (_s < $('html,body').scrollTop()){
+						$('html,body').stop().animate({scrollTop:_s}, 'swing');
+					}
 				}
 			}))
 		}//j
