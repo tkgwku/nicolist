@@ -5,8 +5,8 @@
 公式のマイリストではできないマイリスト内検索など、面白い機能や便利なツールを自由に追加できる(ようにしていきたい)  
 
 ### デモページ
-[https://tkgwku.github.io/n/index.html](https://tkgwku.github.io/n/index.html)
-[以前のページ](http://jar.oiran.org/app/nicolist/)
+[https://tkgwku.github.io/n/index.html](https://tkgwku.github.io/n/index.html)   
+[以前のページ](http://jar.oiran.org/app/nicolist/)   
 Downloadし、index.htmlを開くのも可能だが、ページ内で動画を見ることができない
 
 ### 基本的な使い方
@@ -65,11 +65,14 @@ Downloadし、index.htmlを開くのも可能だが、ページ内で動画を�
 (その他)
 * 基本操作のUNDOやREDO (UNDO=もとに戻す / REDO=もとに戻したのをやっぱりもう一回やる)
 
+### これから消えるかもしれない現仕様
+* 再生専用ページのプレイリストの内容はURLに載せているのでブックマークに登録して保存できる
+
 ### 今後追加するかもしれない機能
 * 動画を並び替え
 * ジャンルの名前を変更
 * Windows Explorerのようなリネーム・選択機能
-* プレイリストを保存
+* プレイリストUIの改善、プレイリストの保存
 * PythonライブラリのEELを活用し、デスクトップでホットキーを監視しながら連続再生
 * 名前順で動画を並び替え
 * 検索結果の数が多い場合折りたたむようにする
