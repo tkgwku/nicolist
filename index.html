@@ -163,7 +163,7 @@ div.sgdef{
 			<button class="btn btn-outline-success mb-1 mt-1" type="submit" id="search">検索</button>
 			<button class="btn btn-outline-info mb-1 mt-1" type="submit" onclick="randomFromAll()">全体からランダム</button>
 			<button class="btn btn-outline-info mb-1 mt-1" type="submit" onclick="randomFromRight()">表示内からランダム</button>
-			<button class="btn btn-outline-secondary mb-1 mt-1" type="submit" data-toggle="modal" data-target="#prefModal">設定</button>
+			<button class="btn btn-outline-secondary mb-1 mt-1" type="submit" id="openPref">設定</button>
 			<button class="btn btn-outline-secondary mb-1 mt-1" type="submit" id="sgopen">ジャンルを並び替え</button>
 		</div>
 
@@ -197,12 +197,25 @@ div.sgdef{
 			<p>HTML5, Javascript, LocalStorageを使用しています。一部のブラウザでは動作しない可能性があります。<br>&copy; 2017 fine_diary, all rights reserved. Powered by <a href="https://jquery.com/" target="_blank">jQuery</a>, <a href="https://getbootstrap.com/" target="_blank">bootstrap</a>, <a href="http://rubaxa.github.io/Sortable/" target="_blank">Sortable.js</a></p>
 		</footer>
 	</div>
+	<!-- container ends -->
 
 	<!-- SEARCH HISTORY -->
 	<div class="dropdown-menu" id="history"></div>
 	<!-- SEARCH HISTORY ends -->
+
+	<!-- VIDEO LINK CONTEXT MENU -->
+	<div class="dropdown-menu" id="menu">
+		<a class="dropdown-item" role="title"></a>
+		<div class="dropdown-divider"></div>
+		<a class="dropdown-item pointer" role="play">このページで視聴</a>
+		<a class="dropdown-item pointer" role="playall">ここから連続再生</a>
+		<a class="dropdown-item pointer" role="playall-random">ここからランダム連続再生</a>
+		<a class="dropdown-item pointer" role="edit">動画情報の変更</a>
+		<a class="dropdown-item pointer" role="remove">削除する</a>
+	</div>
+	<!-- VIDEO LINK CONTEXT MENU ends -->
 </div>
-<!-- container ends -->
+<!-- #body ends -->
 
 <!-- ADD GENRE MODAL -->
 <div class="modal fade" id="genreModal" tabindex="-1" role="dialog" aria-hidden="true">
@@ -337,7 +350,7 @@ div.sgdef{
 			</div>
 			<div class="modal-footer">
 				<span id="confOK">はい</span>
-				<button type="button" class="btn btn-secondary" data-dismiss="modal">キャンセル</button>
+				<span id="confDeny">キャンセル</span>
 			</div>
 		</div>
 	</div>
@@ -474,6 +487,16 @@ div.sgdef{
 					</label>
 				</div>
 
+				<div>
+					・動画リンクをクリックしたときの動作:
+					<select class="custom-select ml-2" id="click_action">
+						<option value="official" selected="">新しいタブで公式リンクを開く</option>
+						<option value="thispage">このページで視聴</option>
+						<option value="cont">ここから連続再生</option>
+						<option value="randomcont">ここからランダム連続再生</option>
+					</select>
+				</div>
+
 				<hr>
 
 				<h5 class="mt-4 mb-3">検索</h5>
@@ -502,6 +525,12 @@ div.sgdef{
 					</label>
 				</div>
 				
+				<div class="mb-1 form-inline">
+					・区切り文字として認識する文字:
+					<input type="text" name="" id="nicolist_separator" class="form-control ml-2">
+					<button type="button" class="btn btn-outline-danger btn-sm" id="reset_sep">リセット</button>
+				</div>
+
 				<hr>
 
 				<p>エクスポート <span id="length"></span></p>
@@ -573,18 +602,6 @@ div.sgdef{
 	</div>
 </div>
 <!-- ADD VIDEO MODAL ends -->
-
-<!-- VIDEO LINK CONTEXT MENU -->
-<div class="dropdown-menu" id="menu">
-	<a class="dropdown-item" role="title"></a>
-	<div class="dropdown-divider"></div>
-	<a class="dropdown-item pointer" role="play">このページで視聴</a>
-	<a class="dropdown-item pointer" role="playall">ここから連続再生</a>
-	<a class="dropdown-item pointer" role="playall-random">ここからランダム連続再生</a>
-	<a class="dropdown-item pointer" role="edit">動画情報の変更</a>
-	<a class="dropdown-item pointer" role="remove">削除する</a>
-</div>
-<!-- VIDEO LINK CONTEXT MENU ends -->
 
 <!-- jQuery -->
 <script src="https://code.jquery.com/jquery-3.2.1.min.js"></script>

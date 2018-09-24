@@ -6,6 +6,9 @@ const STAR_DATA_URL = 'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABAAAAAQCAY
 const UNSTAR_DATA_URL = 'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABAAAAAQCAYAAAAf8/9hAAAACXBIWXMAAAsTAAALEwEAmpwYAAABl0lEQVQ4jZ1RMWsUQRh9726JP8DO4q4y+AtU0IBNSKloEWKIMLMDh4VNiPWyIGlSSDq5Y7/JFVG5QgVBEEVBiDYKQgpJeX0g1TW77HwpvCOXc29FXzXzvfe9730zQA2SJGnU8QBQK2i1WrsiktRpojqS5BUA4b8SZFl2jeQBgKNut7v4zwYkN4qieK6q+1EUPahLUQkR+Vx1nkUkIpsAtgB8BXABAFU1ArA3leaViLwjWQJQVc0BrKiq4XjCEwCXrLX2b8kGg0FzNBrtl2X5wzm3wwnhvb+uqk9DCI+cc9+rmnu93tVms7lL8qEx5icAcFqQJMlCu91+CcBba9/OvMkqyXt5nq93Op1iUj/3C2ma5gAOQwjHFQEKAJ+mm/8wGGPJOfdtPPW29/4WAAyHwzchhDuz4nMGInKZ5C8A8N4/I3kTwEaWZdtpmgaSJ/1+/+JcA1VdU9UD7/0XVX1tjHlsjIkBHIrIB1X9WJbl2lyDRqNxn6TJ8/yutfb9pB7H8YuiKGKSDsB6xdq/4b2/MZc8W3N5+n4KbVypv8PDMtkAAAAASUVORK5CYII=';
 const LARGE_STAR_DATA_URL = 'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAACAAAAAgCAYAAABzenr0AAAACXBIWXMAAAsTAAALEwEAmpwYAAADl0lEQVRYhdWXXWgcZRSGn/PNzKaxsWk20WJWK7alYOmPf+CV4KVgSEqapJvgDyiIYG+8EMSb6IV45Z0WCr0QQSyJ2WwIothS9bIiSFNIrW2jMcEqFetfzf7MnONFdpOJ3U02u5riCx8z8/Gd932/98wMM/B/xqfD+DfVgE2QibK83giHq1t8GF+bedwFDN4UAxyg26VI0ME9+RMc2HgDQppOIAV+QLpunnrw5XMEdpKcGmYhFk3y3YYasAy9dg4zQ81QO4PlT/BAPVz1tUAYJBW7TkEi0djNWDPsGIF9Ql4tlkCERZPM1cO37gTCdrrpJCFgMRZz27izMMpD/7kB35FeEX8ZKQj89bfBt2MEegdvOiNUxWGIA0FwgMNwKjgniCrQQpe1gkTEM8BuAwl42jK0KngIUt6dsniuhjgHJe6C9PCMANgE79HEEPuB4B8WpaxQOjSDNMWlY/gLoRCrEVZm7IDrwFmICrzi9/BGeSmWpY9NvMODbKYjJqAl8cqStcGVxjyiZ7niChyUXr6I72/RxBi3q8cHbgeP2F4QxRoSLvMqIlPAHGOEPCkDLKxekOElO43Zr5iFqBVXjiiPRrnSyKNWuHGNFVELUfsFs5MUbZxnK2lJpUmA/Aj7/E2Muz3s1O2YFcFCIASLt6WckAPxQQKQBDgPmEH4mvPk6JYBLq3LAIAN47iPty3J89FuzBy13QsR+DOIXeWo18uR1apWNbBkZIwXtJO3wh0YGpuvROQgmEbkGkPSy/trcdf2InLcrVsWozdbHvE2LM0raAtE4NVGXQt80rqV2uI30HbwHEP/ioH8KPdrK3eZqyAvVGyiNoPewmP2LpsbNpAIOKxJbti9GBJcRvx5pIIJszYkaqGvYQPqcVjb4srgFhB/iqL9xBPePK8F04iEMSPLbVjzU231x3CcfZpkqri79EYU8H5E/DnOU6BL+pgBKI7yqGtmTHeSjLYurZXgHPbzN2zZdoQ/60pAjbQmS04VCS4g/izHX+1mb1kcIOjnsz9+Y5d/gdP+7HIOlkTaOzm0VgrVE5jkYv4HrHAJiz5iwTL0r1mT5WU9heVnscK3mGX5uC7x3Ah7os+x4ldYNMGUjbC91trCKA/bJFeK01h0Crt6nFurra3agqYmBuV3cLMc9XrYLwN8X6uBRD9nuMYud5EPJQdtHdWfhqo/l5FQ9JRD7iCZWoXjkKe4DnSFWV4U4d56ODYEfwM1wpRyzU0yVAAAAABJRU5ErkJggg==';
 
+const SEP_DEF_VAL = ' 　+';
+const IGN_DEF_VAL = '.';
+
 var y = {"とりあえず":[]};
 var prevy = {"とりあえず":[]};
 var searchHistory = [];
@@ -56,14 +59,31 @@ function ccnew(){
 		$('#createcopy').text('移動');
 	}
 }
+function escapeREInsideBracket(str){
+	return str.replace(/[\[\]\-\\\*\^]/g, function(x){
+		return '\\' + x;
+	})
+}
 function search(query) {
-	var sq = query.replace(/\s/g, '$').replace(/[\-^\\\[;:\],./=~|`{+\*}<>?_!"#$%&'()"！”＃＄％＆’（）＝～｜｀｛＋＊｝＜＞？＿【】『』「」［］〈〉《》＾￥；：」、。・／＼]/g, '$').replace(/\$+/g, '$').replace(/\$$|^\$/g, '').split('$');
+	var separator = escapeREInsideBracket($('#nicolist_separator').val());
+	var sq = query.replace(new RegExp('['+separator+']'), '$').replace(/\$+/g, '$').replace(/\$$|^\$/g, '').split('$');
 	if (sq[0] === '') {
 		message('検索クエリが空です。');
 		return;
 	}
 	sqDesc = sq.join('」+「');
 	$('#sr').html('');
+	$('#sr').append($('<button>', {
+		html: '<span>&times;</span>',
+		'class': 'close',
+		'aria-label': 'Close',
+		click: function(e){
+			$('#sr').fadeOut('slow', function(){
+				refreshStyle();
+				$('#sr').html('');
+			});
+		}
+	}));
 	pushHistory(query);
 	var count = 0;
 	var mobj = {};
@@ -105,17 +125,8 @@ function search(query) {
 			if (isMatched){
 				count ++;
 				if (count > maxsearchcount){
-					$('#sr').text('検索条件「'+sqDesc+'」に一致する動画が多すぎます!');
-					$('#sr').append($('<button>', {
-						html: '<span>&times;</span>',
-						'class': 'close',
-						'aria-label': 'Close',
-						click: function(e){
-							$('#sr').fadeOut('slow',function(){
-								refreshStyle();
-								$('#sr').html('');
-							});
-						}
+					$('#sr').append($('<span>', {
+						text: '検索条件「'+sqDesc+'」に一致する動画が多すぎます'
 					}));
 					$('#sr').fadeIn();
 					return;
@@ -130,18 +141,18 @@ function search(query) {
 	}//i
 	var _mkeys = Object.keys(mobj);
 	if (_mkeys.length === 0) {
-		$('#sr').text('検索条件「'+sqDesc+'」に一致する動画はありませんでした。');
-		$('#sr').append($('<button>', {
-			html: '<span>&times;</span>',
-			'class': 'close',
-			'aria-label': 'Close',
-			click: function(e){
-				$('#sr').fadeOut('slow', refreshStyle);
-			}
+		$('#sr').append($('<span>', {
+			text: '検索条件「'+sqDesc+'」に一致する動画はありませんでした'
 		}));
 		$('#sr').fadeIn();
 		return;
 	}
+	$('<h4>', {
+		text: '「'+sqDesc+'」の検索結果'
+	}).append($('<small>',{
+		text: '('+count+'件の一致)',
+		'class': 'text-muted ml-2'
+	})).appendTo('#sr');
 	for (var i = 0; i < _mkeys.length; i++) {
 		var _g = _mkeys[i];
 		var _l = mobj[_g];
@@ -168,6 +179,9 @@ function search(query) {
 				contextmenu: function(e){
 					showMenu(e.pageX, e.pageY, $(this), 'search');
 					return false;
+				},
+				'click': function(e){
+					return openVideo(_id, _t, _g, 'search');
 				}
 			});
 			if ($('#nicolist_thumb_res').prop('checked')){
@@ -190,20 +204,6 @@ function search(query) {
 			div.appendTo('#sr');
 		}//k
 	}//i
-	$('<h4>', {
-		text: '「'+sqDesc+'」の検索結果'
-	}).append($('<small>',{
-		text: '('+count+'件の一致)',
-		'class': 'text-muted ml-2'
-	})).prependTo('#sr');
-	$('#sr').prepend($('<button>', {
-		html: '<span>&times;</span>',
-		'class': 'close',
-		'aria-label': 'Close',
-		click: function(e){
-			$('#sr').fadeOut('slow', refreshStyle);
-		}
-	}));
 	$('#sr').fadeIn();
 	dismissAllWarningAlerts();
 }
@@ -428,6 +428,22 @@ function registerEventListener(){
 			window.localStorage.setItem(id, $(this).prop('checked'));
 		}
 	});
+	$('#click_action').on('change', function(){
+		localStorage.setItem('nicolist_click_action', $(this).val());
+	});
+	$('#openPref').on('click', function(){
+		$('#nicolist_separator').removeClass('is-valid');
+		$('#prefModal').modal('show');
+	});
+	$('#reset_sep').on('click', function(){
+		$('#nicolist_separator').val(SEP_DEF_VAL);
+		localStorage.setItem('nicolist_separator', $('#nicolist_separator').val());
+		$('#nicolist_separator').addClass('is-valid');
+	});
+	$('#nicolist_separator').on('input', function(){
+		localStorage.setItem('nicolist_separator', $('#nicolist_separator').val());
+		$('#nicolist_separator').addClass('is-valid');
+	});
 	$('#addVideoModal').on('dragover', function (e) {
 		e.stopPropagation();
 		e.preventDefault();
@@ -562,10 +578,10 @@ function registerEventListener(){
 			tr1.append($('<td>', {text: 'タイトル: '}));
 			var td1 = $('<td>');
 			td1.append($('<strong>', {text: title}));
-			if (oldtitle==title) td1.append($('<span>', {text: ' (変更なし)'}))
+			if (oldtitle===title) td1.append($('<span>', {text: ' (変更なし)'}))
 				td1.appendTo(tr1);
 			tr1.appendTo(table);
-			if (oldtitle!=title){
+			if (oldtitle!==title){
 				var tr2 = $('<tr>', {'class': 'gray'});
 				tr2.append($('<td>', {text: '変更前: '}));
 				tr2.append($('<td>', {text: oldtitle}))
@@ -575,10 +591,10 @@ function registerEventListener(){
 			tr3.append($('<td>', {text: 'ジャンル: ','class':'confirmedit'}));
 			var td2 = $('<td>',{'class':'confirmedit'});
 			td2.append($('<strong>', {text: genre}));
-			if (oldgenre==genre) td2.append($('<span>', {text: ' (変更なし)'}))
+			if (oldgenre===genre) td2.append($('<span>', {text: ' (変更なし)'}))
 				td2.appendTo(tr3);
 			tr3.appendTo(table);
-			if (oldgenre!=genre){
+			if (oldgenre!==genre){
 				var tr4 = $('<tr>', {'class': 'gray'});
 				tr4.append($('<td>', {text: '変更前: '}));
 				tr4.append($('<td>', {text: oldgenre}))
@@ -1051,6 +1067,18 @@ function init(){
 		}
 	});
 
+	var sepls = localStorage.getItem('nicolist_separator');
+	if (sepls) {
+		$('#nicolist_separator').val(sepls);
+	} else {
+		$('#nicolist_separator').val(SEP_DEF_VAL);
+	}
+
+	var cals = localStorage.getItem('nicolist_click_action');
+	if (cals && cals !== ''){
+		$('#click_action').val(cals);
+	}
+
 	var tabs = localStorage.getItem('_nicolistTabCount');
 	if (tabs){
 		tabs = int(tabs);
@@ -1371,9 +1399,12 @@ function rightVideoElem(id, title, genre){
 		'data-id' : id,
 		'data-title' : title,
 		'class': 'rightvideo',
-		contextmenu: function(e){
+		'contextmenu': function(e){
 			showMenu(e.pageX, e.pageY, $(this), 'right');
 			return false;
+		},
+		'click': function(e){
+			return openVideo(id, title, genre, 'right');
 		}
 	});
 
@@ -1428,6 +1459,67 @@ function rightVideoElem(id, title, genre){
 	}
 
 	return div;
+}
+function openVideo(id, title, genre, mode){
+	var caval = $('#click_action').val();
+	if (caval === 'thispage'){
+		$('#play').html('');
+		playindex = 0;
+		playlist = [id];
+		playlistTitleMap = {};
+		playlistTitleMap[id] = title;
+		if (islocal) {
+			window.open(domain+'/player.html?pl='+escape(JSON.stringify(playlist))+'&i='+playindex);
+		} else {
+			createEmbedElem();
+			refreshController();
+		}
+		return false;
+	} else if (caval === 'cont' || caval === 'randomcont'){
+		$('#play').html('');
+		if (mode === 'right'){
+			playlist = [];
+			playlistTitleMap = {};
+			$('#right a[data-id]').each(function(_i, elem2){
+				var rvid = $(elem2).attr('data-id');
+				playlist.push(rvid);
+				playlistTitleMap[rvid] = $(elem2).attr('data-title');
+			});
+		} else if (mode === 'random'){
+			playlist = [];
+			playlistTitleMap = {};
+			$('#randomVideo a[data-id]').each(function(_i, elem2){
+				var rvid = $(elem2).attr('data-id');
+				playlist.push(rvid);
+				playlistTitleMap[rvid] = $(elem2).attr('data-title');
+			});
+		} else if (mode === 'search'){
+			playlist = [];
+			playlistTitleMap = {};
+			$('#sr a[data-id]').each(function(_i, elem2){
+				var svid = $(elem2).attr('data-id');
+				playlist.push(svid);
+				playlistTitleMap[svid] = $(elem2).attr('data-title');
+			});
+		} else {
+			//wont happen
+			return true;
+		}
+		if (caval === 'randomcont'){
+			playlist = randomize(playlist, id);
+		}
+		playindex = $.inArray(id, playlist);
+		if (playindex === -1) playindex = 0;
+		if (islocal) {
+			window.open(domain+'/player.html?pl='+escape(JSON.stringify(playlist))+'&i='+playindex);
+		} else {
+			createEmbedElem();
+			refreshController();
+		}
+		$('html,body').stop().animate({scrollTop:0}, 'swing');
+		return false;
+	}
+	return true;
 }
 function sizeString(byte){
     if (byte < 500){
@@ -1756,7 +1848,7 @@ function confAvoidable(mes, func){
 		}
 	}
 }
-function confirm2(mesElem, func){
+function confirm2(mesElem, func, ondeny){
 	$('#confDialog').html('');
 	$('#confDialog').append(mesElem);
 	$('#confOK').html('').append($('<button>', {
@@ -1765,6 +1857,17 @@ function confirm2(mesElem, func){
 		click: func,
 		'data-dismiss': 'modal'
 	}));
+	var cb = $('<button>', {
+		text: 'キャンセル',
+		'class': 'btn btn-secondary',
+		'data-dismiss': 'modal'
+	});
+	if (!isNullOrUndefined(ondeny)){
+		cb.on('click', function(){
+			ondeny();
+		});
+	}
+	$('#confDeny').html('').append(cb);
 	$('#confModal').modal('show');
 }
 function pushPrev(){
@@ -1823,6 +1926,9 @@ function random(list, genre){
 		contextmenu: function(e){
 			showMenu(e.pageX, e.pageY, $(this), 'random');
 			return false;
+		},
+		'click': function(e){
+			return openVideo(id, title, genre, 'random');
 		}
 	});
 	
@@ -2036,7 +2142,7 @@ function addToDeletedVideoList(id){
 function videoSize(){
 	var w = $('#play').outerWidth();
 	var h = Math.ceil(w * 9 / 16);
-	if (w < 640 || $('#nicolist_cinematic').prop('checked')){
+	if (w <= 650 || $('#nicolist_cinematic').prop('checked')){
 		return [w, h];
 	} else {
 		return [640, 360];
