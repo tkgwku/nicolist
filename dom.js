@@ -9,6 +9,8 @@ const LARGE_STAR_DATA_URL = 'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAACAAA
 const SEP_DEF_VAL = ' 　+';
 const IGN_DEF_VAL = '.';
 
+const debug = false;
+
 var y = {"とりあえず":[]};
 var prevy = {"とりあえず":[]};
 var searchHistory = [];
@@ -17,7 +19,7 @@ var showingMenu = false;
 var playlist = [];
 var playlistTitleMap = {};
 var playindex = -1;
-var islocal = window.location.protocol === 'file:';
+var islocal = !debug && window.location.protocol === 'file:';
 var deletedVideoArray = [];
 var volumemap = {};
 var starred = [];
@@ -759,7 +761,6 @@ function registerEventListener(){
 		}//j
 		$('#ccModal').modal('show');
 	});
-
 	$('#pcclose').on('click', function(){
 		$('#play').html('');
 		$('#pcclose').addClass('silent');
@@ -790,13 +791,6 @@ function registerEventListener(){
 		autoplay = true;
 		previous();
 	});
-	$('#pcfav').on('click', function(){
-		toggleFav(playlist[playindex], playlistTitleMap[playlist[playindex]]);
-		refreshController();
-		refreshFavsLeft();
-		localStorage.setItem('nicolist_star', JSON.stringify(starred));
-	});
-
 	$('#sgopen').on('click', function(){
 		$('#sggenre').html('');
 		var gs = Object.keys(y);
@@ -1167,7 +1161,15 @@ function init(){
 			message(e, 'danger');
 		}
 	}
+	registerTooltip($('#controller span[title]'));
 	refresh('vgs');
+}
+function registerTooltip($elem){
+	$elem.tooltip({
+		'placement': 'bottom',
+		'animation': false,
+		'template': '<div class="tooltip mt-2" role="tooltip"><div class="arrow"></div><div class="tooltip-inner"></div></div>'
+	});
 }
 function unload(){
 	var tabs = int(localStorage.getItem('_nicolistTabCount'));
@@ -1339,7 +1341,6 @@ function toggleFav(id, title){
 			break;
 		}
 	}
-
 	if (starIndex === -1){
 		starred.push(id);
 		starred.push(title);
@@ -1370,9 +1371,7 @@ function rightVideoElem(id, title, genre){
 	var div = $('<div>', {
 		'class': 'd-flex flex-row align-items-center'
 	});
-
 	var favIcon = createFavIcon(id, title, true);
-
 	var a = $( "<a>", {
 		"href": getVideoURL(id),
 		'target': '_blank',
@@ -1388,10 +1387,10 @@ function rightVideoElem(id, title, genre){
 			return openVideo($(this), 'right');
 		}
 	});
-
 	div.append(favIcon);
-	if (!$('#nicolist_thumb').prop('checked')) div.addClass('mt-1');
-
+	if (!$('#nicolist_thumb').prop('checked')) {
+		div.addClass('mt-1');
+	}
 	if ($('#nicolist_thumb').prop('checked')){
 		a.append(createThumbImgElem(id, false));
 	}
@@ -1438,7 +1437,6 @@ function rightVideoElem(id, title, genre){
 		}));
 		a.appendTo(div);
 	}
-
 	return div;
 }
 function openVideo($elem, mode){
@@ -1645,10 +1643,7 @@ function randomize(array, first){
 			array.splice(x, 1);
 		}
 	}
-	var n = array.length;
-	var t;
-	var i;
-
+	var n = array.length, t, i;
 	while (n) {
 		i = Math.floor(Math.random() * n--);
 		t = array[n];
@@ -2183,11 +2178,9 @@ function refreshController(){
 	} else {
 		$('#pcprev').addClass('disabled');
 	}
-
 	if ($('#play').html() !== ''){
 		$('#pcclose').removeClass('silent');
 	}
-	//if (islocal && playlist.length > 0){
 	if (playlist.length > 1){
 		$('#pcnewtab').removeClass('silent');
 		$('#pclist').removeClass('silent');
@@ -2195,17 +2188,9 @@ function refreshController(){
 		$('#pcprev').removeClass('silent');
 		$('#pcfav').removeClass('silent');
 		$('#pclist').val(playindex+'');
-		var flag = true;
-		for (var i = 0; i < starred.length; i+=2) {
-			if (starred[i] === playlist[playindex]){
-				$('#pcfav').text('お気に入りを解除');
-				flag = false;
-				break;
-			}
-		}
-		if (flag) {
-			$('#pcfav').text('お気に入りに追加');
-		}
+		$('#pcfav').html('');
+		$('#pcfav').append(createFavIcon(playlist[playindex], playlistTitleMap[playlist[playindex]]));
+		registerTooltip($('#pcfav .favIcon'));
 	} else {
 		$('#pcnewtab').addClass('silent');
 		$('#pclist').addClass('silent');
@@ -2274,19 +2259,15 @@ function starImg(starred){
 function startStarAnimation($elem){
 	var posx = $elem.offset().left - $elem.width()/2;
 	var posy = $elem.offset().top - $elem.height()/2;
-
 	var img = $('<img>',{
 		'width': '32px',
 		'height': '32px',
 		'src': LARGE_STAR_DATA_URL
 	});
-
 	var div = $('<div>',{
 		'id': 'starAnime'
 	}).css({'top':posy,'left':posx});
-
 	div.append(img);
-
 	$('#body').append(div);
 	img.animate({width: '2px', height: '2px', opacity: 0, 'margin-left': '15px', 'margin-top': '15px'}, 300, function(){
 		$('#starAnime').remove();
@@ -2301,9 +2282,7 @@ function createFavIcon(id, title){
 			break;
 		}
 	}//j
-
 	var favIcon = starImg(starIndex !== -1);
-
 	favIcon.addClass('mr-2 pointer').attr({
 		'title': 'お気に入り',
 		'data-id': id,
@@ -2315,6 +2294,5 @@ function createFavIcon(id, title){
 		refreshFavsLeft();
 		localStorage.setItem('nicolist_star', JSON.stringify(starred));
 	});
-
 	return favIcon;
 }
