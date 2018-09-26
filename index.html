@@ -32,14 +32,19 @@ button.close span{font-size: 16px !important}
 .sm-thumb{
 	width: 91px!important;
 	max-width: 91px!important;
+	min-height: 68px;
 	text-align: center;
 	color: #333;
 	font-style: italic;
 	display: inline-block;
 }
+.loading{
+	background-color: #ddd;
+}
 .full-thumb{
 	width: 130px!important;
 	max-width: 130px!important;
+	min-height: 97px;
 	text-align: center;
 	color: #333;
 	font-style: italic;
@@ -103,6 +108,9 @@ ul.tdftad li a:hover{
 }
 .silent{
 	display: none;
+}
+.quiet{
+	visibility: hidden;
 }
 div.sgg{
 	border-radius: 5px;
@@ -493,7 +501,7 @@ div.sgdef{
 				</div>
 
 				<div>
-					・動画リンクをクリックしたときの動作:
+					<span>動画リンクをクリックしたときの動作</span>
 					<select class="custom-select ml-2" id="click_action">
 						<option value="official" selected="">新しいタブで公式リンクを開く</option>
 						<option value="thispage">このページで視聴</option>
@@ -531,7 +539,7 @@ div.sgdef{
 				</div>
 				
 				<div class="mb-1 form-inline">
-					・区切り文字として認識する文字:
+					<span>区切り文字として認識する文字</span>
 					<input type="text" name="" id="nicolist_separator" class="form-control ml-2">
 					<button type="button" class="btn btn-outline-danger btn-sm" id="reset_sep">初期設定</button>
 				</div>
