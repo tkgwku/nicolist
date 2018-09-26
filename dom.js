@@ -84,7 +84,7 @@ function search(query) {
 		html: '<span>&times;</span>',
 		'class': 'close',
 		'aria-label': 'Close',
-		click: function(e){
+		'click': function(e){
 			$('#sr').fadeOut('slow', function(){
 				refreshStyle();
 				$('#sr').html('');
@@ -188,7 +188,10 @@ function search(query) {
 					return false;
 				},
 				'click': function(e){
-					return openVideo($(this), 'search');
+					if ($('#click_action').val() !== 'official'){
+						e.preventDefault();
+					}
+					openVideo($(this), 'search');
 				}
 			});
 			if ($('#nicolist_thumb_res').prop('checked')){
@@ -700,7 +703,7 @@ function registerEventListener(){
 		for (var j = 0; j < _keys.length; j++) {
 			var genre = _keys[j];
 			var genre_name = $('<p>',{
-				click: function(){
+				'click': function(){
 					var thisElem = $(this);
 					if ($('#nicolist_thumb_cc').prop('checked')){
 						thisElem.next().find('.img-thumbnail').each(function(i, elem){
@@ -755,7 +758,7 @@ function registerEventListener(){
 					'data-title': title,
 					'data-id':id,
 					'data-genre':genre,
-					click: function(){
+					'click': function(){
 						var elem = $(this).parent().parent().prev().find('span[data-count]');//gomi
 						var count = int(elem.attr('data-count'));
 						if ($(this).hasClass('alert-success')){
@@ -1451,7 +1454,10 @@ function rightVideoElem(id, title, genre){
 			return false;
 		},
 		'click': function(e){
-			return openVideo($(this), 'right');
+			if ($('#click_action').val() !== 'official'){
+				e.preventDefault();
+			}
+			openVideo($(this), 'right');
 		}
 	});
 	div.append(favIcon);
@@ -1523,7 +1529,6 @@ function openVideo($elem, mode){
 			createEmbedElem();
 			refreshController();
 		}
-		return false;
 	} else if (caval === 'cont' || caval === 'randomcont'){
 		$('#play').html('');
 		if (mode === 'right'){
@@ -1552,7 +1557,7 @@ function openVideo($elem, mode){
 			});
 		} else {
 			//wont happen
-			return true;
+			return;
 		}
 		if (caval === 'randomcont'){
 			playlist = randomize(playlist, id);
@@ -1566,9 +1571,7 @@ function openVideo($elem, mode){
 			refreshController();
 		}
 		$('html,body').stop().animate({scrollTop:0}, 'swing');
-		return false;
 	}
-	return true;
 }
 function sizeString(byte){
     if (byte < 500){
@@ -1834,7 +1837,7 @@ function message(mes, type, wrapper, permanent, elem) {
 			html: '<span>&times;</span>',
 			'type':'button',
 			'class':'close',
-			click: function(){
+			'click': function(){
 				$(this).parent().fadeOut('slow', refreshStyle);
 			}
 		}).appendTo(div);
@@ -1962,7 +1965,10 @@ function random(list, genre){
 			return false;
 		},
 		'click': function(e){
-			return openVideo($(this), 'random');
+			if ($('#click_action').val() !== 'official'){
+				e.preventDefault();
+			}
+			openVideo($(this), 'random');
 		}
 	});
 	
