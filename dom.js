@@ -889,7 +889,7 @@ function registerEventListener(){
 				message('作成するジャンルの名前を入力してください。', 'warning', '#ccalert');
 				$('#ccModal').stop().animate({scrollTop:0}, 'slow');
 				return;
-			} else if (y.hasOwnProperty(ccname) !== -1){
+			} else if (y.hasOwnProperty(ccname)){
 				message('既に存在するジャンル名です。', 'warning', '#ccalert');
 				$('#ccModal').stop().animate({scrollTop:0}, 'slow');
 				return;
