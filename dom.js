@@ -27,9 +27,10 @@ var skip_flag = false;//setupNiconicoIframe()
 var player;//setupYoutubeIframe()
 
 function cctntoggle(){
+	var ls;
 	$('#ccvideos .img-thumbnail').each(function(){
 		if ($(this).hasClass('silent')){
-			var ls = $(this).attr('data-loadstatus');
+			ls = $(this).attr('data-loadstatus');
 			if (ls && ls === 'ready'){
 				loadImg($(this));
 			}
@@ -37,10 +38,10 @@ function cctntoggle(){
 		$(this).toggleClass('silent');
 	});
 }
-function loadImg(elem){
-	var srcurl = elem.attr('data-src');
+function loadImg($elem){
+	var srcurl = $elem.attr('data-src');
 	if (srcurl){
-		elem.attr('src', srcurl);
+		$elem.attr('src', srcurl);
 	}
 }
 function ccnew(){
@@ -71,7 +72,7 @@ function search(query) {
 		message('検索クエリが空です。');
 		return;
 	}
-	sqDesc = sq.join('」+「');
+	var sqDesc = sq.join('」+「');
 	$('#sr').html('');
 	$('#sr').append($('<button>', {
 		html: '<span>&times;</span>',
@@ -181,7 +182,7 @@ function search(query) {
 					return false;
 				},
 				'click': function(e){
-					return openVideo(_id, _t, _g, 'search');
+					return openVideo($(this), 'search');
 				}
 			});
 			if ($('#nicolist_thumb_res').prop('checked')){
@@ -290,30 +291,24 @@ function sub(){
 		}
 	}
 }
-function checkTitleValidity(node){
-	if (node.val() === "" 
-		|| node.val().length > 100 
-		|| node.val().match(/^http:\/\//) != null 
-		|| node.val().match(/^https:\/\//) != null ){
-		if (node.hasClass('is-valid')){
-			node.removeClass('is-valid');
-		}
-		node.addClass('is-invalid');
+function checkTitleValidity($node){
+	if ($node.val() === ''
+		|| $node.val().length > 100 
+		|| $node.val().match(/^http:\/\//) 
+		|| $node.val().match(/^https:\/\//)){
+		$node.removeClass('is-valid');
+		$node.addClass('is-invalid');
 		return false;
 	} else {
-		if (node.hasClass('is-invalid')){
-			node.removeClass('is-invalid');
-		}
-		node.addClass('is-valid');
+		$node.removeClass('is-invalid');
+		$node.addClass('is-valid');
 		return true;
 	}
 }
 function checkURLValidity(){
 	var m = videoIdMatch($('#url').val());
 	if (m){
-		if ($('#url').hasClass('is-invalid')){
-			$('#url').removeClass('is-invalid');
-		}
+		$('#url').removeClass('is-invalid');
 		$('#url').addClass('is-valid');
 		if (m !== lastId){
 			$('#registry').html('');
@@ -357,20 +352,14 @@ function checkURLValidity(){
 				}));
 				div.appendTo('#registry');
 			}
-			if ($('#registry').hasClass('silent')) {
-				$('#registry').removeClass('silent');
-			}
+			$('#registry').removeClass('silent');
 			lastId = m;
 		}
 		return true;
 	} else {
-		if ($('#url').hasClass('is-valid')){
-			$('#url').removeClass('is-valid');
-		}
+		$('#url').removeClass('is-valid');
 		$('#url').addClass('is-invalid');
-		if (!$('#registry').hasClass('silent')) {
-			$('#registry').addClass('silent');
-		}
+		$('#registry').addClass('silent');
 		return false;
 	}
 }
@@ -449,18 +438,16 @@ function registerEventListener(){
 		e.preventDefault();
 		if (e.pageX > $('body').outerWidth(true)/2) {
 			$('#title').addClass('dragging');
-			if ($('#url').hasClass('dragging')) $('#url').removeClass('dragging');
+			$('#url').removeClass('dragging');
 		} else {
 			$('#url').addClass('dragging');
-			if ($('#title').hasClass('dragging')) $('#title').removeClass('dragging');
+			$('#title').removeClass('dragging');
 		}
 	});
 	$('#addVideoModal').on('dragleave', function (e){
 		e.stopPropagation();
 		e.preventDefault();
-		if ($('#url, #title').hasClass('dragging')){
-			$('#url, #title').removeClass('dragging');
-		}
+		$('#url, #title').removeClass('dragging');
 	});
 	$('#addVideoModal').on('drop', function (e){
 		e.preventDefault();
@@ -509,9 +496,7 @@ function registerEventListener(){
 		if (showingMenu){
 			closeMenu();
 		}
-		if ($('#history').css('display') !== 'none'){
-			$('#history').css('display', 'none');
-		}
+		$('#history').css('display', 'none');
 	});
 	$('#menu').on('click', function(e){
 		e.stopPropagation();
@@ -736,7 +721,7 @@ function registerEventListener(){
 					'data-id':id,
 					'data-genre':genre,
 					click: function(){
-						var elem = $(this).parent().parent().prev().find('span[data-count]');
+						var elem = $(this).parent().parent().prev().find('span[data-count]');//gomi
 						var count = int(elem.attr('data-count'));
 						if ($(this).hasClass('alert-success')){
 							$(this).removeClass('alert-success');
@@ -1296,13 +1281,9 @@ function refresh(whatChanged){
 }
 function refreshFavsLeft(){
 	if (starred.length > 0){
-		if ($('#favs').hasClass('disabled')) {
-			$('#favs').removeClass('disabled');
-		}
+		$('#favs').removeClass('disabled');
 	} else {
-		if (!$('#favs').hasClass('disabled')) {
-			$('#favs').addClass('disabled');
-		}
+		$('#favs').addClass('disabled');
 	}
 	$('#favlen').text((starred.length/2)+'');
 }
@@ -1404,7 +1385,7 @@ function rightVideoElem(id, title, genre){
 			return false;
 		},
 		'click': function(e){
-			return openVideo(id, title, genre, 'right');
+			return openVideo($(this), 'right');
 		}
 	});
 
@@ -1460,7 +1441,10 @@ function rightVideoElem(id, title, genre){
 
 	return div;
 }
-function openVideo(id, title, genre, mode){
+function openVideo($elem, mode){
+	var id = $elem.attr('data-id');
+	var title = $elem.attr('data-title');
+	var genre = $elem.attr('data-genre');
 	var caval = $('#click_action').val();
 	if (caval === 'thispage'){
 		$('#play').html('');
@@ -1576,13 +1560,9 @@ function showMenu(coord_x, coord_y, cont, mode){
 					showEditModal(cont);
 					closeMenu();
 				});
-				if ($(elem).hasClass('disabled')){
-					$(elem).removeClass('disabled');
-				}
+				$(elem).removeClass('disabled');
 			} else {
-				if (!$(elem).hasClass('disabled')){
-					$(elem).addClass('disabled');
-				}
+				$(elem).addClass('disabled');
 			}
 		} else if (role === 'play'){
 			$(elem).on('click', function(){
@@ -1603,9 +1583,7 @@ function showMenu(coord_x, coord_y, cont, mode){
 			$(elem).on('click', function(){
 				$('#play').html('');
 				if (mode === 'right'){
-					if ($(elem).hasClass('disabled')){
-						$(elem).removeClass('disabled');
-					}
+					$(elem).removeClass('disabled');
 					playlist = [];
 					playlistTitleMap = {};
 					$('#right a[data-id]').each(function(_i, elem2){
@@ -1614,9 +1592,7 @@ function showMenu(coord_x, coord_y, cont, mode){
 						playlistTitleMap[rvid] = $(elem2).attr('data-title');
 					});
 				} else if (mode === 'random'){
-					if ($(elem).hasClass('disabled')){
-						$(elem).removeClass('disabled');
-					}
+					$(elem).removeClass('disabled');
 					playlist = [];
 					playlistTitleMap = {};
 					$('#randomVideo a[data-id]').each(function(_i, elem2){
@@ -1625,9 +1601,7 @@ function showMenu(coord_x, coord_y, cont, mode){
 						playlistTitleMap[rvid] = $(elem2).attr('data-title');
 					});
 				} else if (mode === 'search'){
-					if ($(elem).hasClass('disabled')){
-						$(elem).removeClass('disabled');
-					}
+					$(elem).removeClass('disabled');
 					playlist = [];
 					playlistTitleMap = {};
 					$('#sr a[data-id]').each(function(_i, elem2){
@@ -1637,9 +1611,7 @@ function showMenu(coord_x, coord_y, cont, mode){
 					});
 				} else {
 					//wont happen
-					if (!$(elem).hasClass('disabled')){
-						$(elem).addClass('disabled');
-					}
+					$(elem).addClass('disabled');
 					return;
 				}
 				if (role === 'playall-random'){
@@ -1928,7 +1900,7 @@ function random(list, genre){
 			return false;
 		},
 		'click': function(e){
-			return openVideo(id, title, genre, 'random');
+			return openVideo($(this), 'random');
 		}
 	});
 	
@@ -2202,46 +2174,26 @@ function refreshPlayer(){
 }
 function refreshController(){
 	if (hasNext() || $('#nicolist_loop').prop('checked')){
-		if ($('#pcnext').hasClass('disabled')){
-			$('#pcnext').removeClass('disabled');
-		}
+		$('#pcnext').removeClass('disabled');
 	} else {
-		if (!$('#pcnext').hasClass('disabled')){
-			$('#pcnext').addClass('disabled');
-		}
+		$('#pcnext').addClass('disabled');
 	}
 	if (hasPrevious() || $('#nicolist_loop').prop('checked')){
-		if ($('#pcprev').hasClass('disabled')){
-			$('#pcprev').removeClass('disabled');
-		}
+		$('#pcprev').removeClass('disabled');
 	} else {
-		if (!$('#pcprev').hasClass('disabled')){
-			$('#pcprev').addClass('disabled');
-		}
+		$('#pcprev').addClass('disabled');
 	}
 
 	if ($('#play').html() !== ''){
-		if ($('#pcclose').hasClass('silent')){
-			$('#pcclose').removeClass('silent');
-		}
+		$('#pcclose').removeClass('silent');
 	}
 	//if (islocal && playlist.length > 0){
 	if (playlist.length > 1){
-		if ($('#pcnewtab').hasClass('silent')){
-			$('#pcnewtab').removeClass('silent');
-		}
-		if ($('#pclist').hasClass('silent')){
-			$('#pclist').removeClass('silent');
-		}
-		if ($('#pcnext').hasClass('silent')){
-			$('#pcnext').removeClass('silent');
-		}
-		if ($('#pcprev').hasClass('silent')){
-			$('#pcprev').removeClass('silent');
-		}
-		if ($('#pcfav').hasClass('silent')){
-			$('#pcfav').removeClass('silent');
-		}
+		$('#pcnewtab').removeClass('silent');
+		$('#pclist').removeClass('silent');
+		$('#pcnext').removeClass('silent');
+		$('#pcprev').removeClass('silent');
+		$('#pcfav').removeClass('silent');
 		$('#pclist').val(playindex+'');
 		var flag = true;
 		for (var i = 0; i < starred.length; i+=2) {
@@ -2255,21 +2207,11 @@ function refreshController(){
 			$('#pcfav').text('お気に入りに追加');
 		}
 	} else {
-		if (!$('#pcnewtab').hasClass('silent')){
-			$('#pcnewtab').addClass('silent');
-		}
-		if (!$('#pclist').hasClass('silent')){
-			$('#pclist').addClass('silent');
-		}
-		if (!$('#pcnext').hasClass('silent')){
-			$('#pcnext').addClass('silent');
-		}
-		if (!$('#pcprev').hasClass('silent')){
-			$('#pcprev').addClass('silent');
-		}
-		if (!$('#pcprev').hasClass('silent')){
-			$('#pcprev').addClass('silent');
-		}
+		$('#pcnewtab').addClass('silent');
+		$('#pclist').addClass('silent');
+		$('#pcnext').addClass('silent');
+		$('#pcprev').addClass('silent');
+		$('#pcprev').addClass('silent');
 	}
 }
 function initPlaylistSel(){
