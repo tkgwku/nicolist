@@ -2228,6 +2228,10 @@ function addToDeletedVideoList(id){
 function videoSize(){
 	var w = $('#play').outerWidth();
 	var h = Math.ceil(w * 9 / 16);
+	if ($(window).height() * 0.8 < h){
+		h = Math.ceil($(window).height() * 0.8);
+		w = Math.ceil(h * 16 / 9);
+	}
 	if (w < 640 || $('#nicolist_cinematic').prop('checked')){
 		return [w, h];
 	} else {
