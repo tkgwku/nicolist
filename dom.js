@@ -13,7 +13,7 @@ const NARROW_DATA_URL = 'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAACAAAAAgC
 const SEP_DEF_VAL = ' 　+';
 //const IGN_DEF_VAL = '.';
 
-const debug = true;
+const debug = false;
 
 var y = {"とりあえず":[]};
 var prevy = {"とりあえず":[]};
@@ -1017,7 +1017,7 @@ function registerEventListener(){
 			message('正しいファイルを選択してください', 'warning', '#prefalert');
 			return;
 		}
-		if (!files[0].type.match(/json/)){
+		if (files[0].type.match(/json/) == null){
 			message('jsonファイルを選択してください', 'warning', '#prefalert');
 			return;
 		}
@@ -1034,7 +1034,7 @@ function registerEventListener(){
 			}
 			var videocount = 0;
 			var genrecount = 0;
-			if (!(toload instanceof Object)){
+			if ($.type(toload) !== 'object'){
 				message('フォーマットが正しくありません', 'warning', '#prefalert');
 				return;
 			}
@@ -1043,7 +1043,7 @@ function registerEventListener(){
 			for (var j = 0; j < _tkeys.length; j++) {
 				var genre = _tkeys[j];
 				var list = toload[genre];
-				if (!(list instanceof Array)){
+				if ($.type(list) !== 'array'){
 					message('フォーマットが正しくありません', 'warning', '#prefalert');
 					return;
 				}
@@ -1239,7 +1239,7 @@ function init(){
 	if (lz){
 		try {
 			lz = JSON.parse(lz);
-			if (lz instanceof Object){
+			if ($.type(lz) === 'object'){
 				volumemap = lz;
 			}
 		} catch(e) {
@@ -1943,6 +1943,10 @@ function randomFromAll(){
 		_temp[genre] = y[genre].length;
 		sum += _temp[genre];
 	}
+	if (sum === 0){
+		message('まだ一つも動画が登録されていません');
+		return;
+	}
 	var rand = Math.random()*sum;//[0,sum)
 	var sum2 = 0;
 	var _tkeys = Object.keys(_temp);
@@ -1956,6 +1960,10 @@ function randomFromAll(){
 	}
 }
 function random(list, genre){
+	if (list.length === 0){
+		message('まだ一つも動画が登録されていません');
+		return;
+	}
 	var rand2 = Math.floor(Math.random() * (list.length/2));
 	var id = list[rand2*2];
 	var title = list[rand2*2 + 1];
