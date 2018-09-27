@@ -13,7 +13,7 @@ const NARROW_DATA_URL = 'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAACAAAAAgC
 const SEP_DEF_VAL = ' 　+';
 //const IGN_DEF_VAL = '.';
 
-const debug = false;
+const debug = true;
 
 var y = {"とりあえず":[]};
 var prevy = {"とりあえず":[]};
@@ -425,9 +425,8 @@ function pushHistory(queryStr) {
 }
 function registerEventListener(){
 	$(window).resize(function() {
-		if ($('#nicolist_cinematic').prop('checked')){
-			videoResize();
-		}
+		if (isNullOrUndefined($('#play iframe').length) || $('#play iframe').length === 0) return;
+		videoResize();
 	});
 	$(window).on('unload', function(){
 		unload();
@@ -820,12 +819,8 @@ function registerEventListener(){
 	});
 	$('#pcclose').on('click', function(){
 		$('#play').html('');
-		$('#pcclose').addClass('silent');
-		$('#pcnext').addClass('silent');
-		$('#pcprev').addClass('silent');
-		$('#pcnewtab').addClass('silent');
 		$('#pclist').addClass('silent').html('');
-		$('#pcfav').addClass('silent');
+		$('#controller').addClass('silent');
 		playindex = -1;
 		playlist = [];
 	});
@@ -2144,10 +2139,7 @@ function setupYoutubeIframe(id){
 		'id': 'playeriframeyoutube',
 	});
 	$('#play').append(div);
-	var s = videoSize();
 	player = new YT.Player('playeriframeyoutube', {
-		width: s[0],
-		height: s[1],
 		videoId: id,
 		playerVars: { 'autoplay': (autoplay ? 1 : 0)},
 		events: {
@@ -2167,20 +2159,19 @@ function setupYoutubeIframe(id){
 			}
 		}
 	});
+	videoResize();
 }
 function setupNiconicoIframe(id){
 	$('#play').html('');
-	var s = videoSize();
 	var iframeElement = $('<iframe>',{
 		"id": "playeriframenicovideo",
-		"width": s[0]+'',
-		"height": s[1]+'',
 		"src": 'https://embed.nicovideo.jp/watch/'+id+'?jsapi=1&playerId=0',
 		"frameborder": "0",
 		"allow": "autoplay; encrypted-media",
 		"allowfullscreen": ""
 	});
 	$('#play').append(iframeElement);
+	videoResize();
 	window.onmessage = function (event) {
 		if (event.origin === 'https://embed.nicovideo.jp'){
 			if (event.data.eventName === 'error'){
@@ -2237,7 +2228,7 @@ function addToDeletedVideoList(id){
 function videoSize(){
 	var w = $('#play').outerWidth();
 	var h = Math.ceil(w * 9 / 16);
-	if (w <= 650 || $('#nicolist_cinematic').prop('checked')){
+	if (w < 640 || $('#nicolist_cinematic').prop('checked')){
 		return [w, h];
 	} else {
 		return [640, 360];
@@ -2248,6 +2239,9 @@ function videoResize(){
 	$('#play iframe').css({
 		'width': s[0],
 		'height': s[1]
+	});
+	$('#controller').css({
+		'width': s[0]
 	});
 }
 function next(){
@@ -2307,28 +2301,18 @@ function refreshController(){
 		$('#pcprev').addClass('disabled');
 	}
 	if ($('#play').html() !== ''){
-		$('#pcclose').removeClass('silent');
+		$('#controller').removeClass('silent');
+	} else {
+		$('#controller').addClass('silent');
 	}
 	if (playlist.length > 1){
-		$('#pcnewtab').removeClass('silent');
 		$('#pclist').removeClass('silent');
-		$('#pcnext').removeClass('silent');
-		$('#pcprev').removeClass('silent');
-		$('#pcfav').removeClass('silent');
-		$('#pcloop').removeClass('silent');
-		$('#pcwidth').removeClass('silent');
 		$('#pclist').val(playindex+'');
 	} else {
-		$('#pcnewtab').addClass('silent');
 		$('#pclist').addClass('silent');
-		$('#pcnext').addClass('silent');
-		$('#pcprev').addClass('silent');
-		$('#pcprev').addClass('silent');
-		$('#pcloop').addClass('silent');
-		$('#pcwidth').addClass('silent');
 	}
 	$('#pcfav').html('');
-	$('#pcfav').append(createFavIcon(playlist[playindex], playlistTitleMap[playlist[playindex]]));
+	$('#pcfav').append(createFavIcon(playlist[playindex], playlistTitleMap[playlist[playindex]]).removeClass('mr-2'));
 	registerTooltip($('#pcfav .favIcon'));
 }
 function initPlaylistSel(){

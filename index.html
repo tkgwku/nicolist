@@ -107,10 +107,16 @@ ul.tdftad li a:hover{
 	text-decoration:none;
 }
 .silent{
-	display: none;
+	display: none!important;
 }
 .quiet{
 	visibility: hidden;
+}
+#pclist{
+	max-width: 520px;
+}
+#controller .p-2{
+	padding-top: .1em!important;
 }
 div.sgg{
 	border-radius: 5px;
@@ -127,9 +133,6 @@ div.sgdef{
 	-webkit-box-shadow: 0 0 3px 3px rgba(0,0,0,0.05);
 	-moz-box-shadow: 0 0 3px 3px rgba(0,0,0,0.05);
 	box-shadow: 0 0 3px 3px rgba(0,0,0,0.05);
-}
-#pclist{
-	max-width: 500px;
 }
 .disabled {cursor: default!important;}
 .disabled img{opacity: .5}
@@ -153,6 +156,7 @@ div.sgdef{
 }
 .pl-2{padding-left: .4em;}
 .pr-2{padding-right: .4em;}
+.pb-2{padding-bottom: .4em;}
 </style>
 </head>
 
@@ -166,7 +170,7 @@ div.sgdef{
 		</div>
 		<!-- ALERT ends -->
 
-		<div class="form-group form-inline">
+		<div class="form-group form-inline" id="getwidth">
 			<button type="submit" class="btn btn-primary mb-1 mt-1" data-toggle="modal" data-target="#addVideoModal" >動画を追加</button>
 			<button type="submit" class="btn btn-outline-primary mb-1 mt-1" data-toggle="modal" data-target="#genreModal" onclick="$('#alert-addvideo').html('');">ジャンルを追加</button>
 			<button type="submit" class="btn btn-outline-primary mb-1 mt-1" id="ccopen">複数動画を移動/コピー</button>
@@ -178,16 +182,16 @@ div.sgdef{
 			<button class="btn btn-outline-secondary mb-1 mt-1" type="submit" id="sgopen">ジャンルを並び替え</button>
 		</div>
 
-		<div id="play"></div>
-		<div id="controller" class="mb-2">
-			<span id="pcfav"></span>
-			<span id="pcprev" class="silent pr-2 pl-1 pointer" title="前の動画"><img src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAACAAAAAgCAYAAABzenr0AAAACXBIWXMAAAsTAAALEwEAmpwYAAACWklEQVRYhe2VP4gTQRTGvzczkgOFCyfEwj+YSosTkRQWJ0YhKS+QxI0WdlqolSBYaKl4hQgKopxYC+5skmZLmwgnNum0THOVsTyOLUxmns0FQjLxstnkRPBX7+z78X1vd4D//GVowe8XnufdBnAVwFet9asDE6jVausA3hhjTggh0O/3QUTFRqPxafg5Ne/BnudliWjTGFOUUkJKyQCglCJmXgOwGIFcLncom80+IaKHzEyDwcMIIcbOzUXA87xrRPTaWnsMAIhobDgAWGvnK1Aqlc6kUql31trLUkoIIZyDB8wtgXw+v5TJZDaI6D4AuOKeltgC1Wr1ppTypbX26KSoJ5GognK5vKqUem+tvUhE+8btYqYKisXi4XQ6/RzAXSKClJKZZ0s8dgKe590iohfMvBw3bhdTJ1CpVM4qpT4YYy4opQAg8fBJOAWUUlvMvJIkbheuCsYyyefzR4wxK6OREy3m2hgTaLVau0KIz8YYwtBlNc8k/igAAFrrK0T0CMAvZl7ole0UAMBBEGz0er2TRPRxNI2Zhzm+gkkCAIBms/nT9/0bANaY+ZsxhijBMky1hC7q9foXrfU5IrrDzDuz1hI7gVGCINjsdrvHAbzdk0heS9wDrVZrV2t9z1q7ysxbcfZj5gpc1Ov171rrSwCuA/hhrd1XJHEFE0T8TqdzCsAzADbufiQWAIB2u90LguBxFEVZIgon1eKSm4vAgDAMt33fX2fmIjN3hmvZ+5PujJ5Z6F+uVqs9APC03+8vKaU4iqLTYRhuL3KmC1Uul88XCoXlgx78b/Abiwj8ZCeQkxsAAAAASUVORK5CYII=" width="16px"></span>
-			<span id="pcnext" class="silent pr-2 pl-2 pointer" title="次の動画"><img src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAACAAAAAgCAYAAABzenr0AAAACXBIWXMAAAsTAAALEwEAmpwYAAACW0lEQVRYhe2VMYgTURCGZ957QojCcVqksZEUWggiKRQEY5G0gV0yW9lZnF7hWZ0gNlZaKHaKaGflPkOIWqkgEU5sYqOCTao7wVgeQozJzlhcAudm926TbM7m/m4f8/b/3vzzdgH29Z+FUYtEtAIAZwHgnbX2MQDIngG4rlsSkTfGGGBm0FpvAMCy7/sv5wGgxhaUOmeMAUQUrbUAwNEgCF54nveaiI7tBUB4SbTWIiJlRGxXq9U7hULhwNwAmDmyEBEFtiK7ns/n14moOheAiA5slyilBAByzGyJqFmpVI6nCpBQorUWRDyfyWS+EdH9YrGYSQUgLoI4EAAQEbmWy+U2iOjizAC7RBD9kq1YjjDzUyL66DjOyakBJuzAdo1iOWOM+UxED8rl8sGJAabpQBhkeGOuLC4ufieiSxMBpCVEFERcYOYnnud9cl33RCKAGSIYk4iMPmKnjTFriQDSECKGnyUIgsPFYvFQuNbMA0Dkn58nBkEASqn3zWbzV7h2bjMwBEEA+IOIN6y1F6JqxjqglAqfYBphEASgtX7W7/ev1uv1n3GFYwDMPJZhYldEHAwGoJT6AgBLvu9/2G1Pah0YtnsTEVettY+S7ktjCHEI/LDT6axGDdpEABNEMJruNWZeqtVqXycxjgVIEAEyMyilfgDAirXWn8Y4FmAniQgiIiPi7Xa7favVavVnMY8EGA5TWKNr9arX6y03Go31WY1jAQBgU0RGc4DDmWiLyGXf99+mZRwL0O12n2ez2buDwQCNMb8B4Ka19l7axjuqVCotOI5zKgpwX2nrL1a89wlV6bvAAAAAAElFTkSuQmCC" width="16px"></span>
-			<span id="pcclose" class="silent pr-2 pl-2 pointer" title="閉じる"><img src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAACAAAAAgCAYAAABzenr0AAAACXBIWXMAAAsTAAALEwEAmpwYAAADZ0lEQVRYhe2Wz2skRRTHv6+qMUHn4L9gyMWrXo2SQEDX3YmZth5CzIquC6IHQWX9H3bBBQ8eZFeiiyJd3TMZsz9AlGSNBw8ieNIg6kXJwZsevHS956U79vR0OjNJxMu+S0hR/T6fqnr1poB78T+HbRpcWVl5sNPphP39fTktkHPuofn5+fv39vb+qo6bhomXZ2Zm/pibm/uz1+udOQ04Mw9F5JfZ2dlf6znHBIhoHUBERLNRFN1yzj15ErhzbktEutZaiMh91tqFVgEA2yICAFoI3Ynj+Oxx4ap61hij5Vie58NWgSRJ1o0xOyJCpYS1dss5150GzszDCpyKRT0/GAy+aRUAEJIkWapIgIgAYBjH8cokcOfcpoh0jTEo4US0lqbpx/W51JLHOOd2VHWhXAUA5Hne7ff7Wy3woap2qysnojXv/SeNkBYB8d4vGWO+rh5HFEWfxXH8VNMHzNxvgJ8/DH6UAADkSZIsGmN2azVxu36dmNmLyGpZcCICVb3gvb/RBjhK4ECCiL6q7cStXq93DgCcc5+KyLMlPIRAAC5mWfbBUcnbamBM1jn3haouGmNARFBVAbArIk8UBYcQAowxL3vvr0+SdBqBUmJbVR+vFiaKXRERIqIXvfcbEyecUkC890tEtFPAtYQX/780Dfw4AgAQAPyuqiODRBSI6Ldpk00t4Jz7UETWiKi6cqiqJaLPnXNP/2cCzLwhIuettQBAqkoAfiz+gohARDenadsTCzDzjRDCC9ZaBaAhBAB4NUmSh4lop7j35Q/YxG17olvAzB+FENYLOEIIRESvpWn6XjHFMvO2iIy07RDCuSzLbp5IgJk3ipWjSAoAr2dZ9m5talRIPFbpEwghnMmy7M5h+VuPgJmv1bfdGPNGAxz4t2PuVo/DWnubmQ99WR0qwMzvhxAuVLfdGPOm9/5qi3PuvV80xtyttm0AB227Ho1HUMAvNsDfaYGP5HXOfVm07WpNPJNl2ciLaEyAma+EEN6qwS95769MCC9jrG2rKvI8f3QwGHx3MKnhw1fKe15U+9vHgAPj7wmoKqIoem7Esv6Vqn4vIsjzHMaYS2maXj4GvIxQvCfu5nkOIhIR+bY6YewIlpeXH+h0OgtE9HO/3//pBPCRWF1dfURV/97c3PzhtHLei1OJfwBF5uKlYMgSEgAAAABJRU5ErkJggg==" width="16px"></span>
-			<span id="pcnewtab" class="silent pr-2 pl-2 pointer" title="別ページのプレイヤーで連続再生"><img src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAACAAAAAgCAYAAABzenr0AAAACXBIWXMAAAsTAAALEwEAmpwYAAADrklEQVRYhe1WQWhcVRQ9970/f/pFg0WTaK2Cg+DGtmtRGBciWUxCk8wPLiriMqgVFFpUWrCiiO6Eim7ETd285I+BoODCMoUubXGjbgomKIiRYJpiNPP+vS7m//HNz7yZXxtXeuHxLu/d+8759917/wP+60L7dVCj0bgtiqJXABxRSvXtiQiJyO/MfGF5efnLf4VAs9l8S0ReK4IXiKDT6RxcWVn5LV/zW9+kEFGViJAPpRSISNwhIgjD8JjrF+wXgZ2dnXeiKDosIkeJiEXkLiK6R0TEIQlmvnMogUajcXcYhg9rrYddz6Yx5lt3YXV19VcATwPA9PT0ZBRFVx3sniilKl4Cc3Nzx4MgSNI0JWYegg/EcfyBMeb54vrs7OxEEARXANwLQNDNsx4TEenD7MsBrfVZAKS1lhEDAJr1ev2A61+v12+vVCqXARxywK/DSfahBAAcdHRi5oEjTVMA+Krdbv+RG09NTVUnJycvi8hDRJSDb1prj7vRJCL/FRBRbkkArjLzuSAItGsjIkREm8aYi+6HjI2NXcwSMAe/Ya19bG1tbb1WqzEAlRG55iUAoEdVRH5OkuQzlJA4jr9g5keVUkLdeut0Op16q9X6HgBqtdpJEXlZa/21MeZSKQJEVKpJLSwsJMz8lFJKAJCIsLX2yVardSW3McacB3B+kH8xB9xsHUkgjuOP0zSddcBhrZ1OkuTSKN9cvI1oVATiOH6fmZ/TWgsAZPd7IkmSzwFgfn7+CaXUmyLyw8bGxmK73b4x6JxhEfC26WazeY6ZX8zB0zQlIlpcWlq60DtYqU8APC4iJyYmJl7wneUFIaKBe3EcLzLzGRdcKfW6MebDgv+h/J8A4MGyBMrkwKtB0L25DPxdY8zbA+ysQ6ZaioDbu30RAPAdM8NaS0qpj4wxpz121tEPeGz2NKKREbDWPhMEwbNa65+MMZ/6DhYRq5TKPyosRaBAZiCBVqv1C4D3fH6O7OYRLfZ/V7w5gFt8LRHRTjYDgPbZeatgWBmWlD8d3XsFxSR0Xy+3+l50kzAqRWCfpePo3jL0VgGAB+I4fgNAhYiUiKjsT1ecqevap7OIHHaqoO8N4CXgiAC4D8BZ4O/+4JsH6Rm4ZIS8VdC3ISI/AjiSXb/cRBrsMcwIETODiK7tdRlAwFp7KgiCR9I0vR/olVA/krPm6FIYnOtE9M3u7u5LpZkDwMzMzB0AsLW11W1jYSjb29tcrVYliiJZX1+X8fFxbrfbLuD/8o/kL6/r0h5ZDjXcAAAAAElFTkSuQmCC" width="16px"></span>
-			<span id="pcloop" class="silent pr-2 pl-1 pointer"><img src="" width="16px"></span>
-			<span id="pcwidth" class="silent pr-2 pl-1 pointer"><img src="" width="16px"></span>
-			<select class="form-control custom-select silent mb-1 mt-1" id="pclist"></select>
+		<div id="play" class="mt-2"></div>
+		<div id="controller" class="silent mb-4 d-flex align-items-center">
+			<span id="pcfav" class="p-2"></span>
+			<span id="pcprev" class="disabled p-2 pointer" title="前の動画"><img src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAACAAAAAgCAYAAABzenr0AAAACXBIWXMAAAsTAAALEwEAmpwYAAACWklEQVRYhe2VP4gTQRTGvzczkgOFCyfEwj+YSosTkRQWJ0YhKS+QxI0WdlqolSBYaKl4hQgKopxYC+5skmZLmwgnNum0THOVsTyOLUxmns0FQjLxstnkRPBX7+z78X1vd4D//GVowe8XnufdBnAVwFet9asDE6jVausA3hhjTggh0O/3QUTFRqPxafg5Ne/BnudliWjTGFOUUkJKyQCglCJmXgOwGIFcLncom80+IaKHzEyDwcMIIcbOzUXA87xrRPTaWnsMAIhobDgAWGvnK1Aqlc6kUql31trLUkoIIZyDB8wtgXw+v5TJZDaI6D4AuOKeltgC1Wr1ppTypbX26KSoJ5GognK5vKqUem+tvUhE+8btYqYKisXi4XQ6/RzAXSKClJKZZ0s8dgKe590iohfMvBw3bhdTJ1CpVM4qpT4YYy4opQAg8fBJOAWUUlvMvJIkbheuCsYyyefzR4wxK6OREy3m2hgTaLVau0KIz8YYwtBlNc8k/igAAFrrK0T0CMAvZl7ole0UAMBBEGz0er2TRPRxNI2Zhzm+gkkCAIBms/nT9/0bANaY+ZsxhijBMky1hC7q9foXrfU5IrrDzDuz1hI7gVGCINjsdrvHAbzdk0heS9wDrVZrV2t9z1q7ysxbcfZj5gpc1Ov171rrSwCuA/hhrd1XJHEFE0T8TqdzCsAzADbufiQWAIB2u90LguBxFEVZIgon1eKSm4vAgDAMt33fX2fmIjN3hmvZ+5PujJ5Z6F+uVqs9APC03+8vKaU4iqLTYRhuL3KmC1Uul88XCoXlgx78b/Abiwj8ZCeQkxsAAAAASUVORK5CYII=" width="16px"></span>
+			<span id="pcnext" class="disabled p-2 pointer" title="次の動画"><img src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAACAAAAAgCAYAAABzenr0AAAACXBIWXMAAAsTAAALEwEAmpwYAAACW0lEQVRYhe2VMYgTURCGZ957QojCcVqksZEUWggiKRQEY5G0gV0yW9lZnF7hWZ0gNlZaKHaKaGflPkOIWqkgEU5sYqOCTao7wVgeQozJzlhcAudm926TbM7m/m4f8/b/3vzzdgH29Z+FUYtEtAIAZwHgnbX2MQDIngG4rlsSkTfGGGBm0FpvAMCy7/sv5wGgxhaUOmeMAUQUrbUAwNEgCF54nveaiI7tBUB4SbTWIiJlRGxXq9U7hULhwNwAmDmyEBEFtiK7ns/n14moOheAiA5slyilBAByzGyJqFmpVI6nCpBQorUWRDyfyWS+EdH9YrGYSQUgLoI4EAAQEbmWy+U2iOjizAC7RBD9kq1YjjDzUyL66DjOyakBJuzAdo1iOWOM+UxED8rl8sGJAabpQBhkeGOuLC4ufieiSxMBpCVEFERcYOYnnud9cl33RCKAGSIYk4iMPmKnjTFriQDSECKGnyUIgsPFYvFQuNbMA0Dkn58nBkEASqn3zWbzV7h2bjMwBEEA+IOIN6y1F6JqxjqglAqfYBphEASgtX7W7/ev1uv1n3GFYwDMPJZhYldEHAwGoJT6AgBLvu9/2G1Pah0YtnsTEVettY+S7ktjCHEI/LDT6axGDdpEABNEMJruNWZeqtVqXycxjgVIEAEyMyilfgDAirXWn8Y4FmAniQgiIiPi7Xa7favVavVnMY8EGA5TWKNr9arX6y03Go31WY1jAQBgU0RGc4DDmWiLyGXf99+mZRwL0O12n2ez2buDwQCNMb8B4Ka19l7axjuqVCotOI5zKgpwX2nrL1a89wlV6bvAAAAAAElFTkSuQmCC" width="16px"></span>
+			<span id="pcclose" class="p-2 pointer" title="閉じる"><img src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAACAAAAAgCAYAAABzenr0AAAACXBIWXMAAAsTAAALEwEAmpwYAAADZ0lEQVRYhe2Wz2skRRTHv6+qMUHn4L9gyMWrXo2SQEDX3YmZth5CzIquC6IHQWX9H3bBBQ8eZFeiiyJd3TMZsz9AlGSNBw8ieNIg6kXJwZsevHS956U79vR0OjNJxMu+S0hR/T6fqnr1poB78T+HbRpcWVl5sNPphP39fTktkHPuofn5+fv39vb+qo6bhomXZ2Zm/pibm/uz1+udOQ04Mw9F5JfZ2dlf6znHBIhoHUBERLNRFN1yzj15ErhzbktEutZaiMh91tqFVgEA2yICAFoI3Ynj+Oxx4ap61hij5Vie58NWgSRJ1o0xOyJCpYS1dss5150GzszDCpyKRT0/GAy+aRUAEJIkWapIgIgAYBjH8cokcOfcpoh0jTEo4US0lqbpx/W51JLHOOd2VHWhXAUA5Hne7ff7Wy3woap2qysnojXv/SeNkBYB8d4vGWO+rh5HFEWfxXH8VNMHzNxvgJ8/DH6UAADkSZIsGmN2azVxu36dmNmLyGpZcCICVb3gvb/RBjhK4ECCiL6q7cStXq93DgCcc5+KyLMlPIRAAC5mWfbBUcnbamBM1jn3haouGmNARFBVAbArIk8UBYcQAowxL3vvr0+SdBqBUmJbVR+vFiaKXRERIqIXvfcbEyecUkC890tEtFPAtYQX/780Dfw4AgAQAPyuqiODRBSI6Ldpk00t4Jz7UETWiKi6cqiqJaLPnXNP/2cCzLwhIuettQBAqkoAfiz+gohARDenadsTCzDzjRDCC9ZaBaAhBAB4NUmSh4lop7j35Q/YxG17olvAzB+FENYLOEIIRESvpWn6XjHFMvO2iIy07RDCuSzLbp5IgJk3ipWjSAoAr2dZ9m5talRIPFbpEwghnMmy7M5h+VuPgJmv1bfdGPNGAxz4t2PuVo/DWnubmQ99WR0qwMzvhxAuVLfdGPOm9/5qi3PuvV80xtyttm0AB227Ho1HUMAvNsDfaYGP5HXOfVm07WpNPJNl2ciLaEyAma+EEN6qwS95769MCC9jrG2rKvI8f3QwGHx3MKnhw1fKe15U+9vHgAPj7wmoKqIoem7Esv6Vqn4vIsjzHMaYS2maXj4GvIxQvCfu5nkOIhIR+bY6YewIlpeXH+h0OgtE9HO/3//pBPCRWF1dfURV/97c3PzhtHLei1OJfwBF5uKlYMgSEgAAAABJRU5ErkJggg==" width="16px"></span>
+			<span id="pcnewtab" class="p-2 pointer" title="別ページのプレイヤーで連続再生"><img src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAACAAAAAgCAYAAABzenr0AAAACXBIWXMAAAsTAAALEwEAmpwYAAADrklEQVRYhe1WQWhcVRQ9970/f/pFg0WTaK2Cg+DGtmtRGBciWUxCk8wPLiriMqgVFFpUWrCiiO6Eim7ETd285I+BoODCMoUubXGjbgomKIiRYJpiNPP+vS7m//HNz7yZXxtXeuHxLu/d+8759917/wP+60L7dVCj0bgtiqJXABxRSvXtiQiJyO/MfGF5efnLf4VAs9l8S0ReK4IXiKDT6RxcWVn5LV/zW9+kEFGViJAPpRSISNwhIgjD8JjrF+wXgZ2dnXeiKDosIkeJiEXkLiK6R0TEIQlmvnMogUajcXcYhg9rrYddz6Yx5lt3YXV19VcATwPA9PT0ZBRFVx3sniilKl4Cc3Nzx4MgSNI0JWYegg/EcfyBMeb54vrs7OxEEARXANwLQNDNsx4TEenD7MsBrfVZAKS1lhEDAJr1ev2A61+v12+vVCqXARxywK/DSfahBAAcdHRi5oEjTVMA+Krdbv+RG09NTVUnJycvi8hDRJSDb1prj7vRJCL/FRBRbkkArjLzuSAItGsjIkREm8aYi+6HjI2NXcwSMAe/Ya19bG1tbb1WqzEAlRG55iUAoEdVRH5OkuQzlJA4jr9g5keVUkLdeut0Op16q9X6HgBqtdpJEXlZa/21MeZSKQJEVKpJLSwsJMz8lFJKAJCIsLX2yVardSW3McacB3B+kH8xB9xsHUkgjuOP0zSddcBhrZ1OkuTSKN9cvI1oVATiOH6fmZ/TWgsAZPd7IkmSzwFgfn7+CaXUmyLyw8bGxmK73b4x6JxhEfC26WazeY6ZX8zB0zQlIlpcWlq60DtYqU8APC4iJyYmJl7wneUFIaKBe3EcLzLzGRdcKfW6MebDgv+h/J8A4MGyBMrkwKtB0L25DPxdY8zbA+ysQ6ZaioDbu30RAPAdM8NaS0qpj4wxpz121tEPeGz2NKKREbDWPhMEwbNa65+MMZ/6DhYRq5TKPyosRaBAZiCBVqv1C4D3fH6O7OYRLfZ/V7w5gFt8LRHRTjYDgPbZeatgWBmWlD8d3XsFxSR0Xy+3+l50kzAqRWCfpePo3jL0VgGAB+I4fgNAhYiUiKjsT1ecqevap7OIHHaqoO8N4CXgiAC4D8BZ4O/+4JsH6Rm4ZIS8VdC3ISI/AjiSXb/cRBrsMcwIETODiK7tdRlAwFp7KgiCR9I0vR/olVA/krPm6FIYnOtE9M3u7u5LpZkDwMzMzB0AsLW11W1jYSjb29tcrVYliiJZX1+X8fFxbrfbLuD/8o/kL6/r0h5ZDjXcAAAAAElFTkSuQmCC" width="16px"></span>
+			<span id="pcloop" class="p-2 pointer"><img src="" width="16px"></span>
+			<span id="pcwidth" class="p-2 pointer"><img src="" width="16px"></span>
+			<select class="form-control custom-select silent ml-2" id="pclist"></select>
 		</div>
 
 		<div id="random" class="alert">
