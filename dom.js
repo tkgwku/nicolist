@@ -220,26 +220,26 @@ function search(query) {
 	dismissAllWarningAlerts();
 }
 function getVideoURL(id){
-	if ((new RegExp("^sm\\d+$")).test(id)
-		|| (new RegExp("^nm\\d+$")).test(id)
-		|| (new RegExp("^so\\d+$")).test(id)
-		|| (new RegExp("^\\d+$")).test(id)){
+	if (/^sm\d+$/.test(id)
+		|| /^nm\d+$/.test(id)
+		|| /^so\d+$/.test(id)
+		|| /^\d+$/.test(id)){
 		return 'http://www.nicovideo.jp/watch/' + id;
 	} else {
 		return 'https://www.youtube.com/watch?v=' + id;
 	}
 }
 function getThumbURL(id){
-	if ((new RegExp("^sm\\d+$")).test(id)){
+	if (/^sm\d+$/.test(id)){
 		var numid = int(id);
 		return 'http://tn.smilevideo.jp/smile?i='+numid;
-	} else if ((new RegExp("^nm\\d+$")).test(id)){
+	} else if (/^nm\d+$/.test(id)){
 		var numid = int(id);
 		return 'http://tn.smilevideo.jp/smile?i='+numid;
-	} else if ((new RegExp("^so\\d+$")).test(id)){
+	} else if (/^so\d+$/.test(id)){
 		var numid = int(id);
 		return 'http://tn.smilevideo.jp/smile?i='+numid;
-	} else if ((new RegExp("^\\d+$")).test(id)){
+	} else if (/^\d+$/.test(id)){
 		var numid = int(id);
 		return 'channel.jpg';
 	} else {
@@ -248,29 +248,30 @@ function getThumbURL(id){
 }
 function videoIdMatch(str){
 	var m_sm = str.match(/nicovideo\.jp\/watch\/(sm\d+)/);
-	if (m_sm){
+	if (m_sm !== null){
 		return m_sm[1];
 	}
 	var m_nm = str.match(/nicovideo\.jp\/watch\/(nm\d+)/);
-	if (m_nm){
+	if (m_nm !== null){
 		return m_nm[1];
 	}
 	var m_so = str.match(/nicovideo\.jp\/watch\/(so\d+)/);
-	if (m_so){
+	if (m_so !== null){
 		return m_so[1];
 	}
 	var m_cn = str.match(/nicovideo\.jp\/watch\/(\d+)/);
-	if (m_cn){
+	if (m_cn !== null){
 		return m_cn[1];
 	}
 	var m_yt = str.match(/youtube\.com\/watch\?v=([a-zA-Z0-9_-]+)/);
-	if (m_yt){
+	if (m_yt !== null){
 		return m_yt[1];
 	}
 	var m_yt2 = str.match(/youtube\.com\/watch\?[^&]+&v=([a-zA-Z0-9_-]+)/);
-	if (m_yt2){
+	if (m_yt2 !== null){
 		return m_yt2[1];
 	}
+	return null;
 }
 function sub(){
 	if (checkValidity()){
@@ -305,8 +306,8 @@ function sub(){
 function checkTitleValidity($node){
 	if ($node.val() === ''
 		|| $node.val().length > 100 
-		|| $node.val().match(/^http:\/\//) 
-		|| $node.val().match(/^https:\/\//)){
+		|| /^http:\/\//.test($node.val()) 
+		|| /^https:\/\//.test($node.val())){
 		$node.removeClass('is-valid');
 		$node.addClass('is-invalid');
 		return false;
@@ -318,7 +319,7 @@ function checkTitleValidity($node){
 }
 function checkURLValidity(){
 	var m = videoIdMatch($('#url').val());
-	if (m){
+	if (m !== null){
 		$('#url').removeClass('is-invalid');
 		$('#url').addClass('is-valid');
 		if (m !== lastId){
@@ -393,7 +394,8 @@ function checkValidity(){
 	return flag;
 }
 function pushHistory(queryStr) {
-	if ($.inArray(queryStr, searchHistory) === -1){
+	var _hindex = $.inArray(queryStr, searchHistory);
+	if (_hindex === -1){
 		var _a = [];
 		_a.push(queryStr);
 		var count = Math.min(int($('#nicolist_historyCount').val())-1, searchHistory.length);
@@ -405,7 +407,7 @@ function pushHistory(queryStr) {
 		var _a = [];
 		_a.push(queryStr);
 		for (var i = 0; i < searchHistory.length; i++) {
-			if (i !== $.inArray(queryStr, searchHistory)){
+			if (i !== _hindex){
 				_a.push(searchHistory[i]);
 			}
 		}
@@ -415,7 +417,7 @@ function pushHistory(queryStr) {
 }
 function registerEventListener(){
 	$(window).resize(function() {
-		if (isNullOrUndefined($('#play iframe').length) || $('#play iframe').length === 0) return;
+		if ($('#play iframe').length === 0) {return;}
 		videoResize();
 	});
 	$(window).on('unload', function(){
@@ -432,7 +434,7 @@ function registerEventListener(){
 	});
 	$('input[type=checkbox]').on('change', function(){
 		var id = $(this).attr('id');
-		if (id){
+		if (!isNullOrUndefined(id) && id !== false){
 			window.localStorage.setItem(id, $(this).prop('checked'));
 		}
 	});
@@ -480,30 +482,31 @@ function registerEventListener(){
 		}
 		var data = e.originalEvent.dataTransfer.items;
 		for (var i = 0; i < data.length; i += 1) {
-			if ((data[i].kind === 'string') && (data[i].type.match('^text/plain'))) {
+			if (data[i].kind !== 'string'){continue;}
+			if (/^text\/plain/.test(data[i].type)) {
 				data[i].getAsString(function (s){
 					$(sel).val(s);
 					checkValidity();
 				});
-			} else if ((data[i].kind === 'string') &&  (data[i].type.match('^text/html'))) {
+			} else if (/^text\/html/.test(data[i].type)) {
 				data[i].getAsString(function (s){
 					var m = s.match(/<[^><]+>[^><]*(?=<)/g);
 					var s2 = null;
-					if (m){
+					if (m !== null){
 						for (j = 0; j < m.length; j++){
-							if (m[j].match(/<span id="video-title"/)){
+							if (/<span id="video-title"/.test(m[j])){
 								s2 = m[j].replace(/<[^><]+>/g, '').replace(/^\s+/, '').replace(/\s+$/, '').replace(/\n/g, '');
 								$('#title').val(s2);
 							}
 						}
 					}
-					if (s2 == null){
+					if (s2 === null){
 						var s2 = s.replace(/<[^><]+>/g, '').replace(/^\s+/, '').replace(/\s+$/, '').replace(/\n/g, '');
 						$('#title').val(s2);
 					}
 					checkValidity();
 				});
-			} else if ((data[i].kind == 'string') && (data[i].type.match('^text/uri-list'))) {
+			} else if (/^text\/uri-list/.test(data[i].type)) {
 				data[i].getAsString(function (s){
 					$('#url').val(s);
 					checkValidity();
@@ -567,13 +570,13 @@ function registerEventListener(){
 		var genre = $('#editGenre').val();
 		var oldtitle = $(this).attr('data-title');
 		var oldgenre = $(this).attr('data-genre');
-		if (title == ''){
+		if (title === ''){
 			message('タイトルが空欄です', 'warning', '#emalert');
 			$('#editTitle').addClass('is-invalid');
-		} else if (genre == ''){
+		} else if (genre === ''){
 			message('ジャンルが正しく選択されていません', 'warning', '#emalert');
 			$('#editGenre').addClass('is-invalid');
-		} else if (title == oldtitle && genre == oldgenre){
+		} else if (title === oldtitle && genre === oldgenre){
 			message('変更なしになっています', 'warning', '#emalert');
 			$('#editTitle').addClass('is-invalid');
 			$('#editGenre').addClass('is-invalid');
@@ -586,10 +589,12 @@ function registerEventListener(){
 			tr1.append($('<td>', {text: 'タイトル: '}));
 			var td1 = $('<td>');
 			td1.append($('<strong>', {text: title}));
-			if (oldtitle===title) td1.append($('<span>', {text: ' (変更なし)'}))
-				td1.appendTo(tr1);
+			if (oldtitle === title) {
+				td1.append($('<span>', {text: ' (変更なし)'}));
+			}
+			td1.appendTo(tr1);
 			tr1.appendTo(table);
-			if (oldtitle!==title){
+			if (oldtitle !== title){
 				var tr2 = $('<tr>', {'class': 'gray'});
 				tr2.append($('<td>', {text: '変更前: '}));
 				tr2.append($('<td>', {text: oldtitle}))
@@ -599,10 +604,12 @@ function registerEventListener(){
 			tr3.append($('<td>', {text: 'ジャンル: ','class':'confirmedit'}));
 			var td2 = $('<td>',{'class':'confirmedit'});
 			td2.append($('<strong>', {text: genre}));
-			if (oldgenre===genre) td2.append($('<span>', {text: ' (変更なし)'}))
-				td2.appendTo(tr3);
+			if (oldgenre === genre) {
+				td2.append($('<span>', {text: ' (変更なし)'}));
+			}
+			td2.appendTo(tr3);
 			tr3.appendTo(table);
-			if (oldgenre!==genre){
+			if (oldgenre !== genre){
 				var tr4 = $('<tr>', {'class': 'gray'});
 				tr4.append($('<td>', {text: '変更前: '}));
 				tr4.append($('<td>', {text: oldgenre}))
@@ -643,20 +650,19 @@ function registerEventListener(){
 		$('#emalert').html('');
 	})
 	$('#nicolist_historyCount').on('change', function(){
-		var sh = $(this).val();
-		if (int(sh) > 0){
+		var sh = int($(this).val());
+		if (!isNaN(sh) && sh > 0){
 			localStorage.setItem('nicolist_historyCount', sh);
 		}
 	});
 	$('#nicolist_msc').on('change', function(){
-		var sh = $(this).val();
-		if (int(sh) > 0){
-			localStorage.setItem('nicolist_msc', sh);
+		var sh2 = int($(this).val());
+		if (!isNaN(sh2) && sh2 > 0){
+			localStorage.setItem('nicolist_msc', sh2);
 		}
 	});
 	$('#nicolist_loop').on('change', function(){
-		var _x = $('#play iframe').length;
-		if (!isNullOrUndefined(_x) && _x !== 0) {
+		if ($('#play iframe').length !== 0) {
 			if ($('#nicolist_loop').prop('checked')){
 				$('#pcloop img').attr('src', LOOP_DATA_URL);
 				$('#pcloop').attr('title', 'ループ再生を解除');
@@ -669,8 +675,7 @@ function registerEventListener(){
 		}
 	});
 	$('#nicolist_cinematic').on('change', function(){
-		var _x = $('#play iframe').length;
-		if (!isNullOrUndefined(_x) && _x !== 0) {
+		if ($('#play iframe').length !== 0) {
 			if ($('#nicolist_cinematic').prop('checked')){
 				$('#pcwidth img').attr('src', NARROW_DATA_URL);
 				$('#pcwidth').attr('title', '固定サイズで表示');
@@ -823,17 +828,19 @@ function registerEventListener(){
 	});
 	$('#pclist').on('change', function(){
 		playindex = parseInt($('#pclist').val(), 10);
-		if (isNaN(playindex)) playindex = 0;//wont happen
+		if (isNaN(playindex)) {
+			playindex = 0;//wont happen
+		}
 		autoplay = false;
 		refreshPlayer();
 	});
 	$('#pcnext').on('click',function(){
-		if ($(this).hasClass('disabled')) return;
+		if ($(this).hasClass('disabled')) {return;}
 		autoplay = true;
 		next();
 	});
 	$('#pcprev').on('click',function(){
-		if ($(this).hasClass('disabled')) return;
+		if ($(this).hasClass('disabled')) {return;}
 		autoplay = true;
 		previous();
 	});
@@ -882,7 +889,7 @@ function registerEventListener(){
 				'class': clazz
 			});
 			$('#sggenre').append(div);
-		}
+		}//i
 		$('#genreSortModal').modal('show');
 		Sortable.create(sggenre, {
 			draggable: '.sgtarget',
@@ -1011,7 +1018,7 @@ function registerEventListener(){
 			message('正しいファイルを選択してください', 'warning', '#prefalert');
 			return;
 		}
-		if (files[0].type.match(/json/) == null){
+		if (files[0].type.match(/json/) === null){
 			message('jsonファイルを選択してください', 'warning', '#prefalert');
 			return;
 		}
@@ -1071,12 +1078,12 @@ function registerEventListener(){
 function init(){
 	registerEventListener();
 
-	if (typeof localStorage === 'undefined'){
-		if (document.cookie){
+	if (isNullOrUndefined(localStorage)){
+		if (!isNullOrUndefined(document.cookie)){
 			var Storage2 = function(){
 				this.data = {};
 				var _s = document.cookie.match(/ls_[^=;]+=[^;=]*/g);
-				if (_s){
+				if (_s !== null){
 					for (var i = 0; i < _s.length; i++) {
 						var _t = _s[i].split(/=/);
 						this.data[unescape(_t[0].substring(3))] = _t[1];
@@ -1087,7 +1094,7 @@ function init(){
 				return this.data[key];
 			};
 			Storage2.prototype.setItem = function(key, val) {
-				if (key){
+				if (key !== null){
 					var _d = new Date();
 					_d.setTime(Date.now() + 114514*60*1000);//almost 13 years
 					document.cookie = 'ls_' + escape(key) + '=' + escape(val) + '; expires='+_d.toUTCString()+'; path=/';
@@ -1095,7 +1102,7 @@ function init(){
 				}
 			};
 			Storage2.prototype.removeItem = function(key) {
-				if (key){
+				if (key !== null){
 					document.cookie = 'ls_' + escape(key) + '=; expires=Thu, 01 Jan 1970 00:00:00 GMT; path=/';
 					delete this.data[key];
 				}
@@ -1116,7 +1123,7 @@ function init(){
 
 	$('input[type=checkbox]').each(function(){	
 		var id = $(this).attr('id');
-		if (id){
+		if (!isNullOrUndefined(id) && id !== false){
 			var bool = window.localStorage.getItem(id);
 			if (bool === 'true'){
 				$(this).prop('checked', true);
@@ -1127,19 +1134,19 @@ function init(){
 	});
 
 	var sepls = localStorage.getItem('nicolist_separator');
-	if (sepls) {
+	if (sepls !== null) {
 		$('#nicolist_separator').val(sepls);
 	} else {
 		$('#nicolist_separator').val(SEP_DEF_VAL);
 	}
 
 	var cals = localStorage.getItem('nicolist_click_action');
-	if (cals && cals !== ''){
+	if (cals !== null && cals !== ''){
 		$('#click_action').val(cals);
 	}
 
 	var tabs = localStorage.getItem('_nicolistTabCount');
-	if (tabs){
+	if (tabs !== null){
 		tabs = int(tabs);
 		if (!isNaN(tabs)){
 			if (!$('#nicolist_multitab').prop('checked')){
@@ -1173,7 +1180,7 @@ function init(){
 		localStorage.setItem('_nicolistTabCount', 1);
 	}
 	var l = localStorage.getItem('nicolist');
-	if (l){
+	if (l !== null){
 		try {
 			l = JSON.parse(l);
 			y = l;
@@ -1183,54 +1190,54 @@ function init(){
 	}
 	var s = localStorage.getItem('selectedgenre');
 	if (Object.keys(y).length > 0){
-		if (s){
+		if (s !== null){
 			setSelGen(s);
 		} else {
 			setSelGen(Object.keys(y)[0]);
 		}
 	}
 	var cnew = localStorage.getItem('nicolist_ccnewval');
-	if (cnew){
+	if (cnew !== null){
 		$('#ccnew').val(cnew);
 	}
 	ccnew();
 	var sh = localStorage.getItem('searchhistory');
-	if (sh){
+	if (sh !== null){
 		searchHistory = JSON.parse(sh);
-		if (!Array.isArray(searchHistory)){
+		if ($.type(searchHistory) !== 'array'){
 			searchHistory = [];
 		}
 	}
-	var nh = localStorage.getItem('nicolist_historyCount');
-	if (nh){
-		$('#nicolist_historyCount').val(int(nh));
+	var nh = int(localStorage.getItem('nicolist_historyCount'));
+	if (!isNaN(nh)){
+		$('#nicolist_historyCount').val(nh);
 	}
-	var nh2 = localStorage.getItem('nicolist_msc');
-	if (nh2){
-		$('#nicolist_msc').val(int(nh2));
+	var nh2 = int(localStorage.getItem('nicolist_msc'));
+	if (!isNaN(nh2)){
+		$('#nicolist_msc').val(nh2);
 	}
 	var ld = localStorage.getItem('nicolist_deleted');
-	if (ld){
+	if (ld !== null){
 		try {
 			deletedVideoArray = JSON.parse(ld);
-			if (!Array.isArray(deletedVideoArray)){
+			if ($.type(deletedVideoArray) !== 'array'){
 				deletedVideoArray = [];
 			}
 		} catch(e) {
 		}
 	}
 	var ls = localStorage.getItem('nicolist_star');
-	if (ls){
+	if (ls !== null){
 		try {
 			starred = JSON.parse(ls);
-			if (!Array.isArray(starred)){
+			if ($.type(starred) !== 'array'){
 				starred = [];
 			}
 		} catch(e) {
 		}
 	}
 	var lz = localStorage.getItem('nicolist_volumemap');
-	if (lz){
+	if (lz !== null){
 		try {
 			lz = JSON.parse(lz);
 			if ($.type(lz) === 'object'){
@@ -1428,8 +1435,7 @@ function toggleFav(id, title){
 			startStarAnimation($(this));
 		});
 		if ($('#favs li').hasClass('selected')) {
-			var _l = $('#right a[data-id='+id+']').length;
-			if (isNullOrUndefined(_l) || _l === 0){
+			if ($('#right a[data-id='+id+']').length === 0){
 				if ($('#nicolist_sort').prop('checked')){
 					rightVideoElem(id, title, '', false).insertAfter('#right h4');
 				} else {
@@ -1485,13 +1491,13 @@ function rightVideoElem(id, title, genre, lazyload){
 		var _mb = title.match(/\[[^\[\]]+\]/g);//[]
 		var tags = [];
 		var converted_title = title;
-		if (_ma){
+		if (_ma !== null){
 			for (var j = 0; j < _ma.length; j++) {
 				tags.push(_ma[j]);
 			}
 			converted_title = converted_title.replace(/【[^【】]+】/g, '');
 		}
-		if (_mb){
+		if (_mb !== null){
 			for (var j = 0; j < _mb.length; j++) {
 				tags.push(_mb[j]);
 			}
@@ -1576,7 +1582,9 @@ function openVideo($elem, mode){
 			playlist = randomize(playlist, id);
 		}
 		playindex = $.inArray(id, playlist);
-		if (playindex === -1) playindex = 0;
+		if (playindex === -1) {
+			playindex = 0;
+		}
 		if (islocal) {
 			window.open(domain+'/player.html?pl='+escape(JSON.stringify(playlist))+'&i='+playindex);
 		} else {
@@ -1605,8 +1613,8 @@ function showMenu(coord_x, coord_y, cont, mode){
 	var genre = cont.attr('data-genre');
 	var title = cont.attr('data-title');
 	var url = cont.attr('href');
-	var hasurlattr = typeof url !== typeof undefined && url !== false && url !== '';
-	var hasgenreattr = typeof genre !== typeof undefined && genre !== false && genre !== '';
+	var hasurlattr = $.type(url) !== 'undefined' && url !== false && url !== '';
+	var hasgenreattr = $.type(genre) !== 'undefined' && genre !== false && genre !== '';
 	$("#menu").children('a').each(function(i, elem){
 		var role = $(elem).attr('role');
 		if (role === 'title'){
@@ -1699,7 +1707,9 @@ function showMenu(coord_x, coord_y, cont, mode){
 					playlist = randomize(playlist, id);
 				}
 				playindex = $.inArray(id, playlist);
-				if (playindex === -1) playindex = 0;
+				if (playindex === -1) {
+					playindex = 0;
+				}
 				if (islocal) {
 					window.open(domain+'/player.html?pl='+escape(JSON.stringify(playlist))+'&i='+playindex);
 				} else {
@@ -1719,7 +1729,7 @@ function showMenu(coord_x, coord_y, cont, mode){
 	showingMenu = true;
 }
 function randomize(array, first){
-	if (array.length <= 1) return array;
+	if (array.length <= 1) {return array};
 	if (first){
 		var x = $.inArray(first, array);
 		if (x !== -1){
@@ -1733,7 +1743,9 @@ function randomize(array, first){
 		array[n] = array[i];
 		array[i] = t;
 	}
-	if (first && x !== -1) array.splice(0, 0, first);
+	if (first && x !== -1) {
+		array.splice(0, 0, first);
+	}
 	return array;
 }
 function showEditModal(cont){
@@ -1756,7 +1768,7 @@ function closeMenu(){
 function has(genre, id){
 	var list = y[genre];
 	for (var i = 0; i < list.length/2; i++){
-		if (list[2*i] === id) return true;
+		if (list[2*i] === id) {return true};
 	}
 	return false;
 }
@@ -1839,9 +1851,9 @@ function undo() {
 	refresh('vgs');
 }
 function message(mes, type, wrapper, permanent, elem) {
-	if (typeof type !== 'string' || $.inArray(type, MESSAGE_TYPES) === -1) type = 'warning';
-	if (typeof wrapper !== 'string' || wrapper === '') wrapper = '#alert';
-	if (typeof permanent !== 'boolean') permanent = false;
+	if ($.type(type) !== 'string' || $.inArray(type, MESSAGE_TYPES) === -1) type = 'warning';
+	if ($.type(wrapper) !== 'string' || wrapper === '') wrapper = '#alert';
+	if ($.type(permanent) !== 'boolean') permanent = false;
 	var div = $('<div>', {
 		'class': 'alert alert-'+type
 	}).css('display', 'none');
@@ -1858,7 +1870,7 @@ function message(mes, type, wrapper, permanent, elem) {
 	var span = $('<span>', {
 		text: mes
 	});
-	if (elem != null && elem != undefined) {
+	if (elem !== null) {
 		span.append(elem)
 	};
 	span.appendTo(div);
@@ -1891,7 +1903,7 @@ function confAvoidable(mes, func){
 	if ($('#nicolist_del').prop('checked')){
 		(func)();
 	} else {
-		if (typeof mes === 'string'){
+		if ($.type(mes) === 'string'){
 			confirm2($('<span>',{text: mes}), func);
 		} else {
 			confirm2(mes, func);
@@ -1912,10 +1924,8 @@ function confirm2(mesElem, func, ondeny){
 		'class': 'btn btn-secondary',
 		'data-dismiss': 'modal'
 	});
-	if (!isNullOrUndefined(ondeny)){
-		cb.on('click', function(){
-			ondeny();
-		});
+	if (ondeny !== null){
+		cb.on('click', ondeny);
 	}
 	$('#confDeny').html('').append(cb);
 	$('#confModal').modal('show');
@@ -1962,7 +1972,7 @@ function random(list, genre){
 	if ($('#nicolist_rand').prop('checked')){
 		$('#randomVideo').html('');
 	}
-	if (!$('#random button').length){// if #random button doesn't exist
+	if ($('#random button').length === 0){// if #random button doesn't exist
 	  	$('#random').prepend($('<button>', {
 	  		html: '<span>&times;</span>',
 	  		'type':'button',
@@ -2007,7 +2017,7 @@ function random(list, genre){
 	var span = $('<span>', {text:title});
 	a.append(span);
 	div.append(a);
-	if (genre){
+	if (genre !== null){
 		div.append($('<span>', {
 			text: '('+genre+')',
 			'class': 'ml-2 text-muted'
@@ -2024,7 +2034,7 @@ function randomFromRight(){
 		list.push($(elem).attr('data-title'));
 		if (genre == null){
 			var thisGenre = $(elem).attr('data-genre');
-			if (typeof thisGenre !== 'undefined' && thisGenre !== false){
+			if ($.type(thisGenre) !== 'undefined' && thisGenre !== false){
 				genre = thisGenre;
 			}
 		}
@@ -2044,6 +2054,7 @@ function bytesize(str) {
 	return encodeURIComponent(str).replace(/%../g, "a").length;
 }
 function int(str){
+	if (str === null) {return NaN;}
 	var num = parseInt(str, 10);
 	if (isNaN(num)){
 		return parseInt(str.match(/\d+/)[0], 10);
@@ -2053,7 +2064,7 @@ function int(str){
 }
 function restrBytesize(str, max){
 	max = max || 50;
-	if (bytesize(str)>max){
+	if (bytesize(str) > max){
 		var count = 0;
 		var newstr = ''
 		for (var i = 0; i < str.length; i++) {
@@ -2105,7 +2116,7 @@ function createStayUnloadedTNI(id, isFullSize){
 }
 function createEmbedElem(){
 	var id = playlist[playindex];
-	if ((new RegExp('^sm\\d+$')).test(id)|| (new RegExp('^nm\\d+$')).test(id) || (new RegExp('^so\\d+$')).test(id) || (new RegExp('^\\d+$')).test(id)){
+	if (/^sm\d+$/.test(id) || /^nm\d+$/.test(id) || /^so\d+$/.test(id) || /^\d+$/.test(id)){
 		setupNiconicoIframe(id);
 	} else {
 		setupYoutubeIframe(id);
@@ -2232,7 +2243,7 @@ function addToDeletedVideoList(id){
 		deletedVideoArray.push(id);
 		localStorage.setItem('nicolist_deleted', JSON.stringify(deletedVideoArray));
 		var $elem = $('#pclist option[value='+playindex+']');
-		if ($elem.length && $elem.length !== 0){
+		if ($elem.length !== 0){
 			$elem.text('[x] '+(playindex+1)+': '+playlistTitleMap[id]);
 		}
 	}
@@ -2243,7 +2254,7 @@ function removeFromDeletedVideoList(id){
 		deletedVideoArray.splice(_delindex, 1);
 		localStorage.setItem('nicolist_deleted', JSON.stringify(deletedVideoArray));
 		var $elem = $('#pclist option[value='+playindex+']');
-		if ($elem.length && $elem.length !== 0){
+		if ($elem.length !== 0){
 			$elem.text((playindex+1)+': '+playlistTitleMap[id]);
 		}
 	}
@@ -2301,14 +2312,14 @@ function previous(){
 }
 function refreshPlayer(){
 	var id = playlist[playindex];
-	if ((new RegExp("^sm\\d+$")).test(id)|| (new RegExp("^nm\\d+$")).test(id) || (new RegExp("^so\\d+$")).test(id) || (new RegExp("^\\d+$")).test(id)){
-		if (!isNullOrUndefined($('#play iframe').length) || $('#play iframe').attr('id') === 'playeriframeyoutube'){
+	if (/^sm\d+$/.test(id)|| /^nm\d+$/.test(id) || /^so\d+$/.test(id) || /^\d+$/.test(id)){
+		if ($('#play iframe').length === 0 || $('#play iframe').attr('id') === 'playeriframeyoutube'){
 			setupNiconicoIframe(id);
 		} else {
 			$('#play iframe').attr('src', 'https://embed.nicovideo.jp/watch/'+id+'?jsapi=1&playerId=0');
 		}
 	} else {
-		if (!isNullOrUndefined($('#play iframe').length) || $('#play iframe').attr('id') === 'playeriframenicovideo'){
+		if ($('#play iframe').length === 0 || $('#play iframe').attr('id') === 'playeriframenicovideo'){
 			setupYoutubeIframe(id);
 		} else {
 			player.loadVideoById({videoId: id});
@@ -2369,7 +2380,7 @@ function reversePairList(list){
 }
 function promptWinExplorer(filename, content){
 	var file = new Blob([content], {type: 'text/plane;'});
-	if (window.navigator.msSaveOrOpenBlob) {
+	if (!isNullOrUndefined(window.navigator.msSaveOrOpenBlob)) {
 		window.navigator.msSaveOrOpenBlob(file, filename);
 	} else {
 		var a = document.createElement('a');
@@ -2385,7 +2396,7 @@ function promptWinExplorer(filename, content){
 	}
 }
 function isNullOrUndefined(smthng){
-	return typeof smthng === 'undefined' || smthng == null;
+	return $.type(smthng) === 'undefined' || smthng === null;
 }
 function escapeHtmlSpecialChars(text) {
     return text.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;").replace(/'/g, "&#039;");
