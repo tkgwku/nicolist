@@ -446,6 +446,10 @@ function registerEventListener(){
 			window.localStorage.setItem(id, $(this).prop('checked'));
 		}
 	});
+	$('#openAddModal').on('click', function(){
+		$('#alert-addvideo').html('');
+		$('#addVideoModal').modal('show');
+	});
 	$('#click_action').on('change', function(){
 		localStorage.setItem('nicolist_click_action', $(this).val());
 	});
@@ -1479,7 +1483,7 @@ function rightVideoElem(id, title, genre, lazyload){
 	});
 	div.append(favIcon);
 	if (!$('#nicolist_thumb').prop('checked')) {
-		div.addClass('mt-1');
+		div.addClass('mb-2');
 	}
 	if ($('#nicolist_thumb').prop('checked')){
 		if (lazyload) {

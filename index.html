@@ -81,7 +81,7 @@ button.close span{font-size: 16px !important}
 .ccvideo:hover{border-left-color: #4BB363;border-right-color: #4BB363;color: #417238}
 .cctable td{border-bottom:1px solid #eee;}
 .cctable td:last{border-bottom:none;}
-.rightvideo{border-bottom:1px solid #d9eef4;margin-bottom: 0.2em}
+.rightvideo{border-bottom:1px solid #d9eef4;border-top: 1px solid transparent}
 div.tdftdiv{
 	padding:3px;
 	line-height:16px;
@@ -171,7 +171,7 @@ div.sgdef{
 		<!-- ALERT ends -->
 
 		<div class="form-group form-inline" id="getwidth">
-			<button type="submit" class="btn btn-primary mb-1 mt-1" data-toggle="modal" data-target="#addVideoModal" >動画を追加</button>
+			<button type="submit" class="btn btn-primary mb-1 mt-1" id="openAddModal">動画を追加</button>
 			<button type="submit" class="btn btn-outline-primary mb-1 mt-1" data-toggle="modal" data-target="#genreModal" onclick="$('#alert-addvideo').html('');">ジャンルを追加</button>
 			<button type="submit" class="btn btn-outline-primary mb-1 mt-1" id="ccopen">複数動画を移動/コピー</button>
 			<input class="form-control mb-1 mt-1" type="text" placeholder="Search" aria-label="Search" id="searchQuery">
