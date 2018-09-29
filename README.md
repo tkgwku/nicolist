@@ -5,8 +5,8 @@
 公式のマイリストではできないマイリスト内検索など、面白い機能や便利なツールを追加していきたい。
 
 ### デモページ
-[https://tkgwku.github.io/n/index.html](https://tkgwku.github.io/n/index.html)   
-[以前のページ](http://jar.oiran.org/app/nicolist/)   
+* [https://tkgwku.github.io/n/index.html](https://tkgwku.github.io/n/index.html)   
+* [以前のページ](http://jar.oiran.org/app/nicolist/)   
 Downloadし、index.htmlを開くのも可能だが、ページ内で動画を見ることができない
 
 ### 基本的な使い方
