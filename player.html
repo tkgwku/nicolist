@@ -8,7 +8,7 @@
 <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0-beta/css/bootstrap.min.css" integrity="sha384-/Y6pD6FV/Vv2HJnA6t+vslU6fwYXjCFtcEpHbNJ0lyAFsXTsjBbfaDjzALeQsN6M" crossorigin="anonymous">
 <style type="text/css">
 	.silent {display: none}
-	body{background-color: #112;padding: 1em 2em;margin: 0;color: #ddd}
+	body{background-color: #112;padding: 1em 2em;margin: 0;color: #ddd;}
 	button{cursor: pointer;}
 	.disabled {cursor: default;}
 </style>
@@ -39,7 +39,7 @@ var playindex = 0;
 function init(){
 	var infoarray = window.location.search.match(/[^?&]+=[^?&]*/g);
 
-	if (infoarray == null){
+	if (infoarray === null){
 		$('#noquery').removeClass('silent');
 
 		var l = localStorage.getItem('nicolist_playlist_s');

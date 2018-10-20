@@ -2,7 +2,7 @@
 const domain = 'https://tkgwku.github.io/n';
 const MESSAGE_TYPES = ['primary', 'secondary', 'success', 'danger', 'warning', 'info', 'light', 'dark'];
 const SEP_DEF_VAL = ' 　+';
-//const IGN_DEF_VAL = '.';
+const IGN_DEF_VAL = '.';
 const debug = false;
 
 var y = {"とりあえず":[]};
@@ -70,7 +70,13 @@ function escapeREInsideBracket(str){
 }
 function search(query) {
 	var separator = escapeREInsideBracket($('#nicolist_separator').val());
-	var sq = query.replace(new RegExp('['+separator+']'), '$').replace(/\$+/g, '$').replace(/\$$|^\$/g, '').split('$');
+	var sq;
+	if (separator === ''){
+		sq = query;
+	} else {
+		sq = query.replace(new RegExp('['+separator+']'), '$');
+	}
+	sq = sq.replace(/\$+/g, '$').replace(/\$$|^\$/g, '').split('$');
 	if (sq[0] === '') {
 		message('検索クエリが空です。');
 		return;
@@ -96,6 +102,7 @@ function search(query) {
 	if (maxsearchcount === 0){
 		maxsearchcount = Infinity;
 	}
+	var ignore = escapeREInsideBracket($('#nicolist_ignore').val());
 	var _keys = Object.keys(y);
 	for (var i = 0; i < _keys.length; i++) {
 		var genre = _keys[i];
@@ -110,7 +117,12 @@ function search(query) {
 			if (isand){//and
 				isMatched = true;
 				for (var j = 0; j < sq.length; j++) {
-					var m = title.match(new RegExp(sq[j], 'gi'));
+					var m;
+					if (ignore !== ''){
+						m = title.replace(new RegExp('['+ignore+']', 'g'), '').match(new RegExp(sq[j], 'gi'));
+					} else {
+						m = title.match(new RegExp(sq[j], 'gi'));
+					}
 					if (m == null){
 						isMatched = false;
 						break;
@@ -119,7 +131,12 @@ function search(query) {
 			} else {//or
 				isMatched = false;
 				for (var j = 0; j < sq.length; j++) {
-					var m = title.match(new RegExp(sq[j], 'gi'));
+					var m;
+					if (ignore !== ''){
+						m = title.replace(new RegExp('['+ignore+']', 'g'), '').match(new RegExp(sq[j], 'gi'));
+					} else {
+						m = title.match(new RegExp(sq[j], 'gi'));
+					}
 					if (m){
 						isMatched = true;
 						break;
@@ -200,10 +217,10 @@ function search(query) {
 				}
 			}
 			var span;
-			if ($('#nicolist_hightlight').prop('checked')){
+			if ($('#nicolist_highlight').prop('checked')){
 				_t = escapeHtmlSpecialChars(_t);
 				for (var j = 0; j < sq.length; j++) {
-					_t = _t.replace(new RegExp(sq[j], 'gi'), function(x){
+					_t = _t.replace(new RegExp(compoundRe(sq[j], '['+ignore+']*'), 'gi'), function(x){
 						return '<mark>'+x+'</mark>';
 					});
 				}//j
@@ -211,6 +228,44 @@ function search(query) {
 			} else {
 				span = $('<span>', {text: _t});
 			}
+			/*
+			var span;
+			if ($('#nicolist_highlight').prop('checked')){
+				span = $('<span>');
+				var mpt = [_t];
+				for (var j = 0; j < sq.length; j++) {
+					var reg = new RegExp(compoundRe(sq[j], '['+ignore+']*'), 'gi');
+					var mptd = [];
+					for (var k = 0; k < mpt.length; k++) {
+						if (k % 2 === 0){
+							var mct = mpt[k].match(reg);
+							var mdt = mpt[k].split(reg);
+							if (mct !== null && mdt.length - 1 === mct.length){
+								for (var l = 0; l < mct.length; l++) {
+									mptd.push(mdt[l]);
+									mptd.push(mct[l]);
+								}
+								mptd.push(mdt[mdt.length-1]);
+							} else {
+								mptd.push(mpt[k]);
+							}
+						} else {
+							mptd.push(mpt[k]);
+						}
+					}
+					mpt = mptd;
+				}
+				for (var j = 0; j < mpt.length; j++) {
+					if (j % 2 === 0) {
+						span.append($('<span>', {text: mpt[j]}));
+					} else {
+						span.append($('<mark>', {text: mpt[j]}));
+					}
+				}
+			} else {
+				span = $('<span>', {text: _t});
+			}
+			*/
 			a.append(span);
 			a.appendTo(div);
 			div.appendTo('#sr');
@@ -218,6 +273,17 @@ function search(query) {
 	}//i
 	$('#sr').fadeIn();
 	dismissAllWarningAlerts();
+}
+//compoundRe('xxxx', '.') -> 'x.x.x.x'
+function compoundRe(text, re){
+	var str = '';
+	for (var i = 0; i < text.length; i++) {
+		str += text.charAt(i);
+		if (i < text.length-1){
+			str += re;
+		}
+	}
+	return str;
 }
 function getVideoURL(id){
 	if (/^sm\d+$/.test(id)
@@ -293,9 +359,9 @@ function sub(){
 			lastId = '';
 			dismissAllWarningAlerts();
 			if ($('#nicolist_stayopen').prop('checked')){
-				messageUndoable('動画「'+restrBytesize(title, 50)+'」を追加しました', 'success', '#alert-addvideo');
+				messageUndoable('動画「'+restrBytesize(title, 50)+'」を追加しました', 'success', '#alert-addvideo', 'v');
 			} else {
-				messageUndoable('動画「'+restrBytesize(title, 50)+'」を追加しました', 'success',);
+				messageUndoable('動画「'+restrBytesize(title, 50)+'」を追加しました', 'success', null, 'v');
 				$('#addVideoModal').modal('hide');
 			}
 		} else {
@@ -415,6 +481,46 @@ function pushHistory(queryStr) {
 	}
 	localStorage.setItem('searchhistory', JSON.stringify(searchHistory));
 }
+function handleVideoDrop(e){
+	var sel = '#url';
+	if (e.pageX > $('#addVideoModal').outerWidth(true)/2) {
+		sel = '#title';
+	}
+	var data = e.originalEvent.dataTransfer.items;
+	for (var i = 0; i < data.length; i++) {
+		if (data[i].kind !== 'string'){continue;}
+		if (/^text\/plain/.test(data[i].type)) {
+			data[i].getAsString(function (s){
+				$(sel).val(s);
+				checkValidity();
+			});
+		} else if (/^text\/html/.test(data[i].type)) {
+			data[i].getAsString(function (s){
+				var m = s.match(/<[^><]+>[^><]*(?=<)/g);
+				var s2 = null;
+				if (m !== null){
+					for (j = 0; j < m.length; j++){
+						if (/<span id="video-title"/.test(m[j])){
+							s2 = m[j].replace(/<[^><]+>/g, '').replace(/^\s+/, '').replace(/\s+$/, '').replace(/\n/g, '');
+							$('#title').val(s2);
+						}
+					}
+				}
+				if (s2 === null){
+					var s2 = s.replace(/<[^><]+>/g, '').replace(/^\s+/, '').replace(/\s+$/, '').replace(/\n/g, '');
+					$('#title').val(s2);
+				}
+				checkValidity();
+			});
+		} else if (/^text\/uri-list/.test(data[i].type)) {
+			data[i].getAsString(function (s){
+				$('#url').val(s);
+				checkValidity();
+			});
+		}
+	} 
+	$(sel).removeClass('dragging');
+}
 function registerEventListener(){
 	$(window).resize(function() {
 		if ($('#play iframe').length === 0) {return;}
@@ -424,7 +530,7 @@ function registerEventListener(){
 		unload();
 	});
 	$(window).scroll(function(){
-		var horizon = $(window).height() + $('html,body').scrollTop();
+		var horizon = $(window).height() + $('html,body').scrollTop() + 100;
 		$('#right, #sr').find('img[data-src]').each(function(i, elem){
 			if ($(elem).offset().top < horizon){
 				loadImg($(elem));
@@ -449,14 +555,55 @@ function registerEventListener(){
 		$('#nicolist_separator').removeClass('is-valid');
 		$('#prefModal').modal('show');
 	});
-	$('#reset_sep').on('click', function(){
-		$('#nicolist_separator').val(SEP_DEF_VAL);
-		localStorage.setItem('nicolist_separator', $('#nicolist_separator').val());
-		$('#nicolist_separator').removeClass('is-valid');
-	});
 	$('#nicolist_separator').on('input', function(){
 		localStorage.setItem('nicolist_separator', $('#nicolist_separator').val());
 		$('#nicolist_separator').addClass('is-valid');
+	});
+	$('#nicolist_ignore').on('input', function(){
+		localStorage.setItem('nicolist_ignore', $('#nicolist_ignore').val());
+	});
+	$('#body').on('dragstart', function(e){
+		e.originalEvent.dataTransfer.clearData();
+	});
+	$('#body, #prefModal').on('dragover', function(e){
+		e.stopPropagation();
+		e.preventDefault();
+	});
+	$('#body').on('drop', function(e){
+		e.preventDefault();
+		var data = e.originalEvent.dataTransfer.items;
+		for (var i = 0; i < data.length; i++) {
+			if (data[i].kind === 'file' && /json/.test(data[i].type)){
+				fileToLoad = data[i].getAsFile();
+				$('#rawFileName').text(fileToLoad.name);
+				$('#loadRawJson').removeClass('silent');
+				$('#dummyLoadRawJson').addClass('silent');
+				var _scrollToRawInput = function(){
+					$('#prefModal').stop().animate({scrollTop:$('#loadRawJson').offset().top}, 1400, function(){
+						$('#prefModal').off('shown.bs.modal', _scrollToRawInput);
+					});
+				};
+				$('#prefModal').on('shown.bs.modal', _scrollToRawInput);
+				$('#prefModal').modal('show');
+				break;
+			} else if (data[i].kind === 'string'){
+				$('#addVideoModal').modal('show');
+				handleVideoDrop(e);
+				break;
+			}
+		}
+	});
+	$('#prefModal').on('drop', function(e){
+		e.preventDefault();
+		var data = e.originalEvent.dataTransfer.items;
+		for (var i = 0; i < data.length; i++) {
+			if (data[i].kind === 'file' && /json/.test(data[i].type)){
+				fileToLoad = data[i].getAsFile();
+				$('#rawFileName').text(fileToLoad.name);
+				$('#loadRawJson').removeClass('silent');
+				$('#dummyLoadRawJson').addClass('silent');
+			}
+		}
 	});
 	$('#addVideoModal').on('dragover', function (e) {
 		e.stopPropagation();
@@ -476,44 +623,7 @@ function registerEventListener(){
 	});
 	$('#addVideoModal').on('drop', function (e){
 		e.preventDefault();
-		var sel = '#url';
-		if (e.pageX > $('#addVideoModal').outerWidth(true)/2) {
-			sel = '#title';
-		}
-		var data = e.originalEvent.dataTransfer.items;
-		for (var i = 0; i < data.length; i += 1) {
-			if (data[i].kind !== 'string'){continue;}
-			if (/^text\/plain/.test(data[i].type)) {
-				data[i].getAsString(function (s){
-					$(sel).val(s);
-					checkValidity();
-				});
-			} else if (/^text\/html/.test(data[i].type)) {
-				data[i].getAsString(function (s){
-					var m = s.match(/<[^><]+>[^><]*(?=<)/g);
-					var s2 = null;
-					if (m !== null){
-						for (j = 0; j < m.length; j++){
-							if (/<span id="video-title"/.test(m[j])){
-								s2 = m[j].replace(/<[^><]+>/g, '').replace(/^\s+/, '').replace(/\s+$/, '').replace(/\n/g, '');
-								$('#title').val(s2);
-							}
-						}
-					}
-					if (s2 === null){
-						var s2 = s.replace(/<[^><]+>/g, '').replace(/^\s+/, '').replace(/\s+$/, '').replace(/\n/g, '');
-						$('#title').val(s2);
-					}
-					checkValidity();
-				});
-			} else if (/^text\/uri-list/.test(data[i].type)) {
-				data[i].getAsString(function (s){
-					$('#url').val(s);
-					checkValidity();
-				});
-			}
-		} 
-		$(sel).removeClass('dragging');
+		handleVideoDrop(e);
 	});
 	$('#url, #title').on('input', function(e){
 		checkValidity();
@@ -559,10 +669,6 @@ function registerEventListener(){
 	});
 	$('#genreModal').on('shown.bs.modal', function () {
 		$('#genrename').focus();
-	});
-	$('#genre').on('change', function (){
-		setSelGen($(this).val());
-		refresh('s');
 	});
 	$('#saveEdit').on('click', function(){
 		var id = $('#editUrl').text();
@@ -637,7 +743,7 @@ function registerEventListener(){
 				}
 				pushPrev();
 				y = _y;
-				messageUndoable('動画「'+title+'」の動画情報を更新しました', 'info');
+				messageUndoable('動画「'+title+'」の動画情報を更新しました', 'info', null, 'v');
 				refresh('v');
 				$('#editModal').modal('hide');
 				dismissAllWarningAlerts();
@@ -711,6 +817,13 @@ function registerEventListener(){
 	});
 	$('#searchQuery').on('click', function (e) {
 		e.stopPropagation();
+	});
+	$('#searchQuery').on('keypress', function(e){
+		if (e.keyCode === 13) {//enter
+			search($('#searchQuery').val());
+			$('#searchQuery').blur();
+			$('#history').css('display', 'none');
+		}
 	});
 	$('#search').on('click', function(e){
 		search($('#searchQuery').val());
@@ -905,7 +1018,7 @@ function registerEventListener(){
 		});
 		y = _y;
 		refresh('g');
-		messageUndoable('ジャンルを並び替えしました', 'success');
+		messageUndoable('ジャンルを並び替えしました', 'success', null, 'g');
 		$('#genreSortModal').modal('hide');
 	});
 
@@ -953,7 +1066,7 @@ function registerEventListener(){
 			if (successcount > 0){
 				pushPrev();
 				y = _y;
-				messageUndoable(successcount+'個の動画を「'+targetgenre+'」に'+__a+'しました'+(failcount>0?' ('+failcount+'個の動画は既に登録されているため'+__a+'されません)':''), 'success');
+				messageUndoable(successcount+'個の動画を「'+targetgenre+'」に'+__a+'しました'+(failcount>0?' ('+failcount+'個の動画は既に登録されているため'+__a+'されません)':''), 'success', null, 'vgs');
 			} else {
 				message('すべて「'+targetgenre+'」に登録済みの動画です', 'warning', '#ccalert');
 				$('#ccModal').stop().animate({scrollTop:0}, 'slow');
@@ -999,7 +1112,7 @@ function registerEventListener(){
 				});
 				y[ccname] = list;
 				var __a = remove_cc?'移動':'コピー';
-				messageUndoable('「'+ccname+'」に'+(list.length/2)+'個の動画を'+__a+'しました', 'success');
+				messageUndoable('「'+ccname+'」に'+(list.length/2)+'個の動画を'+__a+'しました', 'success', null, 'gvs');
 				setSelGen(ccname);
 				refresh('gvs');
 				dismissAllWarningAlerts();
@@ -1013,66 +1126,79 @@ function registerEventListener(){
 		promptWinExplorer('backup_'+d.getFullYear()+'_'+(d.getMonth()+1)+'_'+d.getDate()+'.json', JSON.stringify(y));
 	});
 	$('#fromRawFile').on('change', function (e){
+		$('#loadrawalert').html('');
 		var files = e.target.files;
 		if (files.length !== 1) {
-			message('正しいファイルを選択してください', 'warning', '#prefalert');
+			message('正しいファイルを選択してください', 'warning', '#loadrawalert');
 			return;
 		}
-		if (files[0].type.match(/json/) === null){
-			message('jsonファイルを選択してください', 'warning', '#prefalert');
+		if (!/json/.test(files[0].type)){
+			message('jsonファイルを選択してください', 'warning', '#loadrawalert');
 			return;
 		}
 
-		var reader = new FileReader();
-		reader.readAsText(files[0]);
+		fileToLoad = files[0];
+		$('#rawFileName').text(fileToLoad.name);
+		$('#loadRawJson').removeClass('silent');
+		$('#dummyLoadRawJson').addClass('silent');
+	});
+	$('#loadRawJson').on('click', function(){
+		if (fileToLoad){
+			var reader = new FileReader();
+			reader.readAsText(fileToLoad);
 
-		reader.onload = function (){
-			try {
-				var toload = JSON.parse(reader.result);
-			} catch (e){
-				message('フォーマットが正しくありません', 'warning', '#prefalert');
-				return;
-			}
-			var videocount = 0;
-			var genrecount = 0;
-			if ($.type(toload) !== 'object'){
-				message('フォーマットが正しくありません', 'warning', '#prefalert');
-				return;
-			}
-			var _y = copy(y);
-			var _tkeys = Object.keys(toload);
-			for (var j = 0; j < _tkeys.length; j++) {
-				var genre = _tkeys[j];
-				var list = toload[genre];
-				if ($.type(list) !== 'array'){
-					message('フォーマットが正しくありません', 'warning', '#prefalert');
+			reader.onload = function (){
+				try {
+					var toload = JSON.parse(reader.result);
+				} catch (e){
+					message('フォーマットが正しくありません', 'warning', '#loadrawalert');
 					return;
 				}
-				for (var i = 0; i < list.length/2; i++){
-					var id = list[2*i];
-					var title = list[2*i+1];
-					if (!_y.hasOwnProperty(genre)) {
-						_y[genre] = [];
-						genrecount++;
-					}
-					if ($.inArray(id, _y[genre]) === -1){
-						_y[genre].push(id);
-						_y[genre].push(title);
-						videocount++;
-					}
+				var videocount = 0;
+				var genrecount = 0;
+				if ($.type(toload) !== 'object'){
+					message('フォーマットが正しくありません', 'warning', '#loadrawalert');
+					return;
 				}
-			}//j
-			if (videocount === 0 && genrecount === 0){
-				message('すべて登録済みの動画です', 'warning', '#prefalert');
-			} else {
-				pushPrev();
-				y = _y;
-				messageUndoable('JSONから'+(videocount>0?videocount+'個の動画':'')+(genrecount>0&&videocount>0?'、':'')+(genrecount>0?genrecount+'個のジャンル':'')+'を新たに読み込みました', 'success');
-				refresh((genrecount>0?'g':'')+(videocount>0?'v':''));
-				dismissAllWarningAlerts();
-				$('#prefModal').modal('hide');
-			}
-		};
+				var _y = copy(y);
+				var _tkeys = Object.keys(toload);
+				for (var j = 0; j < _tkeys.length; j++) {
+					var genre = _tkeys[j];
+					var list = toload[genre];
+					if ($.type(list) !== 'array'){
+						message('フォーマットが正しくありません', 'warning', '#loadrawalert');
+						return;
+					}
+					for (var i = 0; i < list.length/2; i++){
+						var id = list[2*i];
+						var title = list[2*i+1];
+						if (!_y.hasOwnProperty(genre)) {
+							_y[genre] = [];
+							genrecount++;
+						}
+						if ($.inArray(id, _y[genre]) === -1){
+							_y[genre].push(id);
+							_y[genre].push(title);
+							videocount++;
+						}
+					}
+				}//j
+				if (videocount === 0 && genrecount === 0){
+					message('すべて登録済みの動画です', 'warning', '#loadrawalert');
+				} else {
+					pushPrev();
+					y = _y;
+					messageUndoable('JSONから'+(videocount>0?videocount+'個の動画':'')+(genrecount>0&&videocount>0?'、':'')+(genrecount>0?genrecount+'個のジャンル':'')+'を新たに読み込みました', 'success', null, (genrecount>0?'g':'')+(videocount>0?'v':''));
+					refresh((genrecount>0?'g':'')+(videocount>0?'v':''));
+					dismissAllWarningAlerts();
+					$('#prefModal').modal('hide');
+				}
+			};
+			fileToLoad = null;
+			$('#rawFileName').text('');
+			$('#loadRawJson').addClass('silent');
+			$('#dummyLoadRawJson').removeClass('silent');
+		}
 	});
 }
 function init(){
@@ -1138,6 +1264,13 @@ function init(){
 		$('#nicolist_separator').val(sepls);
 	} else {
 		$('#nicolist_separator').val(SEP_DEF_VAL);
+	}
+
+	var ignls = localStorage.getItem('nicolist_ignore');
+	if (ignls !== null) {
+		$('#nicolist_ignore').val(ignls);
+	} else {
+		$('#nicolist_ignore').val(IGN_DEF_VAL);
 	}
 
 	var cals = localStorage.getItem('nicolist_click_action');
@@ -1595,18 +1728,18 @@ function openVideo($elem, mode){
 	}
 }
 function sizeString(byte){
-    if (byte < 500){
-        return byte + " byte";
-    } else if (byte < 500000){
-        var a = Math.round( byte * 100 / 1024 ) / 100;
-        return a + " KB";
-    } else if (byte < 500000000){
-        var a = Math.round( (byte * 100 / 1024) / 1024 ) / 100;
-        return a + " MB";
-    } else {
-        var a = Math.round( ((byte * 100 / 1024) / 1024) / 1024 ) / 100;
-        return a + " GB";
-    }
+	if (byte < 500){
+		return byte + " byte";
+	} else if (byte < 500000){
+		var a = Math.round( byte * 100 / 1024 ) / 100;
+		return a + " KB";
+	} else if (byte < 500000000){
+		var a = Math.round( (byte * 100 / 1024) / 1024 ) / 100;
+		return a + " MB";
+	} else {
+		var a = Math.round( ((byte * 100 / 1024) / 1024) / 1024 ) / 100;
+		return a + " GB";
+	}
 }
 function showMenu(coord_x, coord_y, cont, mode){
 	var id = cont.attr('data-id');
@@ -1785,7 +1918,7 @@ function addGenre(name){
 		pushPrev();
 		y[name] = [];
 		dismissAllWarningAlerts();
-		messageUndoable('ジャンル「'+name+'」を追加しました', 'success');
+		messageUndoable('ジャンル「'+name+'」を追加しました', 'success', null, 'gs');
 		return true;
 	} else {
 		message('ジャンル「'+name+'」は既に存在しているようです。', 'warning', '#alert-genre');
@@ -1807,7 +1940,7 @@ function removeVideo(elem){
 			}
 		}
 		y[genre] = newlist;
-		messageUndoable('動画「'+restrBytesize(title, 50)+'」を削除しました', 'danger');
+		messageUndoable('動画「'+restrBytesize(title, 50)+'」を削除しました', 'danger', null, 'v');
 		refresh('v');//video change
 	});
 }
@@ -1822,7 +1955,7 @@ function removeGenre(elem){
 			}
 		}
 		y = newy;
-		messageUndoable('ジャンル「'+genre+'」を削除しました', 'danger');
+		messageUndoable('ジャンル「'+genre+'」を削除しました', 'danger', null, 'gs');
 		setSelGen(Object.keys(y)[0]);
 		refresh('gs');//genre change
 	});
@@ -1836,19 +1969,19 @@ function setSelGen(genre){
 	selectedGenre = genre;
 	localStorage.setItem('selectedgenre', selectedGenre);
 }
-function redo() {
+function redo($elem) {
 	var _c = copy(y);
 	y = copy(prevy);
 	prevy = _c;
-	messageUndoable('REDOしました', 'primary');
-	refresh('vgs');
+	messageUndoable('やり直しました', 'primary', $elem.attr('data-wrapper'), $elem.attr('data-refarg'));
+	refresh($elem.attr('data-refarg'));
 }
-function undo() {
+function undo($elem) {
 	var _c = copy(y);
 	y = copy(prevy);
 	prevy = _c;
-	messageUndoable('UNDOしました', 'primary', '#alert', false, 'redo');
-	refresh('vgs');
+	messageUndoable('もとに戻しました', 'primary', $elem.attr('data-wrapper'), $elem.attr('data-refarg'), null, 'redo');
+	refresh($elem.attr('data-refarg'));
 }
 function message(mes, type, wrapper, permanent, elem) {
 	if ($.type(type) !== 'string' || $.inArray(type, MESSAGE_TYPES) === -1) type = 'warning';
@@ -1878,22 +2011,27 @@ function message(mes, type, wrapper, permanent, elem) {
 	$(wrapper).append(div);
 	div.fadeIn();
 }
-function messageUndoable(mes, type, wrapper, permanent, toredo){
+function messageUndoable(mes, type, wrapper, whatChanged, permanent, toredo){
+	whatChanged = whatChanged || '';
 	var span;
 	if (toredo === 'redo') {
 		span = $('<span>', {
-			text: '[REDO]',
+			text: '[やり直す]',
 			'class': 'undo',
+			'data-wrapper': wrapper,
+			'data-refarg': whatChanged,
 			click : function(){
-				redo();
+				redo($(this));
 			}
 		});
 	} else {
 		span = $('<span>', {
-			text: '[UNDO]',
+			text: '[もとに戻す]',
 			'class': 'undo',
+			'data-wrapper': wrapper,
+			'data-refarg': whatChanged,
 			click : function(){
-				undo();
+				undo($(this));
 			}
 		});
 	}
@@ -2262,8 +2400,8 @@ function removeFromDeletedVideoList(id){
 function videoSize(){
 	var w = $('#play').outerWidth();
 	var h = Math.ceil(w * 9 / 16);
-	if ($(window).height() * 0.8 < h){
-		h = Math.ceil($(window).height() * 0.8);
+	if ($(window).height() * 0.7 < h){
+		h = Math.ceil($(window).height() * 0.7);
 		w = Math.ceil(h * 16 / 9);
 	}
 	if (w < 640 || $('#nicolist_cinematic').prop('checked')){
@@ -2399,7 +2537,7 @@ function isNullOrUndefined(smthng){
 	return $.type(smthng) === 'undefined' || smthng === null;
 }
 function escapeHtmlSpecialChars(text) {
-    return text.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;").replace(/'/g, "&#039;");
+	return text.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;").replace(/'/g, "&#039;");
 }
 function dismissAllWarningAlerts(){
  	$('.alert-warning').fadeOut();

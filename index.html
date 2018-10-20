@@ -6,7 +6,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
 <link rel="shortcut icon" href="favicon.ico">
 <!-- bootstrap -->
-<link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0-beta/css/bootstrap.min.css" integrity="sha384-/Y6pD6FV/Vv2HJnA6t+vslU6fwYXjCFtcEpHbNJ0lyAFsXTsjBbfaDjzALeQsN6M" crossorigin="anonymous">
+<link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/css/bootstrap.min.css" integrity="sha384-Gn5384xqQ1aoWXA+058RXPxPg6fy4IWvTNh0E263XmFcJlSAwiGgFAW/dAiS6JXm" crossorigin="anonymous">
 <style type="text/css">
 *{font-size: 13px}
 button.close span{font-size: 16px !important}
@@ -157,6 +157,8 @@ div.sgdef{
 .pl-2{padding-left: .4em;}
 .pr-2{padding-right: .4em;}
 .pb-2{padding-bottom: .4em;}
+.dummy_sample_text_white{background-color: #e4e4e4;border-radius: 3px}
+.dummy_sample_text_gray{background-color: #ccc;border-radius: 3px}
 </style>
 </head>
 
@@ -174,7 +176,7 @@ div.sgdef{
 			<button type="submit" class="btn btn-primary mb-1 mt-1" id="openAddModal">動画を追加</button>
 			<button type="submit" class="btn btn-outline-primary mb-1 mt-1" data-toggle="modal" data-target="#genreModal" onclick="$('#alert-addvideo').html('');">ジャンルを追加</button>
 			<button type="submit" class="btn btn-outline-primary mb-1 mt-1" id="ccopen">複数動画を移動/コピー</button>
-			<input class="form-control mb-1 mt-1" type="text" placeholder="Search" aria-label="Search" id="searchQuery">
+			<input class="form-control mb-1 mt-1" type="text" placeholder="Search..." id="searchQuery">
 			<button class="btn btn-outline-success mb-1 mt-1" type="submit" id="search">検索</button>
 			<button class="btn btn-outline-info mb-1 mt-1" type="submit" onclick="randomFromAll()">全体からランダム</button>
 			<button class="btn btn-outline-info mb-1 mt-1" type="submit" onclick="randomFromRight()">表示内からランダム</button>
@@ -191,7 +193,7 @@ div.sgdef{
 			<span id="pcnewtab" class="p-2 pointer" title="別ページのプレイヤーで連続再生"><img src="" width="16px"></span>
 			<span id="pcloop" class="p-2 pointer"><img src="" width="16px"></span>
 			<span id="pcwidth" class="p-2 pointer"><img src="" width="16px"></span>
-			<select class="form-control custom-select silent ml-2" id="pclist"></select>
+			<select class="form-control form-inline custom-select silent ml-2" id="pclist"></select>
 		</div>
 
 		<div id="random" class="alert">
@@ -205,9 +207,47 @@ div.sgdef{
 				<ul class="list-group disabled mb-2" style="display: block;" id="favs">
 					<li class="list-group-item" onclick="if (!$(this).parent().hasClass('disabled')) {showFavs();}">お気に入り<span id="favlen" class="ml-2 badge badge-secondary"></span></li>
 				</ul>
-				<ul class="list-group" style="display: block;" id="left"></ul>
+				<ul class="list-group" style="display: block;" id="left">
+					<li class="list-group-item selected"><span class="dummy_sample_text_gray" style="padding-left: 80px">&nbsp;</span></li>
+					<li class="list-group-item"><span class="dummy_sample_text_white" style="padding-left: 100px">&nbsp;</span></li>
+					<li class="list-group-item"><span class="dummy_sample_text_white" style="padding-left: 90px">&nbsp;</span></li>
+					<li class="list-group-item"><span class="dummy_sample_text_white" style="padding-left: 130px">&nbsp;</span></li>
+				</ul>
 			</div>
-			<div class="col" style="display: inline-block;padding:0;" id="right"></div>
+			<div class="col" style="display: inline-block;padding:0;" id="right">
+				<h4><span class="dummy_sample_text_gray h5" style="padding-left: 140px">&nbsp;</span></h4>
+
+				<div class="d-flex flex-row align-items-center mb-1">
+					<span class="dummy_sample_text_white mr-2" style="padding-left: 16px">&nbsp;</span>
+					<span class="dummy_sample_text_white sm-thumb mr-4">&nbsp;</span>
+					<span class="rightvideo dummy_sample_text_white" style="padding-left: 300px">&nbsp;</span>
+				</div>
+				<div class="d-flex flex-row align-items-center mb-1">
+					<span class="dummy_sample_text_white mr-2" style="padding-left: 16px">&nbsp;</span>
+					<span class="dummy_sample_text_white sm-thumb mr-4">&nbsp;</span>
+					<span class="rightvideo dummy_sample_text_white" style="padding-left: 360px">&nbsp;</span>
+				</div>
+				<div class="d-flex flex-row align-items-center mb-1">
+					<span class="dummy_sample_text_white mr-2" style="padding-left: 16px">&nbsp;</span>
+					<span class="dummy_sample_text_white sm-thumb mr-4">&nbsp;</span>
+					<span class="rightvideo dummy_sample_text_white" style="padding-left: 200px">&nbsp;</span>
+				</div>
+				<div class="d-flex flex-row align-items-center mb-1">
+					<span class="dummy_sample_text_white mr-2" style="padding-left: 16px">&nbsp;</span>
+					<span class="dummy_sample_text_white sm-thumb mr-4">&nbsp;</span>
+					<span class="rightvideo dummy_sample_text_white" style="padding-left: 340px">&nbsp;</span>
+				</div>
+				<div class="d-flex flex-row align-items-center mb-1">
+					<span class="dummy_sample_text_white mr-2" style="padding-left: 16px">&nbsp;</span>
+					<span class="dummy_sample_text_white sm-thumb mr-4">&nbsp;</span>
+					<span class="rightvideo dummy_sample_text_white" style="padding-left: 300px">&nbsp;</span>
+				</div>
+				<div class="d-flex flex-row align-items-center">
+					<span class="dummy_sample_text_white mr-2" style="padding-left: 16px">&nbsp;</span>
+					<span class="dummy_sample_text_white sm-thumb mr-4">&nbsp;</span>
+					<span class="rightvideo dummy_sample_text_white" style="padding-left: 270px">&nbsp;</span>
+				</div>
+			</div>
 		</div>
 
 		<footer style="margin-top: 3em">
@@ -276,28 +316,27 @@ div.sgdef{
 
 				<div id="ccalert"></div>
 
-				<div class="form-group">
-					<select class="custom-select mr-sm-2" id="ccnew" onchange="ccnew();">
+				<div class="form-inline">
+					<select class="custom-select form-control mr-sm-2" id="ccnew" onchange="ccnew();">
 						<option value="copytoold">既存のジャンルにコピー</option>
 						<option value="movetoold">既存のジャンルに移動</option>
 						<option value="copytonew">新しいジャンルにコピー</option>
 						<option value="movetonew">新しいジャンルに移動</option>
 					</select>
-					<div id="ccoldform" class="mt-1">
-						<span class="text-muted">移動先のジャンルを選択: </span><select class="custom-select mr-sm-2" role="genre" id="ccoldsel"></select>
-					</div>
-					<div id="ccnewform" class="mt-1">
-						<input type="text" class="form-control" id="ccname" placeholder="新しいジャンルの名前を入力...">
-					</div>
+				</div>
+				<div id="ccoldform" class="mt-1 form-inline">
+					<span class="text-muted">移動先のジャンルを選択: </span>
+					<select class="form-control custom-select mr-sm-2" role="genre" id="ccoldsel"></select>
+				</div>
+				<div id="ccnewform" class="mt-1 form-inline">
+					<input type="text" class="form-control" id="ccname" placeholder="新しいジャンルの名前を入力...">
 				</div>
 
-				<div>
-					<label class="custom-control custom-checkbox">
-						<input type="checkbox" class="custom-control-input" id="nicolist_thumb_cc" checked="" onchange="cctntoggle()">
-						<span class="custom-control-indicator"></span>
-						<span class="custom-control-description">サムネイルを表示</span>
-					</label>
+				<div class="mt-2 custom-control custom-checkbox">
+					<input type="checkbox" class="custom-control-input" id="nicolist_thumb_cc" checked="" onchange="cctntoggle()">
+					<label class="custom-control-label" for="nicolist_thumb_cc">サムネイルを表示</label>
 				</div>
+
 				<hr>
 				<p class="text-muted">移動する動画をクリックして選択してください。</p>
 				<div id="ccvideos"></div>
@@ -409,104 +448,71 @@ div.sgdef{
 				</button>
 			</div>
 			<div class="modal-body">
-				<div id="prefalert"></div>
-
 				<h5 class="mb-3">UI</h5>
 
-				<div>
-					<label class="custom-control custom-checkbox">
-						<input type="checkbox" class="custom-control-input" id="nicolist_del">
-						<span class="custom-control-indicator"></span>
-						<span class="custom-control-description">確認画面の表示を減らす</span>
-					</label>
+				<div class="mt-2 custom-control custom-checkbox">
+					<input type="checkbox" class="custom-control-input" id="nicolist_del">
+					<label class="custom-control-label" for="nicolist_del">確認画面の表示を減らす</label>
 				</div>
 
-				<div>
-					<label class="custom-control custom-checkbox">
-						<input type="checkbox" class="custom-control-input" id="nicolist_rand">
-						<span class="custom-control-indicator"></span>
-						<span class="custom-control-description">前回のランダム選出を残さない</span>
-					</label>
+				<div class="mt-2 custom-control custom-checkbox">
+					<input type="checkbox" class="custom-control-input" id="nicolist_rand">
+					<label class="custom-control-label" for="nicolist_rand">前回のランダム選出を残さない</label>
 				</div>
 
-				<div>
-					<label class="custom-control custom-checkbox">
-						<input type="checkbox" class="custom-control-input" id="nicolist_sort" onchange="refresh('v')" checked="">
-						<span class="custom-control-indicator"></span>
-						<span class="custom-control-description">新しいものが上に来るように表示する</span>
-					</label>
+				<div class="mt-2 custom-control custom-checkbox">
+					<input type="checkbox" class="custom-control-input" id="nicolist_sort" onchange="refresh('v')" checked="">
+					<label class="custom-control-label" for="nicolist_sort">新しいものが上に来るように表示する</label>
 				</div>
 
-				<div>
-					<label class="custom-control custom-checkbox">
-						<input type="checkbox" class="custom-control-input" id="nicolist_taggedtitle" onchange="refresh('v')">
-						<span class="custom-control-indicator"></span>
-						<span class="custom-control-description">動画タイトルの【】や [] を消去し、代わりにタグとして表示する</span>
-					</label>
+				<div class="mt-2 custom-control custom-checkbox">
+					<input type="checkbox" class="custom-control-input" id="nicolist_taggedtitle" onchange="refresh('v')">
+					<label class="custom-control-label" for="nicolist_taggedtitle">動画タイトルの【】や [] を消去し、代わりにタグとして表示する</label>
 				</div>
 
-				<div>
-					<label class="custom-control custom-checkbox">
-						<input type="checkbox" class="custom-control-input" id="nicolist_multitab" onchange="$('#laert').fadeOut()">
-						<span class="custom-control-indicator"></span>
-						<span class="custom-control-description">複数タブで同時に閲覧している際警告を表示しない</span>
-					</label>
+				<div class="mt-2 custom-control custom-checkbox mb-2">
+					<input type="checkbox" class="custom-control-input" id="nicolist_multitab" onchange="$('#laert').fadeOut();">
+					<label class="custom-control-label" for="nicolist_multitab">複数タブで同時に閲覧している際警告を表示しない</label>
 				</div>
-				<div>
-					<span class="text-muted">(複数タブでリストの操作をすると正しい動作ができない可能性があります)</span>
-				</div>
+
+				<p class="text-muted ml-2">(複数タブでリストの操作をすると正しい動作ができない可能性があります)</p>
 
 				<hr>
 
 				<h5 class="mt-4 mb-3">パフォーマンス</h5>
 
-				<div>
-					<label class="custom-control custom-checkbox">
-						<input type="checkbox" class="custom-control-input" id="nicolist_thumb" onchange="refresh('v')">
-						<span class="custom-control-indicator"></span>
-						<span class="custom-control-description">一覧でサムネイル画像を表示する</span>
-					</label>
+				<div class="mt-2 custom-control custom-checkbox">
+					<input type="checkbox" class="custom-control-input" id="nicolist_thumb" checked="" onchange="refresh('v')">
+					<label class="custom-control-label" for="nicolist_thumb">一覧でサムネイル画像を表示する</label>
 				</div>
 
-				<div>
-					<label class="custom-control custom-checkbox">
-						<input type="checkbox" class="custom-control-input" id="nicolist_thumb_res" checked="">
-						<span class="custom-control-indicator"></span>
-						<span class="custom-control-description">検索結果・ランダム選出の結果でサムネイル画像を表示する</span>
-					</label>
+				<div class="mt-2 custom-control custom-checkbox mb-2">
+					<input type="checkbox" class="custom-control-input" id="nicolist_thumb_res" checked="">
+					<label class="custom-control-label" for="nicolist_thumb_res">検索結果・ランダム選出の結果でサムネイル画像を表示する</label>
 				</div>
 
 				<hr>
 
 				<h5 class="mt-4 mb-3">動画再生</h5>
 
-				<div>
-					<label class="custom-control custom-checkbox">
-						<input type="checkbox" class="custom-control-input" id="nicolist_cinematic">
-						<span class="custom-control-indicator"></span>
-						<span class="custom-control-description">動画をウィンドウサイズで再生する</span>
-					</label>
+				<div class="mt-2 custom-control custom-checkbox">
+					<input type="checkbox" class="custom-control-input" id="nicolist_cinematic">
+					<label class="custom-control-label" for="nicolist_cinematic">動画をウィンドウサイズで再生する</label>
 				</div>
 
-				<div>
-					<label class="custom-control custom-checkbox">
-						<input type="checkbox" class="custom-control-input" id="nicolist_loop">
-						<span class="custom-control-indicator"></span>
-						<span class="custom-control-description">プレイリストをループして再生</span>
-					</label>
+				<div class="mt-2 custom-control custom-checkbox">
+					<input type="checkbox" class="custom-control-input" id="nicolist_loop">
+					<label class="custom-control-label" for="nicolist_loop">プレイリストをループして再生</label>
 				</div>
 
-				<div>
-					<label class="custom-control custom-checkbox">
-						<input type="checkbox" class="custom-control-input" id="nicolist_savevolume" checked="">
-						<span class="custom-control-indicator"></span>
-						<span class="custom-control-description">動画ごとに音量設定を保存 (ニコニコ動画のみ)</span>
-					</label>
+				<div class="mt-2 custom-control custom-checkbox">
+					<input type="checkbox" class="custom-control-input" id="nicolist_savevolume" checked="">
+					<label class="custom-control-label" for="nicolist_savevolume">動画ごとに音量設定を保存 (ニコニコ動画のみ)</label>
 				</div>
 
-				<div>
-					<span>動画リンクをクリックしたときの動作</span>
-					<select class="custom-select ml-2" id="click_action">
+				<div class="mt-3 form-inline ml-1">
+					<label for="click_action">動画リンクをクリックしたときの動作</label>
+					<select class="custom-select form-control ml-2" id="click_action" style="">
 						<option value="official" selected="">新しいタブで公式リンクを開く</option>
 						<option value="thispage">このページで視聴</option>
 						<option value="cont">ここから連続再生</option>
@@ -523,30 +529,34 @@ div.sgdef{
 				</div>
 
 				<div class="mb-1 form-inline">
-					<input type="number" name="" style="max-width: 5em" id="nicolist_msc" value="125" class="form-control" size="">個以上がヒットした場合表示しない
+					<input type="number" name="" style="max-width: 5em" id="nicolist_msc" value="200" class="form-control" size="">個以上がヒットした場合表示しない
 				</div>
 
-				<div class="mt-3">
-					<label class="custom-control custom-checkbox">
-						<input type="checkbox" class="custom-control-input" id="nicolist_and" checked="">
-						<span class="custom-control-indicator"></span>
-						<span class="custom-control-description">AND検索をする</span>
-					</label>
+				<div class="mt-3 custom-control custom-checkbox">
+					<input type="checkbox" class="custom-control-input" id="nicolist_highlight" checked="">
+					<label class="custom-control-label" for="nicolist_highlight">一致した箇所をハイライトする</label>
 				</div>
 
-				<div>
-					<label class="custom-control custom-checkbox">
-						<input type="checkbox" class="custom-control-input" id="nicolist_hightlight" checked="">
-						<span class="custom-control-indicator"></span>
-						<span class="custom-control-description">一致した箇所をハイライトする</span>
-					</label>
+				<div class="mt-2 custom-control custom-checkbox">
+					<input type="checkbox" class="custom-control-input" id="nicolist_and" checked="">
+					<label class="custom-control-label" for="nicolist_and">AND検索をする</label>
 				</div>
+
+				<p class="text-muted mt-2 mb-4 ml-2">例えば「エビ 劇場」と検索するとき、AND検索では「エビ」と「劇場」の両方を含む動画がマッチする。OR検索では、どちらか一方でも入っていればマッチする。</p>
 				
-				<div class="mb-1 form-inline">
-					<span>区切り文字として認識する文字</span>
+				<div class="mb-1 form-inline ml-1">
+					<label for="nicolist_separator">区切り文字</label>
 					<input type="text" name="" id="nicolist_separator" class="form-control ml-2">
-					<button type="button" class="btn btn-outline-danger btn-sm" id="reset_sep">初期設定</button>
 				</div>
+
+				<p class="text-muted mt-2 mb-4 ml-2">その字を区切りとして、前と後ろでワードを分割してANDもしくはOR検索する。全角・半角スペースとプラスが初期値。</p>
+
+				<div class="mb-1 form-inline ml-1">
+					<label for="nicolist_ignore">検索対象から除外する文字</label>
+					<input type="text" name="" id="nicolist_ignore" class="form-control ml-2">
+				</div>
+
+				<p class="text-muted mt-2 ml-2">設定した文字をタイトルから除外して、その文字列から検索する。例えば「夜.の踊.り.子」というタイトルの動画があったとき、"."を除外することで「夜の踊り子」とマッチするようになる。</p>
 
 				<hr>
 
@@ -558,13 +568,14 @@ div.sgdef{
 					<textarea class="form-control" id="out" rows="3" onclick="this.focus();this.select()" readonly="readonly"></textarea>
 				</div>
 
-				<p class="text-muted mt-3">nicol;stはブラウザのローカルストレージにデータを保存しています。ローカルストレージは、CClearnerといったクリーナーソフトやブラウザの閲覧データ消去によって<strong>初期化してしまう</strong>場合があります。クリーナーソフトを使う前・閲覧データを削除する前に、バックアップを取るようにしてください。</p>
+				<p class="text-muted mt-3 ml-2">nicol;stはブラウザのローカルストレージにデータを保存しています。ローカルストレージは、CClearnerといったクリーナーソフトやブラウザの閲覧データ消去によって<strong>初期化してしまう</strong>場合があります。クリーナーソフトを使う前・閲覧データを削除する前に、バックアップを取るようにしてください。</p>
 
 				<hr>
 
 				<p>インポート</p>
+				<div id="loadrawalert"></div>
 				<div>
-					<input type="file" class="btn btn-outline-primary" id="fromRawFile">
+					<input type="file" class="silent" id="fromRawFile"><label for="fromRawFile" class="btn btn-outline-primary" style="margin:0;">ファイルを選択</label><button type="submit" class="btn btn-outline-secondary disabled ml-2" id="dummyLoadRawJson">読み込む</button><button type="submit" class="btn btn-success ml-2 silent" id="loadRawJson">読み込む</button><span id="rawFileName" class="ml-2 text-muted"></span>
 				</div>
 
 				<hr>
@@ -592,27 +603,36 @@ div.sgdef{
 			<div class="modal-body">
 				<p>動画を追加</p>
 				<div id="alert-addvideo"></div>
-				<p class="text-muted mb-2">ドラッグアンドドロップでフォームに自動入力できます。</p>
-				<div class="form-group input-group">
-					<span class="input-group-addon" id="basic-addon1">URL</span>
-					<input type="text" class="form-control" id="url" aria-describedby="basic-addon1">
-					<span class="input-group-addon" id="basic-addon2">タイトル</span>
-					<input type="text" class="form-control" id="title" aria-describedby="basic-addon2">
+				<div class="form-row">
+					<div class="col">
+						<div class="input-group">
+							<div class="input-group-prepend">
+							  	<span class="input-group-text">URL</span>
+							</div>
+							<input type="text" class="form-control" id="url" placeholder="https://...">
+						</div>
+					</div>
+					<div class="col">
+						<div class="input-group">
+							<div class="input-group-prepend">
+							  	<span class="input-group-text">URL</span>
+							</div>
+							<input type="text" class="form-control" id="title" placeholder="タイトル...">
+						</div>
+					</div>
 				</div>
+				<p class="text-muted mt-2 ml-2">ドラッグアンドドロップでフォームに自動入力できます。</p>
 
 				<p class="text-muted mt-4 mb-2">追加先のジャンルを選択</p>
-				<div class="form-group">
+				<div class="form-inline mb-2">
 					<select class="form-control" role="genre" id="genre"></select>
 				</div>
 
 				<div id="registry" class="silent mb-4"></div>
 
-				<div>
-					<label class="custom-control custom-checkbox">
-						<input type="checkbox" class="custom-control-input" id="nicolist_stayopen">
-						<span class="custom-control-indicator"></span>
-						<span class="custom-control-description">動画追加後もこのウィンドウを閉じない</span>
-					</label>
+				<div class="mt-4 custom-control custom-checkbox">
+					<input type="checkbox" class="custom-control-input" id="nicolist_stayopen" checked="">
+					<label class="custom-control-label" for="nicolist_stayopen">動画追加後もこのウィンドウを閉じない</label>
 				</div>
 			</div>
 			<div class="modal-footer">
@@ -627,8 +647,8 @@ div.sgdef{
 <!-- jQuery -->
 <script src="https://code.jquery.com/jquery-3.2.1.min.js"></script>
 <!-- bootstrap -->
-<script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.11.0/umd/popper.min.js" integrity="sha384-b/U6ypiBEHpOf/4+1nzFpr53nxSS+GLCkfwBdFNTxtclqqenISfwAzpKaMNFNmj4" crossorigin="anonymous"></script>
-<script src="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0-beta/js/bootstrap.min.js" integrity="sha384-h0AbiXch4ZDo7tp9hKZ4TsHbi047NrKGLO3SEJAg45jXxnGIfYzk4Si90RDIqNm1" crossorigin="anonymous"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.12.9/umd/popper.min.js" integrity="sha384-ApNbgh9B+Y1QKtv3Rn7W3mgPxhU9K/ScQsAP7hUibX39j7fakFPskvXusvfa0b4Q" crossorigin="anonymous"></script>
+<script src="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/js/bootstrap.min.js" integrity="sha384-JZR6Spejh4U02d8jOt6vLEHfe/JQGiRRSQQxSfFWpi1MquVdAyjUar5+76PVCmYl" crossorigin="anonymous"></script>
 <!-- Sortable -->
 <script type="text/javascript" src="Sortable.min.js"></script>
 <!-- Youtube iframe api-->
