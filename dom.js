@@ -571,10 +571,20 @@ function registerEventListener(){
 	});
 	$('#body').on('drop', function(e){
 		e.preventDefault();
-		var data = e.originalEvent.dataTransfer.items;
+		var data = e.originalEvent.dataTransfer.items || e.originalEvent.dataTransfer.files;
 		for (var i = 0; i < data.length; i++) {
-			if (data[i].kind === 'file' && /json/.test(data[i].type)){
+			let flag = data[i].kind === 'file' && /json/.test(data[i].type);
+			if (flag) {
 				fileToLoad = data[i].getAsFile();
+			}
+			/* for IE-11 */
+			if (isNullOrUndefined(data[i].kind)){
+				flag = /\.json$/.test(data[i].name);
+				if (flag){
+					fileToLoad = data[i];
+				}
+			}
+			if (flag){
 				$('#rawFileName').text(fileToLoad.name);
 				$('#loadRawJson').removeClass('silent');
 				$('#dummyLoadRawJson').addClass('silent');
@@ -595,9 +605,20 @@ function registerEventListener(){
 	});
 	$('#prefModal').on('drop', function(e){
 		e.preventDefault();
-		var data = e.originalEvent.dataTransfer.items;
+		var data = e.originalEvent.dataTransfer.items || e.originalEvent.dataTransfer.files;
 		for (var i = 0; i < data.length; i++) {
-			if (data[i].kind === 'file' && /json/.test(data[i].type)){
+			let flag = data[i].kind === 'file' && /json/.test(data[i].type);
+			if (flag) {
+				fileToLoad = data[i].getAsFile();
+			}
+			/* for IE-11 */
+			if (isNullOrUndefined(data[i].kind)){
+				flag = /\.json$/.test(data[i].name);
+				if (flag){
+					fileToLoad = data[i];
+				}
+			}
+			if (flag){
 				fileToLoad = data[i].getAsFile();
 				$('#rawFileName').text(fileToLoad.name);
 				$('#loadRawJson').removeClass('silent');
@@ -2259,9 +2280,14 @@ function createEmbedElem(){
 	} else {
 		setupYoutubeIframe(id);
 	}
-	$('#play iframe').get(0).contentWindow.ondrop = function(e){
-		e.preventDefault();
-		e.stopPropagation();
+	try {
+		$('#play iframe').get(0).contentWindow.ondrop = function(e){
+			e.preventDefault();
+			e.stopPropagation();
+		}
+	} catch(e) {
+		/* for IE-11 */
+		// access denied [TypeError]
 	}
 	initPlaylistSel();
 
