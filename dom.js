@@ -2,7 +2,7 @@
 const domain = 'https://tkgwku.github.io/n';
 const MESSAGE_TYPES = ['primary', 'secondary', 'success', 'danger', 'warning', 'info', 'light', 'dark'];
 const SEP_DEF_VAL = ' 　+';
-const IGN_DEF_VAL = '.';
+const IGN_DEF_VAL = '';
 const debug = false;
 
 var y = {"とりあえず":[]};
