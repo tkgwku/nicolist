@@ -1,5 +1,4 @@
-debug.log
-backup
 *.txt
-windowversion.html
-_ico
+*.zip
+ts/node_modules
+ts/package-lock.json
