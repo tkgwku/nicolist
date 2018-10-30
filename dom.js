@@ -68,6 +68,16 @@ function escapeREInsideBracket(str){
 		return '\\' + x;
 	})
 }
+function loadImgOnScreen() {
+	var horizon = $(window).height() + $('html,body').scrollTop();
+	$('#right, #sr').find('img[data-src]').each(function(i, elem){
+		if (!$(elem).is(':hidden')){
+			if ($(elem).offset().top < horizon){
+				loadImg($(elem));
+			}
+		}
+	});
+}
 function search(query) {
 	var separator = escapeREInsideBracket($('#nicolist_separator').val());
 	var sq;
@@ -168,28 +178,56 @@ function search(query) {
 		$('#sr').fadeIn();
 		return;
 	}
+	var wrapperSr = $('<div>');
 	$('<h4>', {
 		text: '「'+sqDesc+'」の検索結果'
 	}).append($('<small>',{
 		text: '('+count+'件の一致)',
 		'class': 'text-muted ml-2'
-	})).appendTo('#sr');
+	})).appendTo(wrapperSr);
+	var manyMatched = _mkeys.length > 2 && count > 20;
 	for (var i = 0; i < _mkeys.length; i++) {
 		var _g = _mkeys[i];
 		var _l = mobj[_g];
-		$('<h5>', {
-			text: _g
-		}).appendTo('#sr');
+		var wrapperTitle = $('<div>');
+		var genreTitle = $('<span>', {
+			text: (manyMatched ? '- ' : '') + _g,
+			'data-genre': _g,
+			'data-for': 'genreTitle'
+		});
+		if (manyMatched){
+			genreTitle.on('click', function(e){
+				var thisElem = this;
+				$('#sr div[data-for=wrapperGenre]').each(function(_i, elem){
+					if ($(elem).attr('data-genre') === $(thisElem).attr('data-genre')){
+						$(elem).toggleClass('silent');
+						loadImgOnScreen();
+					} else {
+						$(elem).addClass('silent');
+					}
+				});
+			});
+			genreTitle.addClass('pointer hover');
+		}
+		wrapperTitle.append(genreTitle).appendTo(wrapperSr);
+		var wrapperGenre = $('<div>', {
+			'data-genre': _g, 
+			'data-for': 'wrapperGenre',
+			'class': 'mt-2 mb-2'
+		});
+		if (manyMatched){
+			wrapperGenre.addClass('silent');
+		}
 		for (var k = 0; k < _l.length/2; k++){
 			var _id = _l[2*k];
 			var _t = _l[2*k+1];
-			var div = $('<div>',{
+			var wrapperVideo = $('<div>',{
 				'class': 'd-flex align-items-center flex-row'
 			});
 
 			var favIcon = createFavIcon(_id, _t);
 
-			div.append(favIcon);
+			wrapperVideo.append(favIcon);
 
 			var a = $('<a>', {
 				'href': getVideoURL(_id),
@@ -208,13 +246,8 @@ function search(query) {
 					openVideo($(this), 'search');
 				}
 			});
-			var startLazyLoad = Math.ceil($(window).height()/68);
 			if ($('#nicolist_thumb_res').prop('checked')){
-				if (k < startLazyLoad){
-					a.append(createThumbImgElem(_id, false));
-				} else {
-					a.append(createStayUnloadedTNI(_id, false));
-				}
+				a.append(createStayUnloadedTNI(_id, false));
 			}
 			var span;
 			if ($('#nicolist_highlight').prop('checked')){
@@ -267,11 +300,14 @@ function search(query) {
 			}
 			*/
 			a.append(span);
-			a.appendTo(div);
-			div.appendTo('#sr');
+			a.appendTo(wrapperVideo);
+			wrapperVideo.appendTo(wrapperGenre);
 		}//k
+		wrapperGenre.appendTo(wrapperSr)
 	}//i
+	$('#sr').append(wrapperSr);
 	$('#sr').fadeIn();
+	loadImgOnScreen();
 	dismissAllWarningAlerts();
 }
 //compoundRe('xxxx', '.') -> 'x.x.x.x'
@@ -530,13 +566,7 @@ function registerEventListener(){
 		unload();
 	});
 	$(window).scroll(function(){
-		var horizon = $(window).height() + $('html,body').scrollTop() + 100;
-		$('#right, #sr').find('img[data-src]').each(function(i, elem){
-			if ($(elem).offset().top < horizon){
-				loadImg($(elem));
-				$(elem).removeAttr('data-src');
-			}
-		});
+		loadImgOnScreen();
 	});
 	$('input[type=checkbox]').on('change', function(){
 		var id = $(this).attr('id');
