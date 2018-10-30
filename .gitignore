@@ -1,4 +1,12 @@
+debug.log
 *.txt
 *.zip
-ts/node_modules
-ts/package-lock.json
+*.json
+node_modules
+*.html
+*.jpg
+*.png
+img
+*.md
+Sortable.min.js
+*.ico

@@ -1,3 +1,0 @@
-# Nicolist - TypeScript
-
-under const.
