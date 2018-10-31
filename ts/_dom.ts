@@ -1,7 +1,9 @@
-import * as $ from 'jquery'
-import * as images from './images'
-import * as Sortable from 'sortablejs'
-import * as YT from 'youtube'
+/// <reference path="images.ts"/>
+/// <reference path="../node_modules/@types/jquery/index.d.ts"/>
+/// <reference path="../node_modules/@types/popper.js/index.d.ts"/>
+/// <reference path="../node_modules/@types/bootstrap/index.d.ts"/>
+/// <reference path="../node_modules/@types/youtube/index.d.ts"/>
+/// <reference path="../node_modules/@types/sortablejs/index.d.ts"/>
 
 const domain = 'https://tkgwku.github.io/n';
 const MESSAGE_TYPES = ['primary', 'secondary', 'success', 'danger', 'warning', 'info', 'light', 'dark'];
@@ -17,7 +19,7 @@ var showingMenu = false;
 var playlist = [];
 var playlistTitleMap = {};
 var playindex = -1;
-var islocal = !debug && window.location.protocol === 'file:';
+const islocal = !debug && window.location.protocol === 'file:';
 var deletedVideoArray = [];
 var volumemap = {};
 var starred = [];
@@ -83,74 +85,85 @@ function loadImgOnScreen() {
 		}
 	});
 }
+function escapeRegExp(string) {
+	return string.replace(/[.*+?^${}()|[\]\\]/g, x => {return '\\'+x});
+}
 function search(query) {
-	var separator = escapeREInsideBracket($('#nicolist_separator').val());
-	var sq;
+	let separator = escapeREInsideBracket($('#nicolist_separator').val());
+	let queryArray = [];
 	if (separator === ''){
-		sq = query;
+		queryArray = [query];
 	} else {
-		sq = query.replace(new RegExp('['+separator+']'), '$');
+		let ga = separator.charAt(0);
+		queryArray = query
+			.replace(new RegExp('['+separator+']', 'g'), ga)
+			.replace(new RegExp(`${ga}+`, 'g'), ga)
+			.replace(new RegExp(`${ga}$|^${ga}`, 'g'), '')
+			.split(ga);
 	}
-	sq = sq.replace(/\$+/g, '$').replace(/\$$|^\$/g, '').split('$');
-	if (sq[0] === '') {
+	if (queryArray[0] === '') {
 		message('検索クエリが空です。');
 		return;
 	}
-	var sqDesc = sq.join('」+「');
+	let sqDesc = queryArray.join('」+「');
 	$('#sr').html('');
 	$('#sr').append($('<button>', {
 		html: '<span>&times;</span>',
 		'class': 'close',
 		'aria-label': 'Close',
-		'click': function(e){
-			$('#sr').fadeOut('slow', function(){
+		'click': e => {
+			$('#sr').fadeOut('slow', () => {
 				refreshStyle();
 				$('#sr').html('');
 			});
 		}
 	}));
 	pushHistory(query);
-	var count = 0;
-	var mobj = {};
-	var isand = $("#nicolist_and").prop('checked');
-	var maxsearchcount = int($("#nicolist_msc").val());
-	if (maxsearchcount === 0){
+	let count = 0;//count all
+	let mobj = {};//matched video tree
+	let isand = $("#nicolist_and").prop('checked');// true: AND false: OR
+	let maxsearchcount = int($("#nicolist_msc").val());
+	if (maxsearchcount <= 0){
 		maxsearchcount = Infinity;
 	}
 	var ignore = escapeREInsideBracket($('#nicolist_ignore').val());
-	var _keys = Object.keys(y);
-	for (var i = 0; i < _keys.length; i++) {
-		var genre = _keys[i];
-		var list = y[genre];
+	for (let genre in y){
+		let list = y[genre];
 		if ($('#nicolist_sort').prop('checked')) {
 			list = reversePairList(list);
 		}
 		for (var l = 0; l < list.length/2; l++){
-			var id = list[2*l];
-			var title = list[2*l+1];
-			var isMatched = true;
+			let id = list[2*l];
+			let title = list[2*l+1];
+			let isMatched = true;
 			if (isand){//and
 				isMatched = true;
-				for (var j = 0; j < sq.length; j++) {
-					var m;
+				for (let searchQuery of queryArray){
+					let m;
 					if (ignore !== ''){
-						m = title.replace(new RegExp('['+ignore+']', 'g'), '').match(new RegExp(sq[j], 'gi'));
+						m = title
+							.replace(new RegExp('['+ignore+']', 'g'), '')
+							.match(new RegExp(escapeRegExp(searchQuery), 'gi'));
 					} else {
-						m = title.match(new RegExp(sq[j], 'gi'));
+						m = title
+							.match(new RegExp(escapeRegExp(searchQuery), 'gi'));
 					}
-					if (m == null){
+					if (!m){
 						isMatched = false;
 						break;
 					}
 				}//j
 			} else {//or
 				isMatched = false;
-				for (var j = 0; j < sq.length; j++) {
-					var m;
+				for (let searchQuery of queryArray){
+					let m;
 					if (ignore !== ''){
-						m = title.replace(new RegExp('['+ignore+']', 'g'), '').match(new RegExp(sq[j], 'gi'));
+						m = title
+							.replace(new RegExp('['+ignore+']', 'g'), '')
+							.match(new RegExp(escapeRegExp(searchQuery), 'gi'));
 					} else {
-						m = title.match(new RegExp(sq[j], 'gi'));
+						m = title
+							.match(new RegExp(escapeRegExp(searchQuery), 'gi'));
 					}
 					if (m){
 						isMatched = true;
@@ -159,10 +172,10 @@ function search(query) {
 				}//j
 			}
 			if (isMatched){
-				count ++;
+				count++;
 				if (count > maxsearchcount){
 					$('#sr').append($('<span>', {
-						text: '検索条件「'+sqDesc+'」に一致する動画が多すぎます'
+						text: `検索条件「${sqDesc}」に一致する動画が多すぎます`
 					}));
 					$('#sr').fadeIn();
 					return;
@@ -175,72 +188,72 @@ function search(query) {
 			}
 		}//l
 	}//i
-	var _mkeys = Object.keys(mobj);
-	if (_mkeys.length === 0) {
+	let mkeys = Object.keys(mobj);
+	if (mkeys.length === 0) {
 		$('#sr').append($('<span>', {
-			text: '検索条件「'+sqDesc+'」に一致する動画はありませんでした'
+			text: `検索条件「${sqDesc}」に一致する動画はありませんでした`
 		}));
 		$('#sr').fadeIn();
 		return;
 	}
-	var wrapperSr = $('<div>');
+	let wrapperSr = $('<div>');
 	$('<h4>', {
-		text: '「'+sqDesc+'」の検索結果'
+		text: `「${sqDesc}」の検索結果`
 	}).append($('<small>',{
-		text: '('+count+'件の一致)',
+		text: `(${count}件の一致)`,
 		'class': 'text-muted ml-2'
 	})).appendTo(wrapperSr);
-	var manyMatched = _mkeys.length > 2 && count > 20;
-	for (var i = 0; i < _mkeys.length; i++) {
-		var _g = _mkeys[i];
-		var _l = mobj[_g];
-		var wrapperTitle = $('<div>');
-		var genreTitle = $('<span>', {
-			text: (manyMatched ? '- ' : '') + _g,
-			'data-genre': _g,
+	let manyMatched = mkeys.length > 2 && count > 20;
+	for (let i = 0; i < mkeys.length; i++) {
+		let genre = mkeys[i];
+		let list = mobj[genre];
+		let wrapperTitle = $('<div>');
+		let genreTitle = $('<span>', {
+			text: (manyMatched ? '- ' : '') + genre,
+			'data-genre': genre,
 			'data-for': 'genreTitle'
 		});
 		if (manyMatched){
-			genreTitle.on('click', function(e){
-				var thisElem = this;
-				$('#sr div[data-for=wrapperGenre]').each(function(_i, elem){
-					if ($(elem).attr('data-genre') === $(thisElem).attr('data-genre')){
-						$(elem).toggleClass('silent');
-						loadImgOnScreen();
-					} else {
-						$(elem).addClass('silent');
-					}
+			genreTitle.on('click', e => {
+				let thisGenre = $(e.target).attr('data-genre');
+				$(`#sr [data-for=wrapperGenre][data-genre!="${thisGenre}"]`).each((_i, elem) => {
+					$(elem).addClass('silent');
+				});
+				$(`#sr [data-for=wrapperGenre][data-genre="${thisGenre}"]`).each((_i, elem) => {
+					$(elem).toggleClass('silent');
+					loadImgOnScreen();
 				});
 			});
 			genreTitle.addClass('pointer hover');
 		}
-		wrapperTitle.append(genreTitle).appendTo(wrapperSr);
-		var wrapperGenre = $('<div>', {
-			'data-genre': _g, 
+		wrapperTitle.append(genreTitle)
+		wrapperSr.append(wrapperTitle);
+		let wrapperGenre = $('<div>', {
+			'data-genre': genre, 
 			'data-for': 'wrapperGenre',
 			'class': 'mt-2 mb-2'
 		});
 		if (manyMatched){
 			wrapperGenre.addClass('silent');
 		}
-		for (var k = 0; k < _l.length/2; k++){
-			var _id = _l[2*k];
-			var _t = _l[2*k+1];
-			var wrapperVideo = $('<div>',{
+		for (let k = 0; k < list.length/2; k++){
+			let id = list[2*k];
+			let title = list[2*k+1];
+			let wrapperVideo = $('<div>',{
 				'class': 'd-flex align-items-center flex-row'
 			});
 
-			var favIcon = createFavIcon(_id, _t);
+			let favIcon = createFavIcon(id, title);
 
 			wrapperVideo.append(favIcon);
 
-			var a = $('<a>', {
-				'href': getVideoURL(_id),
+			let a = $('<a>', {
+				'href': getVideoURL(id),
 				'target': '_blank',
-				'data-genre' : _g,
-				'data-id' : _id,
-				'data-title' : _t,
-				contextmenu: function(e){
+				'data-genre' : genre,
+				'data-id' : id,
+				'data-title' : title,
+				contextmenu: e => {
 					showMenu(e.pageX, e.pageY, $(this), 'search');
 					return false;
 				},
@@ -252,19 +265,19 @@ function search(query) {
 				}
 			});
 			if ($('#nicolist_thumb_res').prop('checked')){
-				a.append(createStayUnloadedTNI(_id, false));
+				a.append(createStayUnloadedTNI(id, false));
 			}
-			var span;
+			let span;
 			if ($('#nicolist_highlight').prop('checked')){
-				_t = escapeHtmlSpecialChars(_t);
-				for (var j = 0; j < sq.length; j++) {
-					_t = _t.replace(new RegExp(compoundRe(sq[j], '['+ignore+']*'), 'gi'), function(x){
+				title = escapeHtmlSpecialChars(title);
+				for (let searchQuery of queryArray){
+					title = title.replace(new RegExp(compoundRe(escapeRegExp(searchQuery), '['+ignore+']*'), 'gi'), x => {
 						return '<mark>'+x+'</mark>';
 					});
 				}//j
-				span = $('<span>', {html: _t});
+				span = $('<span>', {html: title});
 			} else {
-				span = $('<span>', {text: _t});
+				span = $('<span>', {text: title});
 			}
 			/*
 			var span;
@@ -390,8 +403,8 @@ function sub(){
 			y[genre].push(id);
 			y[genre].push(title);
 			refresh('v');//video change
-			$('#url').val("");
-			$('#title').val("");
+			$('#url').val('');
+			$('#title').val('');
 			$('#url, #title').removeClass('is-valid');
 			if (!$('#registry').hasClass('silent')){
 				$('#registry').addClass('silent');
@@ -400,9 +413,9 @@ function sub(){
 			lastId = '';
 			dismissAllWarningAlerts();
 			if ($('#nicolist_stayopen').prop('checked')){
-				messageUndoable('動画「'+restrBytesize(title, 50)+'」を追加しました', 'success', '#alert-addvideo', 'v');
+				messageUndoable(`動画「${restrBytesize(title, 50)}」を追加しました`, 'success', '#alert-addvideo', 'v');
 			} else {
-				messageUndoable('動画「'+restrBytesize(title, 50)+'」を追加しました', 'success', null, 'v');
+				messageUndoable(`動画「${restrBytesize(title, 50)}」を追加しました`, 'success', null, 'v');
 				$('#addVideoModal').modal('hide');
 			}
 		} else {
@@ -434,9 +447,7 @@ function checkURLValidity(){
 			var already = $('<ul>', {
 				'class': 'list-unstyled'
 			});
-			var _keys = Object.keys(y);
-			for (var j = 0; j < _keys.length; j++) {
-				var genre = _keys[j];
+			for (let genre in y){
 				var list = y[genre];
 				for (var i = 0; i < list.length/2; i++) {
 					var id = list[2*i];
@@ -528,7 +539,7 @@ function handleVideoDrop(e){
 		sel = '#title';
 	}
 	var data = e.originalEvent.dataTransfer.items;
-	for (var i = 0; i < data.length; i++) {
+	for (let i = 0; i < data.length; i++) {
 		if (data[i].kind !== 'string'){continue;}
 		if (/^text\/plain/.test(data[i].type)) {
 			data[i].getAsString(function (s){
@@ -826,10 +837,10 @@ function registerEventListener(){
 	$('#nicolist_loop').on('change', function(){
 		if ($('#play iframe').length !== 0) {
 			if ($('#nicolist_loop').prop('checked')){
-				$('#pcloop img').attr('src', images.LOOP_DATA_URL);
+				$('#pcloop img').attr('src', LOOP_DATA_URL);
 				$('#pcloop').attr('title', 'ループ再生を解除');
 			} else {
-				$('#pcloop img').attr('src', images.NOT_LOOP_DATA_URL);
+				$('#pcloop img').attr('src', NOT_LOOP_DATA_URL);
 				$('#pcloop').attr('title', 'ループ再生');
 			}
 			registerTooltip($('#pcloop'));
@@ -839,10 +850,10 @@ function registerEventListener(){
 	$('#nicolist_cinematic').on('change', function(){
 		if ($('#play iframe').length !== 0) {
 			if ($('#nicolist_cinematic').prop('checked')){
-				$('#pcwidth img').attr('src', images.NARROW_DATA_URL);
+				$('#pcwidth img').attr('src', NARROW_DATA_URL);
 				$('#pcwidth').attr('title', '固定サイズで表示');
 			} else {
-				$('#pcwidth img').attr('src', images.WIDEN_DATA_URL);
+				$('#pcwidth img').attr('src', WIDEN_DATA_URL);
 				$('#pcwidth').attr('title', 'ワイド画面で表示');
 			}
 			registerTooltip($('#pcwidth'));
@@ -1017,12 +1028,12 @@ function registerEventListener(){
 		if ($('#nicolist_loop').prop('checked')){
 			$('#nicolist_loop').prop('checked', false);
 			localStorage.setItem('nicolist_loop', 'false');
-			$('#pcloop img').attr('src', images.NOT_LOOP_DATA_URL);
+			$('#pcloop img').attr('src', NOT_LOOP_DATA_URL);
 			$('#pcloop').attr('title', 'ループ再生');
 		} else {
 			$('#nicolist_loop').prop('checked', true);
 			localStorage.setItem('nicolist_loop', 'true');
-			$('#pcloop img').attr('src', images.LOOP_DATA_URL);
+			$('#pcloop img').attr('src', LOOP_DATA_URL);
 			$('#pcloop').attr('title', 'ループ再生を解除');
 		}
 		$('#pcloop').tooltip('dispose');
@@ -1034,12 +1045,12 @@ function registerEventListener(){
 		if ($('#nicolist_cinematic').prop('checked')){
 			$('#nicolist_cinematic').prop('checked', false);
 			localStorage.setItem('nicolist_cinematic', 'false');
-			$('#pcwidth img').attr('src', images.WIDEN_DATA_URL);
+			$('#pcwidth img').attr('src', WIDEN_DATA_URL);
 			$('#pcwidth').attr('title', 'ワイド画面で表示');
 		} else {
 			$('#nicolist_cinematic').prop('checked', true);
 			localStorage.setItem('nicolist_cinematic', 'true');
-			$('#pcwidth img').attr('src', images.NARROW_DATA_URL);
+			$('#pcwidth img').attr('src', NARROW_DATA_URL);
 			$('#pcwidth').attr('title', '固定サイズで表示');
 		}
 		$('#pcwidth').tooltip('dispose');
@@ -1589,7 +1600,7 @@ function constructRightFav(){
 					refreshController();
 				}
 				$('.favIcon').each(function(){
-					$(this).attr('src', images.UNSTAR_DATA_URL);
+					$(this).attr('src', UNSTAR_DATA_URL);
 				});
 				refresh('s');
 				localStorage.setItem('nicolist_star', JSON.stringify(starred));
@@ -1624,7 +1635,7 @@ function toggleFav(id, title){
 		starred.push(id);
 		starred.push(title);
 		$('.favIcon[data-id='+id+']').each(function(){
-			$(this).attr('src', images.STAR_DATA_URL);
+			$(this).attr('src', STAR_DATA_URL);
 			startStarAnimation($(this));
 		});
 		if ($('#favs li').hasClass('selected')) {
@@ -1640,7 +1651,7 @@ function toggleFav(id, title){
 	} else {
 		starred.splice(starIndex, 2);
 		$('.favIcon[data-id='+id+']').each(function(){
-			$(this).attr('src', images.UNSTAR_DATA_URL);
+			$(this).attr('src', UNSTAR_DATA_URL);
 		});
 		return false;
 	}
@@ -2330,23 +2341,23 @@ function createEmbedElem(){
 	}
 	initPlaylistSel();
 
-	$('#pcprev img').attr('src', images.PREV_DATA_URL);
-	$('#pcnext img').attr('src', images.NEXT_DATA_URL);
-	$('#pcclose img').attr('src', images.CLOSE_DATA_URL);
-	$('#pcnewtab img').attr('src', images.JUMP_DATA_URL);
+	$('#pcprev img').attr('src', PREV_DATA_URL);
+	$('#pcnext img').attr('src', NEXT_DATA_URL);
+	$('#pcclose img').attr('src', CLOSE_DATA_URL);
+	$('#pcnewtab img').attr('src', JUMP_DATA_URL);
 	if ($('#nicolist_loop').prop('checked')){
-		$('#pcloop img').attr('src', images.LOOP_DATA_URL);
+		$('#pcloop img').attr('src', LOOP_DATA_URL);
 		$('#pcloop').attr('title', 'ループ再生を解除');
 	} else {
-		$('#pcloop img').attr('src', images.NOT_LOOP_DATA_URL);
+		$('#pcloop img').attr('src', NOT_LOOP_DATA_URL);
 		$('#pcloop').attr('title', 'ループ再生');
 	}
 	registerTooltip($('#pcloop'));
 	if ($('#nicolist_cinematic').prop('checked')){
-		$('#pcwidth img').attr('src', images.NARROW_DATA_URL);
+		$('#pcwidth img').attr('src', NARROW_DATA_URL);
 		$('#pcwidth').attr('title', '固定サイズで表示');
 	} else {
-		$('#pcwidth img').attr('src', images.WIDEN_DATA_URL);
+		$('#pcwidth img').attr('src', WIDEN_DATA_URL);
 		$('#pcwidth').attr('title', 'ワイド画面で表示');
 	}
 	registerTooltip($('#pcwidth'));
@@ -2609,9 +2620,9 @@ function dismissAllWarningAlerts(){
 }
 function starImg(starred){
 	return (starred ? $('<img>', {
-		'src' : images.STAR_DATA_URL
+		'src' : STAR_DATA_URL
 	}) : $('<img>', {
-		'src' : images.UNSTAR_DATA_URL
+		'src' : UNSTAR_DATA_URL
 	})).addClass('favIcon');
 }
 function startStarAnimation($elem){
@@ -2620,7 +2631,7 @@ function startStarAnimation($elem){
 	var img = $('<img>',{
 		'width': '32px',
 		'height': '32px',
-		'src': images.LARGE_STAR_DATA_URL
+		'src': LARGE_STAR_DATA_URL
 	});
 	var div = $('<div>',{
 		'id': 'starAnime'

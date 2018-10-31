@@ -3,10 +3,12 @@ debug.log
 *.zip
 *.json
 node_modules
-*.html
+player.html
 *.jpg
 *.png
 img
 *.md
 Sortable.min.js
 *.ico
+dom.js
+images.js
