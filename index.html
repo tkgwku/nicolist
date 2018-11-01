@@ -177,12 +177,12 @@ div.sgdef{
 
 		<div class="form-group form-inline">
 			<button type="submit" class="btn btn-primary mb-1 mt-1" id="openAddModal">動画を追加</button>
-			<button type="submit" class="btn btn-outline-primary mb-1 mt-1" data-toggle="modal" data-target="#genreModal" onclick="$('#alert-addvideo').html('');">ジャンルを追加</button>
+			<button type="submit" class="btn btn-outline-primary mb-1 mt-1" id="showAddGenre">ジャンルを追加</button>
 			<button type="submit" class="btn btn-outline-primary mb-1 mt-1" id="ccopen">複数動画を移動/コピー</button>
 			<input class="form-control mb-1 mt-1" type="text" placeholder="Search..." id="searchQuery">
 			<button class="btn btn-outline-success mb-1 mt-1" type="submit" id="search">検索</button>
-			<button class="btn btn-outline-info mb-1 mt-1" type="submit" onclick="randomFromAll()">全体からランダム</button>
-			<button class="btn btn-outline-info mb-1 mt-1" type="submit" onclick="randomFromRight()">表示内からランダム</button>
+			<button class="btn btn-outline-info mb-1 mt-1" type="submit" id="randomFromAll">全体からランダム</button>
+			<button class="btn btn-outline-info mb-1 mt-1" type="submit" id="randomFromRight">表示内からランダム</button>
 			<button class="btn btn-outline-secondary mb-1 mt-1" type="submit" id="openPref">設定</button>
 			<button class="btn btn-outline-secondary mb-1 mt-1" type="submit" id="sgopen">ジャンルを並び替え</button>
 		</div>
@@ -208,7 +208,7 @@ div.sgdef{
 		<div class="row">
 			<div class="col-sm-3 mb-4">
 				<ul class="list-group disabled mb-2" style="display: block;" id="favs">
-					<li class="list-group-item" onclick="if (!$(this).parent().hasClass('disabled')) {showFavs();}">お気に入り<span id="favlen" class="ml-2 badge badge-secondary"></span></li>
+					<li class="list-group-item">お気に入り<span id="favlen" class="ml-2 badge badge-secondary"></span></li>
 				</ul>
 				<ul class="list-group" style="display: block;" id="left">
 					<li class="list-group-item selected"><span class="dummy_sample_text_gray" style="padding-left: 80px">&nbsp;</span></li>
@@ -336,7 +336,7 @@ div.sgdef{
 				</div>
 
 				<div class="mt-2 custom-control custom-checkbox">
-					<input type="checkbox" class="custom-control-input" id="nicolist_thumb_cc" checked="" onchange="cctntoggle()">
+					<input type="checkbox" class="custom-control-input" id="nicolist_thumb_cc">
 					<label class="custom-control-label" for="nicolist_thumb_cc">サムネイルを表示</label>
 				</div>
 
@@ -464,17 +464,17 @@ div.sgdef{
 				</div>
 
 				<div class="mt-2 custom-control custom-checkbox">
-					<input type="checkbox" class="custom-control-input" id="nicolist_sort" onchange="refresh('v')" checked="">
+					<input type="checkbox" class="custom-control-input" id="nicolist_sort" checked="">
 					<label class="custom-control-label" for="nicolist_sort">新しいものが上に来るように表示する</label>
 				</div>
 
 				<div class="mt-2 custom-control custom-checkbox">
-					<input type="checkbox" class="custom-control-input" id="nicolist_taggedtitle" onchange="refresh('v')">
+					<input type="checkbox" class="custom-control-input" id="nicolist_taggedtitle">
 					<label class="custom-control-label" for="nicolist_taggedtitle">動画タイトルの【】や [] を消去し、代わりにタグとして表示する</label>
 				</div>
 
 				<div class="mt-2 custom-control custom-checkbox mb-2">
-					<input type="checkbox" class="custom-control-input" id="nicolist_multitab" onchange="$('#laert').fadeOut();">
+					<input type="checkbox" class="custom-control-input" id="nicolist_multitab">
 					<label class="custom-control-label" for="nicolist_multitab">複数タブで同時に閲覧している際警告を表示しない</label>
 				</div>
 
@@ -485,7 +485,7 @@ div.sgdef{
 				<h5 class="mt-4 mb-3">パフォーマンス</h5>
 
 				<div class="mt-2 custom-control custom-checkbox">
-					<input type="checkbox" class="custom-control-input" id="nicolist_thumb" checked="" onchange="refresh('v')">
+					<input type="checkbox" class="custom-control-input" id="nicolist_thumb" checked="">
 					<label class="custom-control-label" for="nicolist_thumb">一覧でサムネイル画像を表示する</label>
 				</div>
 
@@ -657,14 +657,14 @@ div.sgdef{
 <!-- Youtube iframe api-->
 <script type="text/javascript" src="https://www.youtube.com/iframe_api"></script>
 <script type="text/javascript" src="./js/images.js"></script>
-<script type="text/javascript" src="./js/_dom.js?times=1"></script>
+<script type="text/javascript" src="./js/_dom.js?times=2"></script>
 <script type="text/javascript">
 	if (typeof $ === 'undefined') {
 		alert('jQueryが読み込まれていません');
-	} else if (typeof init === 'undefined') {
+	} else if (typeof Nicolist.init === 'undefined') {
 		alert('Javascriptが読み込まれていません');
 	} else {
-		$(init);
+		$(Nicolist.init);
 	}
 </script>
 </body>
