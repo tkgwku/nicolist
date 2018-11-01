@@ -130,4 +130,4 @@ var JUMP_DATA_URL = 'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAACAAAAAgCAYAA
     'Na65+MMZ/6DhYRq5TKPyosRaBAZiCBVqv1C4D3fH6O7OYRLfZ/V7w5gFt8LRHRTjYDgPbZeatgWBmWlD8d3XsFxSR0Xy+3+l50kzAqRWCfpePo3jL0VgGA' +
     'B+I4fgNAhYiUiKjsT1ecqevap7OIHHaqoO8N4CXgiAC4D8BZ4O/+4JsH6Rm4ZIS8VdC3ISI/AjiSXb/cRBrsMcwIETODiK7tdRlAwFp7KgiCR9I0vR/olV' +
     'A/krPm6FIYnOtE9M3u7u5LpZkDwMzMzB0AsLW11W1jYSjb29tcrVYliiJZX1+X8fFxbrfbLuD/8o/kL6/r0h5ZDjXcAAAAAElFTkSuQmCC';
-//# sourceMappingURL=images.js.map
+var CHANNEL = './../img/channel.jpg';

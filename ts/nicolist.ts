@@ -1,4 +1,5 @@
 /// <reference path="images.ts"/>
+/// <reference path="player.ts"/>
 /// <reference path="../node_modules/@types/jquery/index.d.ts"/>
 /// <reference path="../node_modules/@types/popper.js/index.d.ts"/>
 /// <reference path="../node_modules/@types/bootstrap/index.d.ts"/>
@@ -7,28 +8,21 @@
 
 class Nicolist{
 
-	static readonly domain = 'https://tkgwku.github.io/n';
+	//static readonly domain = 'https://tkgwku.github.io/n';
+	static readonly domain = 'http://jar.oiran.org/app/nicolist';
 	static readonly MESSAGE_TYPES = ['primary', 'secondary', 'success', 'danger', 'warning', 'info', 'light', 'dark'];
 	static readonly SEP_DEF_VAL = ' 　+';
 	static readonly IGN_DEF_VAL = '';
-	static readonly debug = false;
+	static readonly debug = true;
 
 	static y:object = {"とりあえず":[]};
 	static prevy:object = {"とりあえず":[]};
 	static searchHistory = [];
 	static selectedGenre = '';
 	static showingMenu = false;
-	static playlist = [];
-	static playlistTitleMap = {};
-	static playindex = -1;
 	static readonly islocal = !Nicolist.debug && window.location.protocol === 'file:';
-	static deletedVideoArray = [];
-	static volumemap = {};
 	static starred = [];
 	static lastId = '';//checkURLValidity()
-	static autoplay = false;//createEmbedElem()
-	static skip_flag = false;//setupNiconicoIframe()
-	static player;//setupYoutubeIframe()
 	static loadedtn = [];
 	static fileToLoad:File;
 
@@ -351,7 +345,7 @@ class Nicolist{
 			return 'http://tn.smilevideo.jp/smile?i='+numid;
 		} else if (/^\d+$/.test(id)){
 			var numid = Nicolist.int(id);
-			return 'channel.jpg';
+			return CHANNEL;
 		} else {
 			return 'https://img.youtube.com/vi/'+id+'/0.jpg'
 		}
@@ -564,16 +558,13 @@ class Nicolist{
 		$(sel).removeClass('dragging');
 	}
 	static registerEventListener(){
-		$(window).resize(() =>  {
-			if ($('#play iframe').length === 0) {return;}
-			Nicolist.videoResize();
-		});
 		$(window).on('unload', () => {
 			Nicolist.unload();
 		});
 		$(window).scroll(() => {
 			Nicolist.loadImgOnScreen();
 		});
+		NicolistPlayer.registerEventListener();
 		$('input[type=checkbox]').on('change', (e) => {
 			var id = $(e.currentTarget).attr('id');
 			if (!Nicolist.isNullOrUndefined(id)){
@@ -871,7 +862,7 @@ class Nicolist{
 					$('#pcloop').attr('title', 'ループ再生');
 				}
 				Nicolist.registerTooltip($('#pcloop'));
-				Nicolist.refreshController();
+				NicolistPlayer.refreshController();
 			}
 		});
 		$('#nicolist_cinematic').on('change', () => {
@@ -884,9 +875,9 @@ class Nicolist{
 					$('#pcwidth').attr('title', 'ワイド画面で表示');
 				}
 				Nicolist.registerTooltip($('#pcwidth'));
-				Nicolist.refreshController();
+				NicolistPlayer.refreshController();
 			}
-			Nicolist.videoResize();
+			NicolistPlayer.videoResize();
 		})
 		$('#searchQuery').on('focus', (e) => {
 			console.log(e.currentTarget)
@@ -1021,68 +1012,6 @@ class Nicolist{
 				$('#ccvideos').append(ccwrapper);
 			}
 			$('#ccModal').modal('show');
-		});
-		$('#pcclose').on('click', () => {
-			$('#play').html('');
-			$('#pclist').addClass('silent').html('');
-			$('#controller').addClass('silent');
-			Nicolist.playindex = -1;
-			Nicolist.playlist = [];
-		});
-		$('#pcnewtab').on('click', () => {
-			window.open(Nicolist.domain+'/player.html?pl='+escape(JSON.stringify(Nicolist.playlist))+'&i='+Nicolist.playindex);
-		});
-		$('#pclist').on('change', () => {
-			Nicolist.playindex = Nicolist.int($('#pclist').val()+'');
-			if (isNaN(Nicolist.playindex)) {
-				Nicolist.playindex = 0;//wont happen
-			}
-			Nicolist.autoplay = false;
-			Nicolist.refreshPlayer();
-		});
-		$('#pcnext').on('click', (e) => {
-			if ($(e.currentTarget).hasClass('disabled')) {return;}
-			Nicolist.autoplay = true;
-			Nicolist.next();
-		});
-		$('#pcprev').on('click', (e) => {
-			if ($(e.currentTarget).hasClass('disabled')) {return;}
-			Nicolist.autoplay = true;
-			Nicolist.previous();
-		});
-		$('#pcloop').on('click', () => {
-			if ($('#nicolist_loop').prop('checked')){
-				$('#nicolist_loop').prop('checked', false);
-				localStorage.setItem('nicolist_loop', 'false');
-				$('#pcloop img').attr('src', NOT_LOOP_DATA_URL);
-				$('#pcloop').attr('title', 'ループ再生');
-			} else {
-				$('#nicolist_loop').prop('checked', true);
-				localStorage.setItem('nicolist_loop', 'true');
-				$('#pcloop img').attr('src', LOOP_DATA_URL);
-				$('#pcloop').attr('title', 'ループ再生を解除');
-			}
-			$('#pcloop').tooltip('dispose');
-			Nicolist.registerTooltip($('#pcloop'));
-			$('#pcloop').tooltip('show');
-			Nicolist.refreshController();
-		});
-		$('#pcwidth').on('click', () => {
-			if ($('#nicolist_cinematic').prop('checked')){
-				$('#nicolist_cinematic').prop('checked', false);
-				localStorage.setItem('nicolist_cinematic', 'false');
-				$('#pcwidth img').attr('src', WIDEN_DATA_URL);
-				$('#pcwidth').attr('title', 'ワイド画面で表示');
-			} else {
-				$('#nicolist_cinematic').prop('checked', true);
-				localStorage.setItem('nicolist_cinematic', 'true');
-				$('#pcwidth img').attr('src', NARROW_DATA_URL);
-				$('#pcwidth').attr('title', '固定サイズで表示');
-			}
-			$('#pcwidth').tooltip('dispose');
-			Nicolist.registerTooltip($('#pcwidth'));
-			$('#pcwidth').tooltip('show');
-			Nicolist.videoResize();
 		});
 		$('#sgopen').on('click', () => {
 			$('#sggenre').html('');
@@ -1299,6 +1228,7 @@ class Nicolist{
 		});
 	}
 	static init(){
+		NicolistPlayer.showFavbutton = true;
 		Nicolist.registerEventListener();
 
 		if (Nicolist.isNullOrUndefined(localStorage)){
@@ -1467,9 +1397,9 @@ class Nicolist{
 		var ld = localStorage.getItem('nicolist_deleted');
 		if (ld !== null){
 			try {
-				Nicolist.deletedVideoArray = JSON.parse(ld);
-				if ($.type(Nicolist.deletedVideoArray) !== 'array'){
-					Nicolist.deletedVideoArray = [];
+				NicolistPlayer.deletedVideoArray = JSON.parse(ld);
+				if ($.type(NicolistPlayer.deletedVideoArray) !== 'array'){
+					NicolistPlayer.deletedVideoArray = [];
 				}
 			} catch(e) {
 			}
@@ -1489,7 +1419,7 @@ class Nicolist{
 			try {
 				lz = JSON.parse(lz);
 				if ($.type(lz) === 'object'){
-					Nicolist.volumemap = lz;
+					NicolistPlayer.volumemap = lz;
 				}
 			} catch(e) {
 				Nicolist.message(e, 'danger');
@@ -1639,7 +1569,7 @@ class Nicolist{
 					Nicolist.starred = [];
 					Nicolist.refreshFavsLeft();
 					if ($('#play').html() !== '') {
-						Nicolist.refreshController();
+						NicolistPlayer.refreshController();
 					}
 					$('.favIcon').each((_i, elem) => {
 						$(elem).attr('src', UNSTAR_DATA_URL);
@@ -1784,58 +1714,58 @@ class Nicolist{
 		var caval = $('#click_action').val();
 		if (caval === 'thispage'){
 			$('#play').html('');
-			Nicolist.playindex = 0;
-			Nicolist.playlist = [id];
-			Nicolist.playlistTitleMap = {};
-			Nicolist.playlistTitleMap[id] = title;
+			NicolistPlayer.playindex = 0;
+			NicolistPlayer.playlist = [id];
+			NicolistPlayer.playlistTitleMap = {};
+			NicolistPlayer.playlistTitleMap[id] = title;
 			if (Nicolist.islocal) {
-				window.open(Nicolist.domain+'/player.html?pl='+escape(JSON.stringify(Nicolist.playlist))+'&i='+Nicolist.playindex);
+				window.open(Nicolist.domain+'/player.html?pl='+escape(JSON.stringify(NicolistPlayer.playlist))+'&i='+NicolistPlayer.playindex);
 			} else {
-				Nicolist.createEmbedElem();
-				Nicolist.refreshController();
+				NicolistPlayer.createEmbedElem();
+				NicolistPlayer.refreshController();
 			}
 		} else if (caval === 'cont' || caval === 'randomcont'){
 			$('#play').html('');
 			if (mode === 'right'){
-				Nicolist.playlist = [];
-				Nicolist.playlistTitleMap = {};
+				NicolistPlayer.playlist = [];
+				NicolistPlayer.playlistTitleMap = {};
 				$('#right a[data-id]').each((_i, elem2) => {
 					var rvid = $(elem2).attr('data-id');
-					Nicolist.playlist.push(rvid);
-					Nicolist.playlistTitleMap[rvid] = $(elem2).attr('data-title');
+					NicolistPlayer.playlist.push(rvid);
+					NicolistPlayer.playlistTitleMap[rvid] = $(elem2).attr('data-title');
 				});
 			} else if (mode === 'random'){
-				Nicolist.playlist = [];
-				Nicolist.playlistTitleMap = {};
+				NicolistPlayer.playlist = [];
+				NicolistPlayer.playlistTitleMap = {};
 				$('#randomVideo a[data-id]').each((_i, elem2) => {
 					var rvid = $(elem2).attr('data-id');
-					Nicolist.playlist.push(rvid);
-					Nicolist.playlistTitleMap[rvid] = $(elem2).attr('data-title');
+					NicolistPlayer.playlist.push(rvid);
+					NicolistPlayer.playlistTitleMap[rvid] = $(elem2).attr('data-title');
 				});
 			} else if (mode === 'search'){
-				Nicolist.playlist = [];
-				Nicolist.playlistTitleMap = {};
+				NicolistPlayer.playlist = [];
+				NicolistPlayer.playlistTitleMap = {};
 				$('#sr a[data-id]').each((_i, elem2) => {
 					var svid = $(elem2).attr('data-id');
-					Nicolist.playlist.push(svid);
-					Nicolist.playlistTitleMap[svid] = $(elem2).attr('data-title');
+					NicolistPlayer.playlist.push(svid);
+					NicolistPlayer.playlistTitleMap[svid] = $(elem2).attr('data-title');
 				});
 			} else {
 				//wont happen
 				return;
 			}
 			if (caval === 'randomcont'){
-				Nicolist.playlist = Nicolist.randomize(Nicolist.playlist, id);
+				NicolistPlayer.playlist = NicolistPlayer.randomize(NicolistPlayer.playlist, id);
 			}
-			Nicolist.playindex = $.inArray(id, Nicolist.playlist);
-			if (Nicolist.playindex === -1) {
-				Nicolist.playindex = 0;
+			NicolistPlayer.playindex = $.inArray(id, NicolistPlayer.playlist);
+			if (NicolistPlayer.playindex === -1) {
+				NicolistPlayer.playindex = 0;
 			}
 			if (Nicolist.islocal) {
-				window.open(Nicolist.domain+'/player.html?pl='+escape(JSON.stringify(Nicolist.playlist))+'&i='+Nicolist.playindex);
+				window.open(Nicolist.domain+'/player.html?pl='+escape(JSON.stringify(NicolistPlayer.playlist))+'&i='+NicolistPlayer.playindex);
 			} else {
-				Nicolist.createEmbedElem();
-				Nicolist.refreshController();
+				NicolistPlayer.createEmbedElem();
+				NicolistPlayer.refreshController();
 			}
 			$('html,body').stop().animate({scrollTop:0}, 'swing');
 		}
@@ -1910,15 +1840,15 @@ class Nicolist{
 			} else if (role === 'play'){
 				$(elem).on('click', () => {
 					$('#play').html('');
-					Nicolist.playindex = 0;
-					Nicolist.playlist = [id];
-					Nicolist.playlistTitleMap = {};
-					Nicolist.playlistTitleMap[id] = title;
+					NicolistPlayer.playindex = 0;
+					NicolistPlayer.playlist = [id];
+					NicolistPlayer.playlistTitleMap = {};
+					NicolistPlayer.playlistTitleMap[id] = title;
 					if (Nicolist.islocal) {
-						window.open(Nicolist.domain+'/player.html?pl='+escape(JSON.stringify(Nicolist.playlist))+'&i='+Nicolist.playindex);
+						window.open(Nicolist.domain+'/player.html?pl='+escape(JSON.stringify(NicolistPlayer.playlist))+'&i='+NicolistPlayer.playindex);
 					} else {
-						Nicolist.createEmbedElem();
-						Nicolist.refreshController();
+						NicolistPlayer.createEmbedElem();
+						NicolistPlayer.refreshController();
 					}
 					Nicolist.closeMenu();
 				});
@@ -1927,30 +1857,30 @@ class Nicolist{
 					$('#play').html('');
 					if (mode === 'right'){
 						$(elem).removeClass('disabled');
-						Nicolist.playlist = [];
-						Nicolist.playlistTitleMap = {};
+						NicolistPlayer.playlist = [];
+						NicolistPlayer.playlistTitleMap = {};
 						$('#right a[data-id]').each((_i, elem2) => {
 							var rvid = $(elem2).attr('data-id');
-							Nicolist.playlist.push(rvid);
-							Nicolist.playlistTitleMap[rvid] = $(elem2).attr('data-title');
+							NicolistPlayer.playlist.push(rvid);
+							NicolistPlayer.playlistTitleMap[rvid] = $(elem2).attr('data-title');
 						});
 					} else if (mode === 'random'){
 						$(elem).removeClass('disabled');
-						Nicolist.playlist = [];
-						Nicolist.playlistTitleMap = {};
+						NicolistPlayer.playlist = [];
+						NicolistPlayer.playlistTitleMap = {};
 						$('#randomVideo a[data-id]').each((_i, elem2) => {
 							var rvid = $(elem2).attr('data-id');
-							Nicolist.playlist.push(rvid);
-							Nicolist.playlistTitleMap[rvid] = $(elem2).attr('data-title');
+							NicolistPlayer.playlist.push(rvid);
+							NicolistPlayer.playlistTitleMap[rvid] = $(elem2).attr('data-title');
 						});
 					} else if (mode === 'search'){
 						$(elem).removeClass('disabled');
-						Nicolist.playlist = [];
-						Nicolist.playlistTitleMap = {};
+						NicolistPlayer.playlist = [];
+						NicolistPlayer.playlistTitleMap = {};
 						$('#sr a[data-id]').each((_i, elem2) => {
 							var svid = $(elem2).attr('data-id');
-							Nicolist.playlist.push(svid);
-							Nicolist.playlistTitleMap[svid] = $(elem2).attr('data-title');
+							NicolistPlayer.playlist.push(svid);
+							NicolistPlayer.playlistTitleMap[svid] = $(elem2).attr('data-title');
 						});
 					} else {
 						//wont happen
@@ -1958,17 +1888,17 @@ class Nicolist{
 						return;
 					}
 					if (role === 'playall-random'){
-						Nicolist.playlist = Nicolist.randomize(Nicolist.playlist, id);
+						NicolistPlayer.playlist = Nicolist.randomize(NicolistPlayer.playlist, id);
 					}
-					Nicolist.playindex = $.inArray(id, Nicolist.playlist);
-					if (Nicolist.playindex === -1) {
-						Nicolist.playindex = 0;
+					NicolistPlayer.playindex = $.inArray(id, NicolistPlayer.playlist);
+					if (NicolistPlayer.playindex === -1) {
+						NicolistPlayer.playindex = 0;
 					}
 					if (Nicolist.islocal) {
-						window.open(Nicolist.domain+'/player.html?pl='+escape(JSON.stringify(Nicolist.playlist))+'&i='+Nicolist.playindex);
+						window.open(Nicolist.domain+'/player.html?pl='+escape(JSON.stringify(NicolistPlayer.playlist))+'&i='+NicolistPlayer.playindex);
 					} else {
-						Nicolist.createEmbedElem();
-						Nicolist.refreshController();
+						NicolistPlayer.createEmbedElem();
+						NicolistPlayer.refreshController();
 					}
 					$('html,body').stop().animate({scrollTop:0}, 'swing');
 					Nicolist.closeMenu();
@@ -2364,267 +2294,6 @@ class Nicolist{
 			});
 		} else {
 			return Nicolist.createThumbImgElem(id, isFullSize);
-		}
-	}
-	static createEmbedElem(){
-		var id = Nicolist.playlist[Nicolist.playindex];
-		if (/^sm\d+$/.test(id) || /^nm\d+$/.test(id) || /^so\d+$/.test(id) || /^\d+$/.test(id)){
-			Nicolist.setupNiconicoIframe(id);
-		} else {
-			Nicolist.setupYoutubeIframe(id);
-		}
-		try {
-			(<HTMLIFrameElement>$('#play iframe').get(0)).contentWindow.ondrop = (e) => {
-				e.preventDefault();
-				e.stopPropagation();
-			}
-		} catch(e) {
-			/* for IE-11 */
-			// access denied [TypeError]
-		}
-		Nicolist.initPlaylistSel();
-
-		$('#pcprev img').attr('src', PREV_DATA_URL);
-		$('#pcnext img').attr('src', NEXT_DATA_URL);
-		$('#pcclose img').attr('src', CLOSE_DATA_URL);
-		$('#pcnewtab img').attr('src', JUMP_DATA_URL);
-		if ($('#nicolist_loop').prop('checked')){
-			$('#pcloop img').attr('src', LOOP_DATA_URL);
-			$('#pcloop').attr('title', 'ループ再生を解除');
-		} else {
-			$('#pcloop img').attr('src', NOT_LOOP_DATA_URL);
-			$('#pcloop').attr('title', 'ループ再生');
-		}
-		Nicolist.registerTooltip($('#pcloop'));
-		if ($('#nicolist_cinematic').prop('checked')){
-			$('#pcwidth img').attr('src', NARROW_DATA_URL);
-			$('#pcwidth').attr('title', '固定サイズで表示');
-		} else {
-			$('#pcwidth img').attr('src', WIDEN_DATA_URL);
-			$('#pcwidth').attr('title', 'ワイド画面で表示');
-		}
-		Nicolist.registerTooltip($('#pcwidth'));
-	}
-	static setupYoutubeIframe(id){
-		$('#play').html('');
-		var div = $('<div>',{
-			'id': 'playeriframeyoutube',
-		});
-		$('#play').append(div);
-		Nicolist.player = new YT.Player('playeriframeyoutube', {
-			videoId: id,
-			playerVars: { 'autoplay': (Nicolist.autoplay ? 1 : 0)},
-			events: {
-				'onStateChange': (event) => {
-					if (event.data === YT.PlayerState.ENDED){
-						Nicolist.autoplay = true;
-						Nicolist.next();
-					} else if (event.data === YT.PlayerState.CUED){
-						Nicolist.removeFromDeletedVideoList(id);
-						if (Nicolist.autoplay){
-							Nicolist.player.playVideo();
-							Nicolist.autoplay = false;
-						}
-					}
-				},
-				'onError': (event) => {
-					Nicolist.addToDeletedVideoList(id);
-					Nicolist.autoplay = true;
-					Nicolist.next();
-				}
-			}
-		});
-		Nicolist.videoResize();
-	}
-	static setupNiconicoIframe(id){
-		$('#play').html('');
-		var iframeElement = $('<iframe>',{
-			"id": "playeriframenicovideo",
-			"src": 'https://embed.nicovideo.jp/watch/'+id+'?jsapi=1&playerId=0',
-			"frameborder": "0",
-			"allow": "autoplay; encrypted-media",
-			"allowfullscreen": ""
-		});
-		$('#play').append(iframeElement);
-		Nicolist.videoResize();
-		window.onmessage = (event) => {
-			if (event.origin === 'https://embed.nicovideo.jp'){
-				if (event.data.eventName === 'error'){
-					//if the video has been dead
-					Nicolist.addToDeletedVideoList(id);
-					Nicolist.autoplay = true;
-					Nicolist.next();
-				} else if (event.data.eventName === 'playerStatusChange'){
-					if (event.data.data.playerStatus === 4){
-						Nicolist.autoplay = true;
-						Nicolist.next();
-					}
-				} else if (event.data.eventName === 'loadComplete'){
-					if (Nicolist.autoplay){
-						(<HTMLIFrameElement>$('#play iframe').get(0)).contentWindow.postMessage({eventName:'play',playerId:"0",sourceConnectorType:1}, 'https://embed.nicovideo.jp');
-						Nicolist.autoplay = false;
-					}
-					Nicolist.removeFromDeletedVideoList(id);
-					//set volume
-					if ($('#nicolist_savevolume').prop('checked')){
-						var playing = Nicolist.playlist[Nicolist.playindex];
-						if (Nicolist.volumemap.hasOwnProperty(playing)){
-							(<HTMLIFrameElement>$('#play iframe').get(0)).contentWindow.postMessage({
-								eventName:'volumeChange',
-								playerId: "0",
-								sourceConnectorType: 1,
-								data: {
-									volume: Nicolist.volumemap[playing]
-								}
-							}, 'https://embed.nicovideo.jp');
-						}
-						Nicolist.skip_flag = true;
-					}
-				} else if ($('#nicolist_savevolume').prop('checked') && event.data.eventName === 'playerMetadataChange'){
-					if (Nicolist.skip_flag){
-						Nicolist.skip_flag = false;
-					} else {
-						var v = Math.round(event.data.data.volume * 1000)/1000;
-						var playing = Nicolist.playlist[Nicolist.playindex];
-						if (!Nicolist.volumemap.hasOwnProperty(playing) || Nicolist.volumemap[playing] !== v){
-							Nicolist.volumemap[playing] = v;
-							localStorage.setItem('nicolist_volumemap', JSON.stringify(Nicolist.volumemap));
-						}
-					}
-				}
-			}
-		}
-	}
-	static addToDeletedVideoList(id){
-		if ($.inArray(id, Nicolist.deletedVideoArray) === -1){
-			Nicolist.deletedVideoArray.push(id);
-			localStorage.setItem('nicolist_deleted', JSON.stringify(Nicolist.deletedVideoArray));
-			var $elem = $('#pclist option[value='+Nicolist.playindex+']');
-			if ($elem.length !== 0){
-				$elem.text('[x] '+(Nicolist.playindex+1)+': '+Nicolist.playlistTitleMap[id]);
-			}
-		}
-	}
-	static removeFromDeletedVideoList(id){
-		var _delindex = $.inArray(id, Nicolist.deletedVideoArray);
-		if (_delindex !== -1){
-			Nicolist.deletedVideoArray.splice(_delindex, 1);
-			localStorage.setItem('nicolist_deleted', JSON.stringify(Nicolist.deletedVideoArray));
-			var $elem = $('#pclist option[value='+Nicolist.playindex+']');
-			if ($elem.length !== 0){
-				$elem.text((Nicolist.playindex+1)+': '+Nicolist.playlistTitleMap[id]);
-			}
-		}
-	}
-	static videoSize(){
-		var w = $('#play').outerWidth();
-		var h = Math.ceil(w * 9 / 16);
-		if ($(window).height() * 0.7 < h){
-			h = Math.ceil($(window).height() * 0.7);
-			w = Math.ceil(h * 16 / 9);
-		}
-		if (w < 640 || $('#nicolist_cinematic').prop('checked')){
-			return [w, h];
-		} else {
-			return [640, 360];
-		}
-	}
-	static videoResize(){
-		var s = Nicolist.videoSize();
-		$('#play iframe').css({
-			'width': s[0],
-			'height': s[1]
-		});
-		$('#controller').css({
-			'width': s[0]
-		});
-	}
-	static next(){
-		if (Nicolist.hasNext()){
-			Nicolist.playindex++;
-			Nicolist.refreshPlayer();
-		} else {
-			if ($('#nicolist_loop').prop('checked')){
-				Nicolist.playindex = 0;
-				Nicolist.refreshPlayer();
-			}
-		}
-	}
-	static hasNext(){
-		return Nicolist.playindex > -1 && Nicolist.playlist.length > Nicolist.playindex + 1;
-	}
-	static hasPrevious(){
-		return Nicolist.playindex > 0;
-	}
-	static previous(){
-		if (Nicolist.hasPrevious()){
-			Nicolist.playindex--;
-			Nicolist.refreshPlayer();
-		} else {
-			if ($('#nicolist_loop').prop('checked')){
-				Nicolist.playindex = Nicolist.playlist.length - 1;
-				Nicolist.refreshPlayer();
-			}
-		}
-	}
-	static refreshPlayer(){
-		var id = Nicolist.playlist[Nicolist.playindex];
-		if (/^sm\d+$/.test(id)|| /^nm\d+$/.test(id) || /^so\d+$/.test(id) || /^\d+$/.test(id)){
-			if ($('#play iframe').length === 0 || $('#play iframe').attr('id') === 'playeriframeyoutube'){
-				Nicolist.setupNiconicoIframe(id);
-			} else {
-				$('#play iframe').attr('src', 'https://embed.nicovideo.jp/watch/'+id+'?jsapi=1&playerId=0');
-			}
-		} else {
-			if ($('#play iframe').length === 0 || $('#play iframe').attr('id') === 'playeriframenicovideo'){
-				Nicolist.setupYoutubeIframe(id);
-			} else {
-				Nicolist.player.loadVideoById({videoId: id});
-			}
-		}
-		Nicolist.refreshController();
-	}
-	static refreshController(){
-		if (Nicolist.hasNext() || $('#nicolist_loop').prop('checked')){
-			$('#pcnext').removeClass('disabled');
-		} else {
-			$('#pcnext').addClass('disabled');
-		}
-		if (Nicolist.hasPrevious() || $('#nicolist_loop').prop('checked')){
-			$('#pcprev').removeClass('disabled');
-		} else {
-			$('#pcprev').addClass('disabled');
-		}
-		if ($('#play').html() !== ''){
-			$('#controller').removeClass('silent');
-		} else {
-			$('#controller').addClass('silent');
-		}
-		if (Nicolist.playlist.length > 1){
-			$('#pclist').removeClass('silent');
-			$('#pclist').val(Nicolist.playindex+'');
-		} else {
-			$('#pclist').addClass('silent');
-		}
-		$('#pcfav').html('');
-		$('#pcfav').append(Nicolist.createFavIcon(Nicolist.playlist[Nicolist.playindex], Nicolist.playlistTitleMap[Nicolist.playlist[Nicolist.playindex]]).removeClass('mr-2'));
-		Nicolist.registerTooltip($('#pcfav .favIcon'));
-	}
-	static initPlaylistSel(){
-		$('#pclist').html('');
-		var opt, suffix, i;
-		for (i = 0; i < Nicolist.playlist.length; i++) {
-			if (Nicolist.playlistTitleMap.hasOwnProperty(Nicolist.playlist[i])){
-				suffix = ($.inArray(Nicolist.playlist[i], Nicolist.deletedVideoArray) === -1) ? '' : '[x] ';
-				opt = $('<option>', {
-					text: suffix + (i+1) + ': ' + Nicolist.playlistTitleMap[Nicolist.playlist[i]],
-					'value': i+''
-				});
-				opt.appendTo($('#pclist'));
-			} else {
-				//wont happen
-				continue;
-			}
 		}
 	}
 	static reversePairList(list){

@@ -6,7 +6,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
 <!-- for IE-11 -->
 <meta http-equiv="X-UA-Compatible" content="IE=edge">
-<link rel="shortcut icon" href="favicon.ico">
+<link rel="shortcut icon" href="./img/favicon.ico">
 <!-- bootstrap -->
 <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/css/bootstrap.min.css" integrity="sha384-Gn5384xqQ1aoWXA+058RXPxPg6fy4IWvTNh0E263XmFcJlSAwiGgFAW/dAiS6JXm" crossorigin="anonymous">
 <style type="text/css">
@@ -371,7 +371,7 @@ div.sgdef{
 					</div>
 					<div class="col-auto">
 						<div class="form-group">
-							<a href="" target="_blank">
+							<a href="" target="_blank" id="editUrlLink">
 								<button class="btn btn-secondary" id="editUrl"></button>
 							</a>
 						</div>
@@ -657,11 +657,12 @@ div.sgdef{
 <!-- Youtube iframe api-->
 <script type="text/javascript" src="https://www.youtube.com/iframe_api"></script>
 <script type="text/javascript" src="./js/images.js"></script>
-<script type="text/javascript" src="./js/_dom.js?times=2"></script>
+<script type="text/javascript" src="./js/player.js?times=0"></script>
+<script type="text/javascript" src="./js/nicolist.js?times=0"></script>
 <script type="text/javascript">
 	if (typeof $ === 'undefined') {
 		alert('jQueryが読み込まれていません');
-	} else if (typeof Nicolist.init === 'undefined') {
+	} else if (typeof Nicolist === 'undefined') {
 		alert('Javascriptが読み込まれていません');
 	} else {
 		$(Nicolist.init);

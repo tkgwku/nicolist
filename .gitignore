@@ -1,14 +1,5 @@
 debug.log
 *.txt
 *.zip
-*.json
 node_modules
-player.html
-*.jpg
-*.png
-img
 *.md
-Sortable.min.js
-*.ico
-dom.js
-images.js
