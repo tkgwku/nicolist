@@ -64,7 +64,8 @@ button.close span{font-size: 16px !important}
 	margin:5px 0;
 }
 .badge-secondary2{
-	background-color: #aad;
+	background-color: rgb(149, 149, 229);
+	color: #fff;
 }
 .titletag{
 	border:1px solid #ddd;
@@ -74,20 +75,17 @@ button.close span{font-size: 16px !important}
 	cursor: pointer;
 }
 .ccvideo{
-	border-left:2px solid transparent;
-	border-right:2px solid transparent;
+	border-top:1px solid transparent;
+	border-left:1px solid transparent;
+	border-right:1px solid transparent;
+	border-bottom:1px solid #eee;
 	padding: 0 5px;
 	cursor: pointer;
 	transition: background-color,border-color,color 0.1s ease-in-out 0s;
 }
-.ccvideo:hover{border-left-color: #4BB363;border-right-color: #4BB363;color: #417238}
-.cctable td{border-bottom:1px solid #eee;}
-.cctable td:last{border-bottom:none;}
+#ccvideo .cctable:last{border-bottom:none;}
+.ccvideo:hover{border-color: #4BB363;color: #417238}
 .rightvideo{border-bottom:1px solid #d9eef4;border-top: 1px solid transparent}
-div.tdftdiv{
-	padding:3px;
-	line-height:16px;
-}
 ul.tdftad{
 	margin:0;
 	padding:0;
@@ -515,7 +513,7 @@ div.sgdef{
 
 				<div class="mt-3 form-inline ml-1">
 					<label for="click_action">動画リンクをクリックしたときの動作</label>
-					<select class="custom-select form-control ml-2" id="click_action" style="">
+					<select class="custom-select form-control ml-2" id="click_action">
 						<option value="official" selected="">新しいタブで公式リンクを開く</option>
 						<option value="thispage">このページで視聴</option>
 						<option value="cont">ここから連続再生</option>
@@ -657,6 +655,7 @@ div.sgdef{
 <!-- Youtube iframe api-->
 <script type="text/javascript" src="https://www.youtube.com/iframe_api"></script>
 <script type="text/javascript" src="./js/images.js"></script>
+<script type="text/javascript" src="./js/util.js?times=0"></script>
 <script type="text/javascript" src="./js/player.js?times=0"></script>
 <script type="text/javascript" src="./js/nicolist.js?times=0"></script>
 <script type="text/javascript">

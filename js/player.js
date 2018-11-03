@@ -1,5 +1,5 @@
 /// <reference path="images.ts"/>
-/// <reference path="nicolist.ts"/>
+/// <reference path="util.ts"/>
 /// <reference path="../node_modules/@types/jquery/index.d.ts"/>
 /// <reference path="../node_modules/@types/popper.js/index.d.ts"/>
 /// <reference path="../node_modules/@types/bootstrap/index.d.ts"/>
@@ -8,6 +8,9 @@
 var NicolistPlayer = /** @class */ (function () {
     function NicolistPlayer() {
     }
+    /**
+     * Register Nicolist Player Event Handler
+     */
     NicolistPlayer.registerEventListener = function () {
         $(window).resize(function () {
             if ($('#play iframe').length === 0) {
@@ -29,10 +32,10 @@ var NicolistPlayer = /** @class */ (function () {
             NicolistPlayer.playlist = [];
         });
         $('#pcnewtab').on('click', function () {
-            window.open(Nicolist.domain + '/player.html?pl=' + escape(JSON.stringify(NicolistPlayer.playlist)) + '&i=' + NicolistPlayer.playindex);
+            window.open(NicolistPlayer.domain + '/player.html?pl=' + escape(JSON.stringify(NicolistPlayer.playlist)) + '&i=' + NicolistPlayer.playindex);
         });
         $('#pclist').on('change', function () {
-            NicolistPlayer.playindex = Nicolist.int($('#pclist').val() + '');
+            NicolistPlayer.playindex = Util.int($('#pclist').val() + '');
             if (isNaN(NicolistPlayer.playindex)) {
                 NicolistPlayer.playindex = 0; //wont happen
             }
@@ -67,7 +70,7 @@ var NicolistPlayer = /** @class */ (function () {
                 $('#pcloop').attr('title', 'ループ再生を解除');
             }
             $('#pcloop').tooltip('dispose');
-            Nicolist.registerTooltip($('#pcloop'));
+            Util.registerTooltip($('#pcloop'));
             $('#pcloop').tooltip('show');
             NicolistPlayer.refreshController();
         });
@@ -85,34 +88,16 @@ var NicolistPlayer = /** @class */ (function () {
                 $('#pcwidth').attr('title', '固定サイズで表示');
             }
             $('#pcwidth').tooltip('dispose');
-            Nicolist.registerTooltip($('#pcwidth'));
+            Util.registerTooltip($('#pcwidth'));
             $('#pcwidth').tooltip('show');
             NicolistPlayer.videoResize();
         });
     };
-    NicolistPlayer.randomize = function (array, first) {
-        if (array.length <= 1) {
-            return array;
-        }
-        ;
-        if (first) {
-            var x = $.inArray(first, array);
-            if (x !== -1) {
-                array.splice(x, 1);
-            }
-        }
-        var n = array.length, t, i;
-        while (n) {
-            i = Math.floor(Math.random() * n--);
-            t = array[n];
-            array[n] = array[i];
-            array[i] = t;
-        }
-        if (first && x !== -1) {
-            array.splice(0, 0, first);
-        }
-        return array;
-    };
+    /**
+     * create Youtube embed Iframe and append to '#play'
+     * #play / iframe #playeriframeyoutube
+     * @param {string} id - video id
+     */
     NicolistPlayer.setupYoutubeIframe = function (id) {
         $('#play').html('');
         var div = $('<div>', {
@@ -145,6 +130,11 @@ var NicolistPlayer = /** @class */ (function () {
         });
         NicolistPlayer.videoResize();
     };
+    /**
+     * create Niconico embed Iframe and append to '#play'
+     * #play / iframe #playeriframenicovideo
+     * @param {string} id - video id
+     */
     NicolistPlayer.setupNiconicoIframe = function (id) {
         $('#play').html('');
         var iframeElement = $('<iframe>', {
@@ -208,6 +198,10 @@ var NicolistPlayer = /** @class */ (function () {
             }
         };
     };
+    /**
+     * mark as unavailable video
+     * @param id
+     */
     NicolistPlayer.addToDeletedVideoList = function (id) {
         if ($.inArray(id, NicolistPlayer.deletedVideoArray) === -1) {
             NicolistPlayer.deletedVideoArray.push(id);
@@ -218,6 +212,10 @@ var NicolistPlayer = /** @class */ (function () {
             }
         }
     };
+    /**
+     * unmark from unavailable video
+     * @param id
+     */
     NicolistPlayer.removeFromDeletedVideoList = function (id) {
         var _delindex = $.inArray(id, NicolistPlayer.deletedVideoArray);
         if (_delindex !== -1) {
@@ -229,6 +227,10 @@ var NicolistPlayer = /** @class */ (function () {
             }
         }
     };
+    /**
+     * make proper video Iframe element (width, height)
+     * @returns {Array} (width, height)
+     */
     NicolistPlayer.videoSize = function () {
         var w = $('#play').outerWidth();
         var h = Math.ceil(w * 9 / 16);
@@ -243,6 +245,9 @@ var NicolistPlayer = /** @class */ (function () {
             return [640, 360];
         }
     };
+    /**
+     * set proper video Iframe width and height
+     */
     NicolistPlayer.videoResize = function () {
         var s = NicolistPlayer.videoSize();
         $('#play iframe').css({
@@ -253,6 +258,9 @@ var NicolistPlayer = /** @class */ (function () {
             'width': s[0]
         });
     };
+    /**
+     * play next video
+     */
     NicolistPlayer.next = function () {
         if (NicolistPlayer.hasNext()) {
             NicolistPlayer.playindex++;
@@ -265,12 +273,23 @@ var NicolistPlayer = /** @class */ (function () {
             }
         }
     };
+    /**
+     * playlist has next video
+     * @returns {boolean}
+     */
     NicolistPlayer.hasNext = function () {
         return NicolistPlayer.playindex > -1 && NicolistPlayer.playlist.length > NicolistPlayer.playindex + 1;
     };
+    /**
+     * playlist has previous video
+     * @returns {boolean}
+     */
     NicolistPlayer.hasPrevious = function () {
         return NicolistPlayer.playindex > 0;
     };
+    /**
+     * play previous video
+     */
     NicolistPlayer.previous = function () {
         if (NicolistPlayer.hasPrevious()) {
             NicolistPlayer.playindex--;
@@ -283,6 +302,10 @@ var NicolistPlayer = /** @class */ (function () {
             }
         }
     };
+    /**
+     * refresh player Iframe content <br>
+     * called when playlist change and when playindex change
+     */
     NicolistPlayer.refreshPlayer = function () {
         var id = NicolistPlayer.playlist[NicolistPlayer.playindex];
         if (/^sm\d+$/.test(id) || /^nm\d+$/.test(id) || /^so\d+$/.test(id) || /^\d+$/.test(id)) {
@@ -303,6 +326,9 @@ var NicolistPlayer = /** @class */ (function () {
         }
         NicolistPlayer.refreshController();
     };
+    /**
+     * refresh player controller outside Iframe
+     */
     NicolistPlayer.refreshController = function () {
         if (NicolistPlayer.hasNext() || $('#nicolist_loop').prop('checked')) {
             $('#pcnext').removeClass('disabled');
@@ -333,9 +359,13 @@ var NicolistPlayer = /** @class */ (function () {
         //for nicolist main page
         if (NicolistPlayer.showFavbutton) {
             $('#pcfav').append(Nicolist.createFavIcon(NicolistPlayer.playlist[NicolistPlayer.playindex], NicolistPlayer.playlistTitleMap[NicolistPlayer.playlist[NicolistPlayer.playindex]]).removeClass('mr-2'));
-            Nicolist.registerTooltip($('#pcfav .favIcon'));
+            Util.registerTooltip($('#pcfav .favIcon'));
         }
     };
+    /**
+     * initialize playlist listup elements <br>
+     * todo: youtube-like playlist showcage
+     */
     NicolistPlayer.initPlaylistSel = function () {
         $('#pclist').html('');
         var opt, suffix, i;
@@ -349,11 +379,13 @@ var NicolistPlayer = /** @class */ (function () {
                 opt.appendTo($('#pclist'));
             }
             else {
-                //wont happen
                 continue;
             }
         }
     };
+    /**
+     * create embed Iframe element
+     */
     NicolistPlayer.createEmbedElem = function () {
         var id = NicolistPlayer.playlist[NicolistPlayer.playindex];
         if (/^sm\d+$/.test(id) || /^nm\d+$/.test(id) || /^so\d+$/.test(id) || /^\d+$/.test(id)) {
@@ -385,7 +417,7 @@ var NicolistPlayer = /** @class */ (function () {
             $('#pcloop img').attr('src', NOT_LOOP_DATA_URL);
             $('#pcloop').attr('title', 'ループ再生');
         }
-        Nicolist.registerTooltip($('#pcloop'));
+        Util.registerTooltip($('#pcloop'));
         if ($('#nicolist_cinematic').prop('checked')) {
             $('#pcwidth img').attr('src', NARROW_DATA_URL);
             $('#pcwidth').attr('title', '固定サイズで表示');
@@ -394,14 +426,14 @@ var NicolistPlayer = /** @class */ (function () {
             $('#pcwidth img').attr('src', WIDEN_DATA_URL);
             $('#pcwidth').attr('title', 'ワイド画面で表示');
         }
-        Nicolist.registerTooltip($('#pcwidth'));
+        Util.registerTooltip($('#pcwidth'));
     };
     ////// for player.html ///////
     NicolistPlayer.init = function () {
         NicolistPlayer.registerEventListener();
         $('input[type=checkbox]').on('change', function (e) {
             var id = $(e.currentTarget).attr('id');
-            if (!Nicolist.isNullOrUndefined(id)) {
+            if (!Util.isNull(id)) {
                 window.localStorage.setItem(id, $(e.currentTarget).prop('checked'));
             }
         });
@@ -443,7 +475,7 @@ var NicolistPlayer = /** @class */ (function () {
             else {
                 var m2 = infoarray[i].match(/^i=(\d+)$/);
                 if (m2) {
-                    NicolistPlayer.playindex = Nicolist.int(m2[1]);
+                    NicolistPlayer.playindex = Util.int(m2[1]);
                 }
             }
         }
@@ -471,6 +503,7 @@ var NicolistPlayer = /** @class */ (function () {
             }
         }
     };
+    NicolistPlayer.domain = 'https://tkgwku.github.io/n';
     NicolistPlayer.showFavbutton = false;
     NicolistPlayer.playlist = [];
     NicolistPlayer.playlistTitleMap = {};

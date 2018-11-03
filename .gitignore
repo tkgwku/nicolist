@@ -1,4 +1,4 @@
-debug.log
+*.log
 *.txt
 *.zip
 node_modules

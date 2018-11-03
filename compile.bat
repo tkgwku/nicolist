@@ -1,1 +1,1 @@
-tsc
+tsc > compile.log
