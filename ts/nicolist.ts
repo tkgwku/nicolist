@@ -8,8 +8,6 @@
 /// <reference path="../node_modules/@types/sortablejs/index.d.ts"/>
 
 class Nicolist{
-	static readonly domain = 'https://tkgwku.github.io/n';
-	//static readonly domain = 'http://jar.oiran.org/app/nicolist';
 	static readonly MESSAGE_TYPES = ['primary', 'secondary', 'success', 'danger', 'warning', 'info', 'light', 'dark'];
 	static readonly SEP_DEF_VAL = ' 　+';
 	static readonly IGN_DEF_VAL = '';
@@ -675,12 +673,12 @@ class Nicolist{
 				$('#ccoldform').css('display', 'none');
 			}
 			if (val === 'copytoold' || val === 'copytoold'){
-				$('#createcopy').text('コピー');
+				$('#createcopy, #createcopy2').text('コピー');
 			} else {
-				$('#createcopy').text('移動');
+				$('#createcopy, #createcopy2').text('移動');
 			}
 		});
-		$('#createcopy').on('click', () => {
+		$('#createcopy, #createcopy2').on('click', () => {
 			let $cc_video_selected = $('#ccvideos').find('.alert-success[data-for=cc_genre_video]');
 			if ($cc_video_selected.length === 0){
 				Nicolist.message('動画が選択されていません。', 'warning', '#ccalert');
@@ -1118,14 +1116,15 @@ class Nicolist{
 		});
 		$('#sgopen').on('click', () => {
 			$('#sggenre').html('');
-			var gs = Object.keys(Nicolist.y);
+			let gs = Object.keys(Nicolist.y);
 			for (let i = 0; i< gs.length; i++){
-				var g = gs[i];
-				var clazz = 'sgg '+(i != 0 ? 'sgtarget' : 'sgdef');
-				var div = $('<div>',{
+				let g = gs[i];
+				let div = $('<div>',{
+					'class': 'sggwrapper '+(i != 0 ? 'sgtarget' : '')
+				}).append($('<div>', {
 					text: g,
-					'class': clazz
-				});
+					'class': 'sgg '+(i != 0 ? '' : 'sgdef')
+				}));
 				$('#sggenre').append(div);
 			}//i
 			$('#genreSortModal').modal('show');
@@ -1134,7 +1133,7 @@ class Nicolist{
 				animation: 300
 			});
 		});
-		$('#submitGenreSort').on('click', () => {
+		$('#submitGenreSort, #submitGenreSort2').on('click', () => {
 			Nicolist.pushPrev();
 			var _y = {};
 			$('.sgg').each((i, elem) => {
@@ -1394,9 +1393,9 @@ class Nicolist{
 				$('#ccoldform').css('display', 'none');
 			}
 			if (ls === 'copytoold' || ls === 'copytoold'){
-				$('#createcopy').text('コピー');
+				$('#createcopy, #createcopy2').text('コピー');
 			} else {
-				$('#createcopy').text('移動');
+				$('#createcopy, #createcopy2').text('移動');
 			}
 		});
 		
@@ -1740,7 +1739,7 @@ class Nicolist{
 			NicolistPlayer.playlistTitleMap = {};
 			NicolistPlayer.playlistTitleMap[id] = title;
 			if (Nicolist.islocal) {
-				window.open(Nicolist.domain+'/player.html?pl='+escape(JSON.stringify(NicolistPlayer.playlist))+'&i='+NicolistPlayer.playindex);
+				window.open(Util.domain+'/player.html?pl='+escape(JSON.stringify(NicolistPlayer.playlist))+'&i='+NicolistPlayer.playindex);
 			} else {
 				NicolistPlayer.createEmbedElem();
 				NicolistPlayer.refreshController();
@@ -1783,7 +1782,7 @@ class Nicolist{
 				NicolistPlayer.playindex = 0;
 			}
 			if (Nicolist.islocal) {
-				window.open(Nicolist.domain+'/player.html?pl='+escape(JSON.stringify(NicolistPlayer.playlist))+'&i='+NicolistPlayer.playindex);
+				window.open(Util.domain+'/player.html?pl='+escape(JSON.stringify(NicolistPlayer.playlist))+'&i='+NicolistPlayer.playindex);
 			} else {
 				NicolistPlayer.createEmbedElem();
 				NicolistPlayer.refreshController();
@@ -1866,7 +1865,7 @@ class Nicolist{
 					NicolistPlayer.playlistTitleMap = {};
 					NicolistPlayer.playlistTitleMap[id] = title;
 					if (Nicolist.islocal) {
-						window.open(Nicolist.domain+'/player.html?pl='+escape(JSON.stringify(NicolistPlayer.playlist))+'&i='+NicolistPlayer.playindex);
+						window.open(Util.domain+'/player.html?pl='+escape(JSON.stringify(NicolistPlayer.playlist))+'&i='+NicolistPlayer.playindex);
 					} else {
 						NicolistPlayer.createEmbedElem();
 						NicolistPlayer.refreshController();
@@ -1916,7 +1915,7 @@ class Nicolist{
 						NicolistPlayer.playindex = 0;
 					}
 					if (Nicolist.islocal) {
-						window.open(Nicolist.domain+'/player.html?pl='+escape(JSON.stringify(NicolistPlayer.playlist))+'&i='+NicolistPlayer.playindex);
+						window.open(Util.domain+'/player.html?pl='+escape(JSON.stringify(NicolistPlayer.playlist))+'&i='+NicolistPlayer.playindex);
 					} else {
 						NicolistPlayer.createEmbedElem();
 						NicolistPlayer.refreshController();

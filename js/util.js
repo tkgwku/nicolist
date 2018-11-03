@@ -4,6 +4,7 @@
 var Util = /** @class */ (function () {
     function Util() {
     }
+    //static readonly domain = 'http://jar.oiran.org/app/nicolist';
     Util.getLS = function (key, callbackSuccess, callbackNull) {
         var ls = window.localStorage.getItem(key);
         if (ls !== null) {
@@ -135,5 +136,6 @@ var Util = /** @class */ (function () {
         }
         return array;
     };
+    Util.domain = 'https://tkgwku.github.io/n';
     return Util;
 }());

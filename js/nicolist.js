@@ -680,13 +680,13 @@ var Nicolist = /** @class */ (function () {
                 $('#ccoldform').css('display', 'none');
             }
             if (val === 'copytoold' || val === 'copytoold') {
-                $('#createcopy').text('コピー');
+                $('#createcopy, #createcopy2').text('コピー');
             }
             else {
-                $('#createcopy').text('移動');
+                $('#createcopy, #createcopy2').text('移動');
             }
         });
-        $('#createcopy').on('click', function () {
+        $('#createcopy, #createcopy2').on('click', function () {
             var $cc_video_selected = $('#ccvideos').find('.alert-success[data-for=cc_genre_video]');
             if ($cc_video_selected.length === 0) {
                 Nicolist.message('動画が選択されていません。', 'warning', '#ccalert');
@@ -1144,11 +1144,12 @@ var Nicolist = /** @class */ (function () {
             var gs = Object.keys(Nicolist.y);
             for (var i = 0; i < gs.length; i++) {
                 var g = gs[i];
-                var clazz = 'sgg ' + (i != 0 ? 'sgtarget' : 'sgdef');
                 var div = $('<div>', {
+                    'class': 'sggwrapper ' + (i != 0 ? 'sgtarget' : '')
+                }).append($('<div>', {
                     text: g,
-                    'class': clazz
-                });
+                    'class': 'sgg ' + (i != 0 ? '' : 'sgdef')
+                }));
                 $('#sggenre').append(div);
             } //i
             $('#genreSortModal').modal('show');
@@ -1157,7 +1158,7 @@ var Nicolist = /** @class */ (function () {
                 animation: 300
             });
         });
-        $('#submitGenreSort').on('click', function () {
+        $('#submitGenreSort, #submitGenreSort2').on('click', function () {
             Nicolist.pushPrev();
             var _y = {};
             $('.sgg').each(function (i, elem) {
@@ -1413,10 +1414,10 @@ var Nicolist = /** @class */ (function () {
                 $('#ccoldform').css('display', 'none');
             }
             if (ls === 'copytoold' || ls === 'copytoold') {
-                $('#createcopy').text('コピー');
+                $('#createcopy, #createcopy2').text('コピー');
             }
             else {
-                $('#createcopy').text('移動');
+                $('#createcopy, #createcopy2').text('移動');
             }
         });
         Util.getLS('searchHistory', function (ls) {
@@ -1758,7 +1759,7 @@ var Nicolist = /** @class */ (function () {
             NicolistPlayer.playlistTitleMap = {};
             NicolistPlayer.playlistTitleMap[id] = title;
             if (Nicolist.islocal) {
-                window.open(Nicolist.domain + '/player.html?pl=' + escape(JSON.stringify(NicolistPlayer.playlist)) + '&i=' + NicolistPlayer.playindex);
+                window.open(Util.domain + '/player.html?pl=' + escape(JSON.stringify(NicolistPlayer.playlist)) + '&i=' + NicolistPlayer.playindex);
             }
             else {
                 NicolistPlayer.createEmbedElem();
@@ -1806,7 +1807,7 @@ var Nicolist = /** @class */ (function () {
                 NicolistPlayer.playindex = 0;
             }
             if (Nicolist.islocal) {
-                window.open(Nicolist.domain + '/player.html?pl=' + escape(JSON.stringify(NicolistPlayer.playlist)) + '&i=' + NicolistPlayer.playindex);
+                window.open(Util.domain + '/player.html?pl=' + escape(JSON.stringify(NicolistPlayer.playlist)) + '&i=' + NicolistPlayer.playindex);
             }
             else {
                 NicolistPlayer.createEmbedElem();
@@ -1899,7 +1900,7 @@ var Nicolist = /** @class */ (function () {
                     NicolistPlayer.playlistTitleMap = {};
                     NicolistPlayer.playlistTitleMap[id] = title;
                     if (Nicolist.islocal) {
-                        window.open(Nicolist.domain + '/player.html?pl=' + escape(JSON.stringify(NicolistPlayer.playlist)) + '&i=' + NicolistPlayer.playindex);
+                        window.open(Util.domain + '/player.html?pl=' + escape(JSON.stringify(NicolistPlayer.playlist)) + '&i=' + NicolistPlayer.playindex);
                     }
                     else {
                         NicolistPlayer.createEmbedElem();
@@ -1954,7 +1955,7 @@ var Nicolist = /** @class */ (function () {
                         NicolistPlayer.playindex = 0;
                     }
                     if (Nicolist.islocal) {
-                        window.open(Nicolist.domain + '/player.html?pl=' + escape(JSON.stringify(NicolistPlayer.playlist)) + '&i=' + NicolistPlayer.playindex);
+                        window.open(Util.domain + '/player.html?pl=' + escape(JSON.stringify(NicolistPlayer.playlist)) + '&i=' + NicolistPlayer.playindex);
                     }
                     else {
                         NicolistPlayer.createEmbedElem();
@@ -2353,8 +2354,6 @@ var Nicolist = /** @class */ (function () {
         });
         return favIcon;
     };
-    Nicolist.domain = 'https://tkgwku.github.io/n';
-    //static readonly domain = 'http://jar.oiran.org/app/nicolist';
     Nicolist.MESSAGE_TYPES = ['primary', 'secondary', 'success', 'danger', 'warning', 'info', 'light', 'dark'];
     Nicolist.SEP_DEF_VAL = ' 　+';
     Nicolist.IGN_DEF_VAL = '';

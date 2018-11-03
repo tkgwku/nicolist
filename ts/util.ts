@@ -3,6 +3,8 @@
 /// <reference path="../node_modules/@types/bootstrap/index.d.ts"/>
 
 class Util{
+	static readonly domain = 'https://tkgwku.github.io/n';
+	//static readonly domain = 'http://jar.oiran.org/app/nicolist';
 	static getLS(key, callbackSuccess:Function, callbackNull?:Function){
 		let ls = window.localStorage.getItem(key);
 		if (ls !== null){

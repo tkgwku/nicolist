@@ -7,7 +7,6 @@
 /// <reference path="../node_modules/@types/sortablejs/index.d.ts"/>
 
 class NicolistPlayer{
-	static readonly domain = 'https://tkgwku.github.io/n';
 	static showFavbutton = false;
 
 	static playlist = [];
@@ -41,7 +40,7 @@ class NicolistPlayer{
 			NicolistPlayer.playlist = [];
 		});
 		$('#pcnewtab').on('click', () => {
-			window.open(NicolistPlayer.domain+'/player.html?pl='+escape(JSON.stringify(NicolistPlayer.playlist))+'&i='+NicolistPlayer.playindex);
+			window.open(Util.domain+'/player.html?pl='+escape(JSON.stringify(NicolistPlayer.playlist))+'&i='+NicolistPlayer.playindex);
 		});
 		$('#pclist').on('change', () => {
 			NicolistPlayer.playindex = Util.int($('#pclist').val()+'');
@@ -227,7 +226,7 @@ class NicolistPlayer{
 	}
 	/**
 	 * make proper video Iframe element (width, height)
-	 * @returns {Array} (width, height)
+	 * @returns {[number, number]} (width, height)
 	 */
 	static videoSize(){
 		var w = $('#play').outerWidth();

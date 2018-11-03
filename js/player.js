@@ -32,7 +32,7 @@ var NicolistPlayer = /** @class */ (function () {
             NicolistPlayer.playlist = [];
         });
         $('#pcnewtab').on('click', function () {
-            window.open(NicolistPlayer.domain + '/player.html?pl=' + escape(JSON.stringify(NicolistPlayer.playlist)) + '&i=' + NicolistPlayer.playindex);
+            window.open(Util.domain + '/player.html?pl=' + escape(JSON.stringify(NicolistPlayer.playlist)) + '&i=' + NicolistPlayer.playindex);
         });
         $('#pclist').on('change', function () {
             NicolistPlayer.playindex = Util.int($('#pclist').val() + '');
@@ -229,7 +229,7 @@ var NicolistPlayer = /** @class */ (function () {
     };
     /**
      * make proper video Iframe element (width, height)
-     * @returns {Array} (width, height)
+     * @returns {[number, number]} (width, height)
      */
     NicolistPlayer.videoSize = function () {
         var w = $('#play').outerWidth();
@@ -503,7 +503,6 @@ var NicolistPlayer = /** @class */ (function () {
             }
         }
     };
-    NicolistPlayer.domain = 'https://tkgwku.github.io/n';
     NicolistPlayer.showFavbutton = false;
     NicolistPlayer.playlist = [];
     NicolistPlayer.playlistTitleMap = {};

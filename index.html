@@ -118,12 +118,12 @@ ul.tdftad li a:hover{
 #controller .p-2{
 	padding-top: .1em!important;
 }
+div.sggwrapper{padding-bottom: .3em!important;}
+div.sgtarget{cursor: pointer;}
 div.sgg{
 	border-radius: 5px;
 	padding: .7em 1em;
 	border:1px solid #ddd;
-	cursor: pointer;
-	margin: .3em;
 }
 div.sgdef{
 	background-color: #eee;
@@ -329,14 +329,17 @@ div.sgdef{
 					<span class="text-muted">移動先のジャンルを選択: </span>
 					<select class="form-control custom-select mr-sm-2" role="genre" id="ccoldsel"></select>
 				</div>
-				<div id="ccnewform" class="mt-1 form-inline">
-					<input type="text" class="form-control" id="ccname" placeholder="新しいジャンルの名前を入力...">
+				<div id="ccnewform" class="mt-1">
+					<input type="text" class="form-control col-8" id="ccname" placeholder="新しいジャンルの名前を入力...">
 				</div>
 
-				<div class="mt-2 custom-control custom-checkbox">
+				<div class="mt-3 custom-control custom-checkbox">
 					<input type="checkbox" class="custom-control-input" id="nicolist_thumb_cc">
 					<label class="custom-control-label" for="nicolist_thumb_cc">サムネイルを表示</label>
 				</div>
+				<p>
+					<button type="button" class="btn btn-primary mt-3" id="createcopy2">コピー/移動</button>
+				</p>
 
 				<hr>
 				<p class="text-muted">移動する動画をクリックして選択してください。</p>
@@ -426,6 +429,11 @@ div.sgdef{
 				</button>
 			</div>
 			<div class="modal-body">
+				<p class="text-muted">リストをつかんで並び替えて、適用ボタンを押して保存。</p>
+				<p>
+					<button type="button" class="btn btn-primary" id="submitGenreSort2">適用</button>
+				</p>
+				<hr>
 				<div id="sggenre"></div>
 			</div>
 			<div class="modal-footer">
@@ -622,7 +630,7 @@ div.sgdef{
 						</div>
 					</div>
 				</div>
-				<p class="text-muted mt-2 ml-2">ドラッグアンドドロップでフォームに自動入力できます。</p>
+				<p class="text-muted mt-2 ml-2">テキストやリンクをドラッグ&ドロップして、フォームに自動入力できます。</p>
 
 				<p class="text-muted mt-4 mb-2">追加先のジャンルを選択</p>
 				<div class="form-inline mb-2">
@@ -654,10 +662,7 @@ div.sgdef{
 <script type="text/javascript" src="./Sortable.min.js"></script>
 <!-- Youtube iframe api-->
 <script type="text/javascript" src="https://www.youtube.com/iframe_api"></script>
-<script type="text/javascript" src="./js/images.js"></script>
-<script type="text/javascript" src="./js/util.js?times=0"></script>
-<script type="text/javascript" src="./js/player.js?times=0"></script>
-<script type="text/javascript" src="./js/nicolist.js?times=0"></script>
+<script type="text/javascript" src="./js/nicolilst.min.js"></script>
 <script type="text/javascript">
 	if (typeof $ === 'undefined') {
 		alert('jQueryが読み込まれていません');
