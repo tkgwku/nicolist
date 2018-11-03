@@ -6,14 +6,17 @@ if not exist dist\ (
 if not exist dist\img\ (
 	mkdir dist\img\
 )
-if not exist dist\Sortable.min.js (
-	copy \y Sortable.min.js dist\Sortable.min.js
+if not exist dist\js\ (
+	mkdir dist\js\
+)
+if not exist dist\js\Sortable.min.js (
+	copy /y js\Sortable.min.js dist\js\Sortable.min.js
 )
 if not exist dist\img\favicon.ico (
-	copy \y img\favicon.ico dist\img\favicon.ico
+	copy /y img\favicon.ico dist\img\favicon.ico
 )
 if not exist dist\img\favicon.ico (
-	copy \y img\channel.jpg dist\img\channel.jpg
+	copy /y img\channel.jpg dist\img\channel.jpg
 )
 
 tsc & node compile.js
