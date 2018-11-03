@@ -53,13 +53,13 @@ class Nicolist{
 		return string.replace(/[.*+?^${}()|[\]\\]/g, x => {return '\\'+x});
 	}
 	static search(query) {
-		let separator = Nicolist.escapeREInsideBracket($('#nicolist_separator').val());
+		let separator = Nicolist.escapeREInsideBracket($('#nicolist_separator').val()+'');
 		let queryArray = [];
 		if (separator === ''){
-			queryArray = [query];
+			queryArray = [query+''];
 		} else {
 			let ga = separator.charAt(0);
-			queryArray = query
+			queryArray = (query+'')
 				.replace(new RegExp('['+separator+']', 'g'), ga)
 				.replace(new RegExp(`${ga}+`, 'g'), ga)
 				.replace(new RegExp(`${ga}$|^${ga}`, 'g'), '')
@@ -72,7 +72,6 @@ class Nicolist{
 		let sqDesc = queryArray.join('」+「');
 		$('#sr').html('');
 		$('<button>', {
-			html: '<span>&times;</span>',
 			'class': 'close',
 			'aria-label': 'Close',
 			'click': e => {
@@ -81,7 +80,9 @@ class Nicolist{
 					$('#sr').html('');
 				});
 			}
-		}).appendTo('#sr');
+		}).append($('<span>', {
+			html: '&times;'
+		})).appendTo('#sr');
 		Nicolist.pushHistory(query);
 		let count = 0;//count all
 		let mobj = {};//matched video tree
@@ -1080,7 +1081,6 @@ class Nicolist{
 			NicolistPlayer.videoResize();
 		})
 		$('#searchQuery').on('focus', (e) => {
-			console.log(e.currentTarget)
 			if (Nicolist.searchHistory.length === 0) return;
 			$('#history').html('');
 			for (var i = 0; i < Nicolist.searchHistory.length; i++) {
@@ -2030,16 +2030,16 @@ class Nicolist{
 		}
 		var div = $('<div>', {
 			'class': 'alert alert-'+type
-		}).css('display', 'none');
+		});
 		if (!permanent){
 			$('<button>', {
 				'type':'button',
-				'class':'close'
-			}).append($('<span>', {
-				html: '&times;',
+				'class':'close',
 				'click': (e) => {
-					$(e.currentTarget).parent().parent().fadeOut('slow', Nicolist.refreshStyle);
+					$(e.currentTarget).parent().fadeOut('slow', Nicolist.refreshStyle);
 				}
+			}).append($('<span>', {
+				html: '&times;'
 			})).appendTo(div);
 		}
 		var span = $('<span>', {
@@ -2047,9 +2047,10 @@ class Nicolist{
 		});
 		if (elem) span.append(elem);
 		span.appendTo(div);
+		$(wrapper).css('display', 'none');
 		$(wrapper).html('');
 		$(wrapper).append(div);
-		div.fadeIn();
+		$(wrapper).fadeIn();
 	}
 	static messageUndoable(mes, type?, wrapper?, whatChanged?, permanent?, toredo?){
 		whatChanged = whatChanged || '';
@@ -2148,15 +2149,15 @@ class Nicolist{
 		if ($('#random button').length === 0){// if #random button doesn't exist
 		  	$('<button>', {
 		  		'type':'button',
-		  		'class':'close'
-		  	}).append($('<span>', {
-		  		html: '&times;',
+		  		'class':'close',
 		  		'click': (e) => {
 		  			$('#random').fadeOut('slow', () => {
 		  				Nicolist.refreshStyle();
 		  				$('#randomVideo').html('');
 		  			});
 		  		}
+		  	}).append($('<span>', {
+		  		html: '&times;'
 		  	})).prependTo('#random');
 		}
 		var a = $('<a>', {

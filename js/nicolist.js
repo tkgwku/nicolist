@@ -38,14 +38,14 @@ var Nicolist = /** @class */ (function () {
         return string.replace(/[.*+?^${}()|[\]\\]/g, function (x) { return '\\' + x; });
     };
     Nicolist.search = function (query) {
-        var separator = Nicolist.escapeREInsideBracket($('#nicolist_separator').val());
+        var separator = Nicolist.escapeREInsideBracket($('#nicolist_separator').val() + '');
         var queryArray = [];
         if (separator === '') {
-            queryArray = [query];
+            queryArray = [query + ''];
         }
         else {
             var ga = separator.charAt(0);
-            queryArray = query
+            queryArray = (query + '')
                 .replace(new RegExp('[' + separator + ']', 'g'), ga)
                 .replace(new RegExp(ga + "+", 'g'), ga)
                 .replace(new RegExp(ga + "$|^" + ga, 'g'), '')
@@ -58,7 +58,6 @@ var Nicolist = /** @class */ (function () {
         var sqDesc = queryArray.join('」+「');
         $('#sr').html('');
         $('<button>', {
-            html: '<span>&times;</span>',
             'class': 'close',
             'aria-label': 'Close',
             'click': function (e) {
@@ -67,7 +66,9 @@ var Nicolist = /** @class */ (function () {
                     $('#sr').html('');
                 });
             }
-        }).appendTo('#sr');
+        }).append($('<span>', {
+            html: '&times;'
+        })).appendTo('#sr');
         Nicolist.pushHistory(query);
         var count = 0; //count all
         var mobj = {}; //matched video tree
@@ -1104,7 +1105,6 @@ var Nicolist = /** @class */ (function () {
             NicolistPlayer.videoResize();
         });
         $('#searchQuery').on('focus', function (e) {
-            console.log(e.currentTarget);
             if (Nicolist.searchHistory.length === 0)
                 return;
             $('#history').html('');
@@ -2078,16 +2078,16 @@ var Nicolist = /** @class */ (function () {
         }
         var div = $('<div>', {
             'class': 'alert alert-' + type
-        }).css('display', 'none');
+        });
         if (!permanent) {
             $('<button>', {
                 'type': 'button',
-                'class': 'close'
-            }).append($('<span>', {
-                html: '&times;',
+                'class': 'close',
                 'click': function (e) {
-                    $(e.currentTarget).parent().parent().fadeOut('slow', Nicolist.refreshStyle);
+                    $(e.currentTarget).parent().fadeOut('slow', Nicolist.refreshStyle);
                 }
+            }).append($('<span>', {
+                html: '&times;'
             })).appendTo(div);
         }
         var span = $('<span>', {
@@ -2096,9 +2096,10 @@ var Nicolist = /** @class */ (function () {
         if (elem)
             span.append(elem);
         span.appendTo(div);
+        $(wrapper).css('display', 'none');
         $(wrapper).html('');
         $(wrapper).append(div);
-        div.fadeIn();
+        $(wrapper).fadeIn();
     };
     Nicolist.messageUndoable = function (mes, type, wrapper, whatChanged, permanent, toredo) {
         whatChanged = whatChanged || '';
@@ -2200,15 +2201,15 @@ var Nicolist = /** @class */ (function () {
         if ($('#random button').length === 0) { // if #random button doesn't exist
             $('<button>', {
                 'type': 'button',
-                'class': 'close'
-            }).append($('<span>', {
-                html: '&times;',
+                'class': 'close',
                 'click': function (e) {
                     $('#random').fadeOut('slow', function () {
                         Nicolist.refreshStyle();
                         $('#randomVideo').html('');
                     });
                 }
+            }).append($('<span>', {
+                html: '&times;'
             })).prependTo('#random');
         }
         var a = $('<a>', {
