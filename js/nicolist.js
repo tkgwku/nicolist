@@ -372,7 +372,7 @@ var Nicolist = /** @class */ (function () {
                 }
                 $('#registry').html('');
                 Nicolist.lastId = '';
-                $('#alert, #alert-addvideo').fadeOut();
+                $('#alert, #alert-addvideo').html('');
                 if ($('#nicolist_stayopen').prop('checked')) {
                     Nicolist.messageUndoable("\u52D5\u753B\u300C" + Util.cutString(title, 50) + "\u300D\u3092\u8FFD\u52A0\u3057\u307E\u3057\u305F", 'success', '#alert-addvideo', 'v');
                 }
@@ -786,7 +786,7 @@ var Nicolist = /** @class */ (function () {
                     Nicolist.messageUndoable("\u300C" + ccname + "\u300D\u306B" + list_1.length / 2 + "\u500B\u306E\u52D5\u753B\u3092" + verb + "\u3057\u307E\u3057\u305F", 'success', null, 'gvs');
                     Nicolist.setSelGen(ccname);
                     Nicolist.refresh('gvs');
-                    $('#ccalert').fadeOut();
+                    $('#ccalert').html('');
                     $('#ccModal').modal('hide');
                     $('#ccname').val('');
                 }
@@ -1051,7 +1051,6 @@ var Nicolist = /** @class */ (function () {
                     Nicolist.messageUndoable('動画「' + title + '」の動画情報を更新しました', 'info', null, 'v');
                     Nicolist.refresh('v');
                     $('#editModal').modal('hide');
-                    $('#emalert').fadeOut();
                 });
             }
         });
@@ -1244,7 +1243,7 @@ var Nicolist = /** @class */ (function () {
                         Nicolist.y = _y;
                         Nicolist.messageUndoable('JSONから' + (videocount > 0 ? videocount + '個の動画' : '') + (genrecount > 0 && videocount > 0 ? '、' : '') + (genrecount > 0 ? genrecount + '個のジャンル' : '') + 'を新たに読み込みました', 'success', null, (genrecount > 0 ? 'g' : '') + (videocount > 0 ? 'v' : ''));
                         Nicolist.refresh((genrecount > 0 ? 'g' : '') + (videocount > 0 ? 'v' : ''));
-                        $('#loadrawalert').fadeOut();
+                        $('#loadrawalert').html('');
                         $('#prefModal').modal('hide');
                     }
                 };
@@ -1999,7 +1998,7 @@ var Nicolist = /** @class */ (function () {
         if (!Nicolist.y.hasOwnProperty(name)) {
             Nicolist.pushPrev();
             Nicolist.y[name] = [];
-            $('#alert-genre').fadeOut();
+            $('#alert-genre').html('');
             Nicolist.messageUndoable('ジャンル「' + name + '」を追加しました', 'success', null, 'gs');
             return true;
         }
@@ -2084,7 +2083,7 @@ var Nicolist = /** @class */ (function () {
                 'type': 'button',
                 'class': 'close',
                 'click': function (e) {
-                    $(e.currentTarget).parent().fadeOut('slow', Nicolist.refreshStyle);
+                    $(e.currentTarget).parent().parent().fadeOut('slow', Nicolist.refreshStyle);
                 }
             }).append($('<span>', {
                 html: '&times;'

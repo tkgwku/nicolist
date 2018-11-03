@@ -377,7 +377,7 @@ class Nicolist{
 				}
 				$('#registry').html('');
 				Nicolist.lastId = '';
-				$('#alert, #alert-addvideo').fadeOut();
+				$('#alert, #alert-addvideo').html('');
 				if ($('#nicolist_stayopen').prop('checked')){
 					Nicolist.messageUndoable(`動画「${Util.cutString(title, 50)}」を追加しました`, 'success', '#alert-addvideo', 'v');
 				} else {
@@ -773,7 +773,7 @@ class Nicolist{
 					Nicolist.messageUndoable(`「${ccname}」に${list.length/2}個の動画を${verb}しました`, 'success', null, 'gvs');
 					Nicolist.setSelGen(ccname);
 					Nicolist.refresh('gvs');
-					$('#ccalert').fadeOut();
+					$('#ccalert').html('');
 					$('#ccModal').modal('hide');
 					$('#ccname').val('');
 				}
@@ -1029,7 +1029,6 @@ class Nicolist{
 					Nicolist.messageUndoable('動画「'+title+'」の動画情報を更新しました', 'info', null, 'v');
 					Nicolist.refresh('v');
 					$('#editModal').modal('hide');
-					$('#emalert').fadeOut();
 				});
 			}
 		});
@@ -1219,7 +1218,7 @@ class Nicolist{
 						Nicolist.y = _y;
 						Nicolist.messageUndoable('JSONから'+(videocount>0?videocount+'個の動画':'')+(genrecount>0&&videocount>0?'、':'')+(genrecount>0?genrecount+'個のジャンル':'')+'を新たに読み込みました', 'success', null, (genrecount>0?'g':'')+(videocount>0?'v':''));
 						Nicolist.refresh((genrecount>0?'g':'')+(videocount>0?'v':''));
-						$('#loadrawalert').fadeOut();
+						$('#loadrawalert').html('');
 						$('#prefModal').modal('hide');
 					}
 				};
@@ -1955,7 +1954,7 @@ class Nicolist{
 		if (!Nicolist.y.hasOwnProperty(name)){
 			Nicolist.pushPrev();
 			Nicolist.y[name] = [];
-			$('#alert-genre').fadeOut();
+			$('#alert-genre').html('');
 			Nicolist.messageUndoable('ジャンル「'+name+'」を追加しました', 'success', null, 'gs');
 			return true;
 		} else {
@@ -2036,7 +2035,7 @@ class Nicolist{
 				'type':'button',
 				'class':'close',
 				'click': (e) => {
-					$(e.currentTarget).parent().fadeOut('slow', Nicolist.refreshStyle);
+					$(e.currentTarget).parent().parent().fadeOut('slow', Nicolist.refreshStyle);
 				}
 			}).append($('<span>', {
 				html: '&times;'
