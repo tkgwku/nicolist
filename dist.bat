@@ -19,4 +19,6 @@ if not exist dist\img\favicon.ico (
 	copy /y img\channel.jpg dist\img\channel.jpg
 )
 
+echo "Started to compile TS"
+
 tsc & node compile.js

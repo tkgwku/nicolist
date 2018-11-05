@@ -24,6 +24,26 @@ class Util{
 	static isNull(smthng){
 		return $.type(smthng) === 'undefined' || smthng === null;
 	}
+	static escapeRegExp(string) {
+		return string.replace(/[.*+?^${}()|[\]\\]/g, x => {return '\\'+x});
+	}
+	static escapeREInsideBracket(str){
+		return str.replace(/[\[\]\-\\\*\^]/g, (x) => {
+			return '\\' + x;
+		})
+	}
+	static zenkakuToHankakuS(t:string) {
+		return t.replace(/[Ａ-Ｚａ-ｚ０-９]/g, function(x) {
+			return String.fromCharCode(x.charCodeAt(0) - 0xFEE0);
+		});
+	}
+	static zenkakuToHankakuA(qs:Array<string>) {
+		let a = []
+		for (let q of qs){
+			a.push(Util.zenkakuToHankakuS(q));
+		}
+		return a;
+	}
 	static escapeHtmlSpecialChars(text) {
 		return text.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;").replace(/'/g, "&#039;");
 	}

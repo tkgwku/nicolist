@@ -28,6 +28,27 @@ var Util = /** @class */ (function () {
     Util.isNull = function (smthng) {
         return $.type(smthng) === 'undefined' || smthng === null;
     };
+    Util.escapeRegExp = function (string) {
+        return string.replace(/[.*+?^${}()|[\]\\]/g, function (x) { return '\\' + x; });
+    };
+    Util.escapeREInsideBracket = function (str) {
+        return str.replace(/[\[\]\-\\\*\^]/g, function (x) {
+            return '\\' + x;
+        });
+    };
+    Util.zenkakuToHankakuS = function (t) {
+        return t.replace(/[Ａ-Ｚａ-ｚ０-９]/g, function (x) {
+            return String.fromCharCode(x.charCodeAt(0) - 0xFEE0);
+        });
+    };
+    Util.zenkakuToHankakuA = function (qs) {
+        var a = [];
+        for (var _i = 0, qs_1 = qs; _i < qs_1.length; _i++) {
+            var q = qs_1[_i];
+            a.push(Util.zenkakuToHankakuS(q));
+        }
+        return a;
+    };
     Util.escapeHtmlSpecialChars = function (text) {
         return text.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;").replace(/'/g, "&#039;");
     };
