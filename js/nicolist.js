@@ -516,7 +516,11 @@ var Nicolist = /** @class */ (function () {
     };
     Nicolist.handleVideoDrop = function (e) {
         var sel = e.pageX > $('#addVideoModal').outerWidth(true) / 2 ? '#title' : '#url';
-        var data = e.dataTransfer.items || e.originalEvent.dataTransfer.items;
+        var data = e.dataTransfer.items;
+        if (Util.isNull(data)) {
+            Nicolist.message('あなたのブラウザはDragEventをサポートしていないため、ドラッグ&ドロップの処理を続行することができません', 'danger');
+            return;
+        }
         for (var i = 0; i < data.length; i++) {
             if (data[i].kind !== 'string') {
                 continue;
@@ -854,70 +858,96 @@ var Nicolist = /** @class */ (function () {
             localStorage.setItem('nicolist_ignore', $('#nicolist_ignore').val() + '');
         });
         $('#body').on('dragstart', function (e) {
-            e.originalEvent['dataTransfer'].clearData();
+            e.originalEvent.dataTransfer.clearData();
         });
         $('#body, #prefModal').on('dragover', function (e) {
             e.stopPropagation();
             e.preventDefault();
         });
-        $('#body').on('drop', function (e) {
+        $('#body').get(0).ondrop = function (e) {
             e.preventDefault();
-            var data = e.originalEvent['dataTransfer'].items || e.originalEvent['dataTransfer'].files;
-            for (var i = 0; i < data.length; i++) {
-                var flag = data[i].kind === 'file' && /json/.test(data[i].type);
-                if (flag) {
-                    Nicolist.fileToLoad = data[i].getAsFile();
-                }
-                /* for IE-11 */
-                if (Util.isNull(data[i].kind)) {
-                    flag = /\.json$/.test(data[i].name);
-                    if (flag) {
-                        Nicolist.fileToLoad = data[i];
+            var data = e.dataTransfer.items;
+            if (data && data.length > 0 && data[0].kind) {
+                var _loop_1 = function (i) {
+                    if (data[i].kind === 'file' && /json/.test(data[i].type)) {
+                        Nicolist.fileToLoad = data[i].getAsFile();
+                        $('#rawFileName').text(Nicolist.fileToLoad.name);
+                        $('#loadRawJson').removeClass('silent');
+                        $('#dummyLoadRawJson').addClass('silent');
+                        var _scrollToRawInput_1 = function () {
+                            $('#prefModal').stop().animate({ scrollTop: $('#loadRawJson').offset().top }, 1400, function () {
+                                $('#prefModal').off('shown.bs.modal', _scrollToRawInput_1);
+                            });
+                        };
+                        $('#prefModal').on('shown.bs.modal', _scrollToRawInput_1);
+                        $('#prefModal').modal('show');
+                        return "break";
                     }
-                }
-                if (flag) {
-                    $('#rawFileName').text(Nicolist.fileToLoad.name);
-                    $('#loadRawJson').removeClass('silent');
-                    $('#dummyLoadRawJson').addClass('silent');
-                    var _scrollToRawInput = function () {
-                        $('#prefModal').stop().animate({ scrollTop: $('#loadRawJson').offset().top }, 1400, function () {
-                            $('#prefModal').off('shown.bs.modal', _scrollToRawInput);
-                        });
-                    };
-                    $('#prefModal').on('shown.bs.modal', _scrollToRawInput);
-                    $('#prefModal').modal('show');
-                    break;
-                }
-                else if (data[i].kind === 'string') {
-                    $('#addVideoModal').modal('show');
-                    Nicolist.handleVideoDrop(e);
-                    break;
+                    else if (data[i].kind === 'string') {
+                        $('#addVideoModal').modal('show');
+                        Nicolist.handleVideoDrop(e);
+                        return "break";
+                    }
+                };
+                for (var i = 0; i < data.length; i++) {
+                    var state_1 = _loop_1(i);
+                    if (state_1 === "break")
+                        break;
                 }
             }
-        });
-        $('#prefModal').on('drop', function (e) {
-            e.preventDefault();
-            var data = e.originalEvent['dataTransfer'].items || e.originalEvent['dataTransfer'].files;
-            for (var i = 0; i < data.length; i++) {
-                var flag = data[i].kind === 'file' && /json/.test(data[i].type);
-                if (flag) {
-                    Nicolist.fileToLoad = data[i].getAsFile();
-                }
+            else {
                 /* for IE-11 */
-                if (Util.isNull(data[i].kind)) {
-                    flag = /\.json$/.test(data[i].name);
-                    if (flag) {
-                        Nicolist.fileToLoad = data[i];
+                var files = e.dataTransfer.files;
+                var _loop_2 = function (i) {
+                    if (/\.json$/.test(files[i].name)) {
+                        Nicolist.fileToLoad = files[i];
+                        $('#rawFileName').text(Nicolist.fileToLoad.name);
+                        $('#loadRawJson').removeClass('silent');
+                        $('#dummyLoadRawJson').addClass('silent');
+                        var _scrollToRawInput_2 = function () {
+                            $('#prefModal').stop().animate({ scrollTop: $('#loadRawJson').offset().top }, 1400, function () {
+                                $('#prefModal').off('shown.bs.modal', _scrollToRawInput_2);
+                            });
+                        };
+                        $('#prefModal').on('shown.bs.modal', _scrollToRawInput_2);
+                        $('#prefModal').modal('show');
+                        return "break";
                     }
-                }
-                if (flag) {
-                    Nicolist.fileToLoad = data[i].getAsFile();
-                    $('#rawFileName').text(Nicolist.fileToLoad.name);
-                    $('#loadRawJson').removeClass('silent');
-                    $('#dummyLoadRawJson').addClass('silent');
+                };
+                for (var i = 0; i < files.length; i++) {
+                    var state_2 = _loop_2(i);
+                    if (state_2 === "break")
+                        break;
                 }
             }
-        });
+        };
+        $('#prefModal').get(0).ondrop = function (e) {
+            e.preventDefault();
+            var data = e.dataTransfer.items;
+            if (data && data.length > 0 && data[0].kind) {
+                for (var i_1 = 0; i_1 < data.length; i_1++) {
+                    if (data[i_1].kind === 'file' && /json/.test(data[i_1].type)) {
+                        Nicolist.fileToLoad = data[i_1].getAsFile();
+                        $('#rawFileName').text(Nicolist.fileToLoad.name);
+                        $('#loadRawJson').removeClass('silent');
+                        $('#dummyLoadRawJson').addClass('silent');
+                        $('#prefModal').stop().animate({ scrollTop: $('#loadRawJson').offset().top }, 600);
+                    }
+                }
+            }
+            else {
+                var files = e.dataTransfer.files;
+                for (var i = 0; i < files.length; i++) {
+                    if (/\.json$/.test(files[i].name)) {
+                        Nicolist.fileToLoad = files[i];
+                        $('#rawFileName').text(Nicolist.fileToLoad.name);
+                        $('#loadRawJson').removeClass('silent');
+                        $('#dummyLoadRawJson').addClass('silent');
+                        $('#prefModal').stop().animate({ scrollTop: $('#loadRawJson').offset().top }, 600);
+                    }
+                }
+            }
+        };
         $('#addVideoModal').on('dragover', function (e) {
             e.stopPropagation();
             e.preventDefault();
@@ -937,7 +967,7 @@ var Nicolist = /** @class */ (function () {
         });
         $('#addVideoModal').on('drop', function (e) {
             e.preventDefault();
-            Nicolist.handleVideoDrop(e);
+            Nicolist.handleVideoDrop(e.originalEvent);
         });
         $('#url, #title').on('input', function (e) {
             Nicolist.checkValidity();
@@ -1516,7 +1546,7 @@ var Nicolist = /** @class */ (function () {
             //#leftの更新
             $("select[role='genre']").html('');
             $('#left').html('');
-            var _loop_1 = function (genre) {
+            var _loop_3 = function (genre) {
                 //select更新
                 $("select[role='genre']").each(function (i, elem) {
                     $(elem).append($('<option>', {
@@ -1536,7 +1566,7 @@ var Nicolist = /** @class */ (function () {
                 }).appendTo("#left");
             };
             for (var genre in Nicolist.y) {
-                _loop_1(genre);
+                _loop_3(genre);
             }
             $('select[role="genre"]').val(Nicolist.selectedGenre);
         }
