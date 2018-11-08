@@ -19,19 +19,43 @@ class NicolistPlayer{
 	static player;//setupYoutubeIframe()
 
 	/**
+	 * register resize event listener (optimized for performance)
+	 * @param $resizeElem 
+	 * @param func 
+	 * @param interval 
+	 */
+	static registerResizeEventListener($resizeElem, func, interval=2){
+		$resizeElem.resize((e:JQuery.Event) => {
+			let $thisElem = $(e.currentTarget);
+			let thisphase = $thisElem.data('__resize_phase');
+			if (Util.isNull(thisphase)){
+				$thisElem.data('__resize_phase', 0);
+			} else {
+				if (thisphase >= interval){
+					func(e);
+					$thisElem.data('__resize_phase', 0);
+				} else {
+					$thisElem.data('__resize_phase', thisphase+1);
+				}
+			}
+		});
+	}
+	/**
 	 * Register Nicolist Player Event Handler
 	 */
 	static registerEventListener(){
-		$(window).resize(() =>  {
+		NicolistPlayer.registerResizeEventListener($(window), () =>  {
 			if ($('#play iframe').length === 0) {return;}
 			NicolistPlayer.videoResize();
 		});
+		/*
 		$(window).on('unload', () => {
 			// todo
 		});
 		$(window).scroll(() => {
 			// todo
 		});
+		*/
 		$('#pcclose').on('click', () => {
 			$('#play').html('');
 			$('#pclist').addClass('silent').html('');
@@ -115,7 +139,7 @@ class NicolistPlayer{
 						NicolistPlayer.autoplay = true;
 						NicolistPlayer.next();
 					} else if (event.data === YT.PlayerState.CUED){
-						NicolistPlayer.removeFromDeletedVideoList(id);
+						NicolistPlayer.removeFromDeletedVideoList();
 						if (NicolistPlayer.autoplay){
 							NicolistPlayer.player.playVideo();
 							NicolistPlayer.autoplay = false;
@@ -123,7 +147,7 @@ class NicolistPlayer{
 					}
 				},
 				'onError': (event) => {
-					NicolistPlayer.addToDeletedVideoList(id);
+					NicolistPlayer.addToDeletedVideoList();
 					NicolistPlayer.autoplay = true;
 					NicolistPlayer.next();
 				}
@@ -131,16 +155,38 @@ class NicolistPlayer{
 		});
 		NicolistPlayer.videoResize();
 	}
+	static checkIframe404(){
+		$.ajax({
+			url: $('#play iframe').attr('src'),
+			dataType: "jsonp",
+			timeout: 5000,
+	
+			success: function () {
+				NicolistPlayer.removeFromDeletedVideoList();
+			},
+			error: function (parsedjson) {
+				if(parsedjson.status < 400) {
+					NicolistPlayer.removeFromDeletedVideoList();
+				} else {
+					//if the video has been dead
+					NicolistPlayer.addToDeletedVideoList();
+					NicolistPlayer.autoplay = true;
+					NicolistPlayer.next();
+				}
+			}
+		});
+	}
 	/**
 	 * create Niconico embed Iframe and append to '#play' 
 	 * #play / iframe #playeriframenicovideo
 	 * @param {string} id - video id
 	 */
 	static setupNiconicoIframe(id:string){
+		let videoUrl = 'https://embed.nicovideo.jp/watch/'+id+'?jsapi=1&playerId=0';
 		$('#play').html('');
 		var iframeElement = $('<iframe>',{
 			"id": "playeriframenicovideo",
-			"src": 'https://embed.nicovideo.jp/watch/'+id+'?jsapi=1&playerId=0',
+			"src": videoUrl,
 			"frameborder": "0",
 			"allow": "autoplay; encrypted-media",
 			"allowfullscreen": ""
@@ -149,12 +195,7 @@ class NicolistPlayer{
 		NicolistPlayer.videoResize();
 		window.onmessage = (event) => {
 			if (event.origin === 'https://embed.nicovideo.jp'){
-				if (event.data.eventName === 'error'){
-					//if the video has been dead
-					NicolistPlayer.addToDeletedVideoList(id);
-					NicolistPlayer.autoplay = true;
-					NicolistPlayer.next();
-				} else if (event.data.eventName === 'playerStatusChange'){
+				if (event.data.eventName === 'playerStatusChange'){
 					if (event.data.data.playerStatus === 4){
 						NicolistPlayer.autoplay = true;
 						NicolistPlayer.next();
@@ -164,7 +205,6 @@ class NicolistPlayer{
 						(<HTMLIFrameElement>$('#play iframe').get(0)).contentWindow.postMessage({eventName:'play',playerId:"0",sourceConnectorType:1}, 'https://embed.nicovideo.jp');
 						NicolistPlayer.autoplay = false;
 					}
-					NicolistPlayer.removeFromDeletedVideoList(id);
 					//set volume
 					if ($('#nicolist_savevolume').prop('checked')){
 						var playing = NicolistPlayer.playlist[NicolistPlayer.playindex];
@@ -194,12 +234,13 @@ class NicolistPlayer{
 				}
 			}
 		}
+		NicolistPlayer.checkIframe404();
 	}
 	/**
 	 * mark as unavailable video
-	 * @param id 
 	 */
-	static addToDeletedVideoList(id){
+	static addToDeletedVideoList(){
+		let id = NicolistPlayer.playlist[NicolistPlayer.playindex];
 		if ($.inArray(id, NicolistPlayer.deletedVideoArray) === -1){
 			NicolistPlayer.deletedVideoArray.push(id);
 			localStorage.setItem('nicolist_deleted', JSON.stringify(NicolistPlayer.deletedVideoArray));
@@ -211,9 +252,9 @@ class NicolistPlayer{
 	}
 	/**
 	 * unmark from unavailable video
-	 * @param id 
 	 */
-	static removeFromDeletedVideoList(id){
+	static removeFromDeletedVideoList(){
+		let id = NicolistPlayer.playlist[NicolistPlayer.playindex];
 		var _delindex = $.inArray(id, NicolistPlayer.deletedVideoArray);
 		if (_delindex !== -1){
 			NicolistPlayer.deletedVideoArray.splice(_delindex, 1);
@@ -307,6 +348,7 @@ class NicolistPlayer{
 				NicolistPlayer.setupNiconicoIframe(id);
 			} else {
 				$('#play iframe').attr('src', 'https://embed.nicovideo.jp/watch/'+id+'?jsapi=1&playerId=0');
+				NicolistPlayer.checkIframe404();
 			}
 		} else {
 			if ($('#play iframe').length === 0 || $('#play iframe').attr('id') === 'playeriframenicovideo'){
@@ -355,11 +397,10 @@ class NicolistPlayer{
 	 */
 	static initPlaylistSel(){
 		$('#pclist').html('');
-		var opt, suffix, i;
-		for (i = 0; i < NicolistPlayer.playlist.length; i++) {
+		for (let i = 0; i < NicolistPlayer.playlist.length; i++) {
 			if (NicolistPlayer.playlistTitleMap.hasOwnProperty(NicolistPlayer.playlist[i])){
-				suffix = ($.inArray(NicolistPlayer.playlist[i], NicolistPlayer.deletedVideoArray) === -1) ? '' : '[x] ';
-				opt = $('<option>', {
+				let suffix = ($.inArray(NicolistPlayer.playlist[i], NicolistPlayer.deletedVideoArray) === -1) ? '' : '[x] ';
+				let opt = $('<option>', {
 					text: suffix + (i+1) + ': ' + NicolistPlayer.playlistTitleMap[NicolistPlayer.playlist[i]],
 					'value': i+''
 				});

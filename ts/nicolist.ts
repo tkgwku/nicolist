@@ -1,10 +1,10 @@
 /// <reference path="images.ts"/>
 /// <reference path="util.ts"/>
+/// <reference path="mobile.ts"/>
 /// <reference path="player.ts"/>
 /// <reference path="../node_modules/@types/jquery/index.d.ts"/>
 /// <reference path="../node_modules/@types/popper.js/index.d.ts"/>
 /// <reference path="../node_modules/@types/bootstrap/index.d.ts"/>
-/// <reference path="../node_modules/@types/youtube/index.d.ts"/>
 /// <reference path="../node_modules/@types/sortablejs/index.d.ts"/>
 
 class Nicolist{
@@ -37,7 +37,7 @@ class Nicolist{
 		}
 	}
 	static loadImgOnScreen(scrollSelecter, wrapperSelecter) {
-		var horizon = $(window).height() + $(scrollSelecter).scrollTop();
+		var horizon = $(window).height() + $(scrollSelecter).scrollTop() + 50;
 		$(wrapperSelecter).find('img[data-src]:visible').each((i, elem) => {
 			if ($(elem).offset().top < horizon){
 				Nicolist.loadImg($(elem));
@@ -90,6 +90,7 @@ class Nicolist{
 
 		let videoCount = 0;
 		let genreCount = 0;
+		let maxlength = 0;
 
 		let $wrapperSr = $('<div>');
 
@@ -98,9 +99,10 @@ class Nicolist{
 		 *   div=$wrapperSr
 		 *     h4 {text: 検索結果}
 		 *       small {text: xx件の一致}
-		 *     div
-		 *       span {text: Genrename, data-genre, data-for:genreTitle}
-		 *     div=$wrapperVideos {data-genre, data-for:wrapperVideos}
+		 *     div {data-for:genreTitle}
+		 *       p {text: Genrename, data-for:titleText}
+		 *       (p) {data-for: desc}
+		 *     div=$wrapperVideos {data-for:wrapperVideos}
 		 *       div=$wrapperVideo {class: d-flex...}
 		 *         img=$favbutton
 		 *         a=$a {data-id, data-title, data-genre}
@@ -110,9 +112,9 @@ class Nicolist{
 
 		for (const genre in Nicolist.y){
 			const list = $('#nicolist_sort').prop('checked') ? Nicolist.reversePairList(Nicolist.y[genre]) :  Nicolist.y[genre].slice(0);
-			let isThisGenreContainsMatch = false;
 			let $wrapperVideos;
-			for (let l = 0, _len = list.length/2; l <_len; l++){
+			let thisGenreMatchCount = 0;
+			for (let l = 0, _len = list.length/2; l <_len; l+=1){
 				const id = list[2*l];
 				const title = list[2*l+1];
 
@@ -122,7 +124,7 @@ class Nicolist{
 					match(title, queryArray, ignore) : 
 					match(Util.zenkakuToHankakuS(title), Util.zenkakuToHankakuA(queryArray), ignore);
 				if (matchArray){
-					videoCount++;
+					videoCount+=1;
 					if (videoCount > maxsearchcount){
 						$('#sr').append($('<div>', {
 							'class': 'd-flex flex-row align-items-center'
@@ -136,20 +138,23 @@ class Nicolist{
 						return;
 					}
 					// first match appeared on this genre
-					if (!isThisGenreContainsMatch){
-						isThisGenreContainsMatch = true;
-						genreCount++;
-						$wrapperSr.append($('<div>').append($('<span>', {
+					if (thisGenreMatchCount === 0){
+						genreCount+=1;
+						$wrapperSr.append($('<div>', {
+							'data-for': 'genreTitle',
+						}).append($('<p>', {
 							text: genre,
-							'data-genre': genre,
-							'data-for': 'genreTitle'
+							'data-for': 'titleText'
 						})));
 	
 						$wrapperVideos = $('<div>', {
-							'data-genre': genre, 
 							'data-for': 'wrapperVideos',
 							'class': 'mt-2 mb-2'
 						});
+					}
+					thisGenreMatchCount += 1;
+					if (thisGenreMatchCount > maxlength){
+						maxlength = thisGenreMatchCount;
 					}
 
 					let $wrapperVideo = $('<div>',{
@@ -160,22 +165,20 @@ class Nicolist{
 	
 					$wrapperVideo.append($favbutton);
 	
-					let $a = $('<a>', {
+					let $a = MobileUtil.anchorOpt($('<a>', {
 						'href': Nicolist.getVideoURL(id),
 						'target': '_blank',
 						'data-genre' : genre,
 						'data-id' : id,
 						'data-title' : title,
-						contextmenu: e => {
-							Nicolist.showMenu(e.pageX, e.pageY, $(e.currentTarget), 'search');
-							return false;
-						},
-						'click': (e2) => {
-							if ($('#click_action').val() !== 'official'){
-								e2.preventDefault();
-							}
-							Nicolist.openVideo($(e2.currentTarget), 'search');
+					}), (e2) => {
+						if ($('#click_action').val() !== 'official'){
+							e2.preventDefault();
 						}
+						Nicolist.openVideo($(e2.currentTarget), 'search');
+					}, e => {
+						Nicolist.showMenu(e.pageX, e.pageY, $(e.currentTarget), 'search');
+						return false;
 					});
 
 					if ($('#nicolist_thumb_res').prop('checked')){
@@ -206,23 +209,24 @@ class Nicolist{
 			'class': 'text-muted ml-2'
 		})));
 
-		const manyMatched = genreCount > 2 && videoCount > 20;
+		const manyMatched = $('#nicolist_thumb_res').prop('checked') && maxlength > 10 && videoCount > 20;
 
 		if (manyMatched){
 			$wrapperSr.find('[data-for=genreTitle]').each((_i, _elem) => {
 				$(_elem).on('click', e => {
-					let thisGenre = $(e.currentTarget).attr('data-genre');
-					$(`#sr div[data-for=wrapperGenre][data-genre!="${thisGenre}"]`).each((i, elem) => {
-						$(elem).addClass('silent');
-					});
-					$(`#sr div[data-for=wrapperGenre][data-genre="${thisGenre}"]`).each((i, elem) => {
-						$(elem).toggleClass('silent');
-						Nicolist.loadImgOnScreen('html, body', '#sr');
-					});
+					$(_elem).next().toggleClass('silent');
+					$(_elem).children().filter('[data-for=desc]').toggleClass('silent');
+					Nicolist.loadImgOnScreen('html, body', '#sr');
 				});
-				$(_elem).addClass('pointer hover');
 				$(_elem).text('- '+$(_elem).text());
+				$(_elem).addClass('pointer hover');
+				$(_elem).append($('<p>', {
+					text: 'クリックして詳細を表示',
+					'class': 'white-gray ml-2',
+					'data-for': 'desc'
+				}));
 			});
+			$wrapperSr.find(`[data-for=wrapperVideos]`).addClass('silent');
 		}
 		$('#sr').append($wrapperSr);
 		$('#sr').fadeIn();
@@ -249,12 +253,12 @@ class Nicolist{
 				if (marked.indexOf(from+i) === -1){
 					marked.push(from+i);
 				}
-				i++;
+				i+=1;
 			}
 		}
 		for (const str of m){
 			if ($.inArray(str, completed) === -1){
-				for (let k = 0, klen = t.length - str.length + 1;k < klen; k++){
+				for (let k = 0, klen = t.length - str.length + 1;k < klen; k+=1){
 					if (str.toUpperCase() === t.substring(k, k+str.length).toUpperCase()){
 						mark(k, str.length);
 						completed.push(str);
@@ -264,7 +268,7 @@ class Nicolist{
 		}
 		let lastMarkStart = -1;
 		let lastMarkEnd = -1;
-		for (let j = 0, len = t.length;j < len;j++){
+		for (let j = 0, len = t.length;j < len;j+=1){
 			let isMarked = marked.indexOf(j) !== -1;
 			if (isMarked){
 				if (lastMarkStart === -1){
@@ -303,7 +307,7 @@ class Nicolist{
 	
 	static ignorantRE(t:string, x:string) {
 		let re = '';
-		for (let i = 0, len = t.length; i < len; i++){
+		for (let i = 0, len = t.length; i < len; i+=1){
 			re += Util.escapeRegExp(t.charAt(i)) + (i === len-1 ? '' : x);
 		}
 		return re;
@@ -449,7 +453,7 @@ class Nicolist{
 				});
 				for (let genre in Nicolist.y){
 					const list = Nicolist.y[genre];
-					for (let i = 0, _len = list.length/2; i < _len; i++) {
+					for (let i = 0, _len = list.length/2; i < _len; i+=1) {
 						const id = list[2*i];
 						const title = list[2*i+1];
 						if (id === m){
@@ -517,14 +521,14 @@ class Nicolist{
 			let a = [];
 			a.push(queryStr);
 			let count = Math.min(Util.int($('#nicolist_historyCount').val()+'')-1, Nicolist.searchHistory.length);
-			for (let i = 0; i < count; i++) {
+			for (let i = 0; i < count; i+=1) {
 				a.push(Nicolist.searchHistory[i]);
 			}
 			Nicolist.searchHistory = a;
 		} else {
 			let a = [];
 			a.push(queryStr);
-			for (let i = 0, _len = Nicolist.searchHistory.length; i < _len; i++) {
+			for (let i = 0, _len = Nicolist.searchHistory.length; i < _len; i+=1) {
 				if (i !== _hindex){
 					a.push(Nicolist.searchHistory[i]);
 				}
@@ -540,7 +544,7 @@ class Nicolist{
 			Nicolist.message('あなたのブラウザはDragEventをサポートしていないため、ドラッグ&ドロップの処理を続行することができません', 'danger');
 			return;
 		}
-		for (let i = 0; i < data.length; i++) {
+		for (let i = 0; i < data.length; i+=1) {
 			if (data[i].kind !== 'string'){continue;}
 			if (/^text\/plain/.test(data[i].type)) {
 				data[i].getAsString((s) => {
@@ -552,7 +556,7 @@ class Nicolist{
 					let m = s.match(/<[^><]+>[^><]*(?=<)/g);
 					let s2 = null;
 					if (m !== null){
-						for (let j = 0, _jlen = m.length; j < _jlen; j++){
+						for (let j = 0, _jlen = m.length; j < _jlen; j+=1){
 							if (/<span id="video-title"/.test(m[j])){
 								s2 = m[j].replace(/<[^><]+>/g, '').replace(/^\s+/, '').replace(/\s+$/, '').replace(/\n/g, '');
 								$('#title').val(s2);
@@ -574,19 +578,35 @@ class Nicolist{
 		} 
 		$(sel).removeClass('dragging');
 	}
+	static registerScrollEventListener($scrollElem, func, interval=5){
+		$scrollElem.scroll((e:JQuery.Event) => {
+			let $thisElem = $(e.currentTarget);
+			let thisphase = $thisElem.data('__scroll_phase');
+			if (Util.isNull(thisphase)){
+				$thisElem.data('__scroll_phase', 0);
+			} else {
+				if (thisphase >= interval){
+					func(e);
+					$thisElem.data('__scroll_phase', 0);
+				} else {
+					$thisElem.data('__scroll_phase', thisphase+1);
+				}
+			}
+		});
+	}
 	static registerEventListener(){
+		NicolistPlayer.registerEventListener();
 		$(window).on('unload', () => {
 			Nicolist.unload();
 		});
-		$(window).scroll(() => {
+		Nicolist.registerScrollEventListener($(window), (e) => {
 			Nicolist.loadImgOnScreen('html, body', '#sr, #right');
 		});
-		$('#ccModal').scroll(() => {
+		Nicolist.registerScrollEventListener($('#ccModal'), (e) => {
 			Nicolist.loadImgOnScreen('#ccModal', '#ccvideos');
 		});
-		NicolistPlayer.registerEventListener();
 		$('input[type=checkbox]').on('change', (e) => {
-			var id = $(e.currentTarget).attr('id');
+			let id = $(e.currentTarget).attr('id');
 			if (!Util.isNull(id)){
 				window.localStorage.setItem(id, $(e.currentTarget).prop('checked'));
 			}
@@ -657,7 +677,7 @@ class Nicolist{
 				if ($('#nicolist_sort').prop('checked')){
 					list = Nicolist.reversePairList(list);
 				}
-				for (let i = 0, _len = list.length/2; i < _len; i++) {
+				for (let i = 0, _len = list.length/2; i < _len; i+=1) {
 					const id = list[2*i];
 					const title = list[2*i+1];
 					let $genre_video_item = $('<div>', {
@@ -672,10 +692,10 @@ class Nicolist{
 							let count = Util.int($countElem.attr('data-count'));
 							if ($thisElem.hasClass('alert-success')){
 								$thisElem.removeClass('alert-success');
-								count--;
+								count-=1;
 							} else {
 								$thisElem.addClass('alert-success');
-								count++;
+								count+=1;
 							}
 							$countElem.attr('data-count', count+'');
 							if (count === 0) {
@@ -745,7 +765,7 @@ class Nicolist{
 							const genre = $(elem).attr('data-genre');
 							let list2 = _y[genre];
 							let newlist = [];
-							for (let i = 0, _len=list2.length/2; i < _len; i++){
+							for (let i = 0, _len=list2.length/2; i < _len; i+=1){
 								if (list2[2*i] !== id){
 									newlist.push(list2[2*i]);
 									newlist.push(list2[2*i+1]);
@@ -753,9 +773,9 @@ class Nicolist{
 							}
 							_y[genre] = newlist;
 						}
-						successcount++;
+						successcount+=1;
 					} else {
-						failcount++;
+						failcount+=1;
 					}
 				});
 				if (successcount > 0){
@@ -793,7 +813,7 @@ class Nicolist{
 							const genre = $(elem).attr('data-genre');
 							let list2 = Nicolist.y[genre];
 							let newlist = [];
-							for (var i = 0, _len = list2.length/2; i < _len; i++){
+							for (var i = 0, _len = list2.length/2; i < _len; i+=1){
 								if (list2[2*i] !== id){
 									newlist.push(list2[2*i]);
 									newlist.push(list2[2*i+1]);
@@ -873,7 +893,7 @@ class Nicolist{
 			e.preventDefault();
 			let data = e.dataTransfer.items;
 			if (data && data.length > 0 && data[0].kind){
-				for (let i = 0; i < data.length; i++) {
+				for (let i = 0; i < data.length; i+=1) {
 					if (data[i].kind === 'file' && /json/.test(data[i].type)) {
 						Nicolist.fileToLoad = data[i].getAsFile();
 						$('#rawFileName').text(Nicolist.fileToLoad.name);
@@ -897,7 +917,7 @@ class Nicolist{
 				/* for IE-11 */
 				let files = e.dataTransfer.files;
 			
-				for (let i = 0; i < files.length; i++) {
+				for (let i = 0; i < files.length; i+=1) {
 					if (/\.json$/.test(files[i].name)) {
 						Nicolist.fileToLoad = files[i];
 						$('#rawFileName').text(Nicolist.fileToLoad.name);
@@ -919,7 +939,7 @@ class Nicolist{
 			e.preventDefault();
 			let data = e.dataTransfer.items;
 			if (data && data.length > 0 && data[0].kind){
-				for (let i = 0; i < data.length; i++) {
+				for (let i = 0; i < data.length; i+=1) {
 					if (data[i].kind === 'file' && /json/.test(data[i].type)) {
 						Nicolist.fileToLoad = data[i].getAsFile();
 						$('#rawFileName').text(Nicolist.fileToLoad.name);
@@ -930,7 +950,7 @@ class Nicolist{
 				}
 			} else {
 				let files = e.dataTransfer.files;
-				for (var i = 0; i < files.length; i++) {
+				for (var i = 0; i < files.length; i+=1) {
 					if (/\.json$/.test(files[i].name)) {
 						Nicolist.fileToLoad = files[i];
 						$('#rawFileName').text(Nicolist.fileToLoad.name);
@@ -1063,7 +1083,7 @@ class Nicolist{
 					var _y = Util.copyObj(Nicolist.y);
 					var list = _y[oldgenre];
 					var newlist = [];
-					for (var i = 0; i < list.length/2; i++){
+					for (var i = 0; i < list.length/2; i+=1){
 						if (list[2*i] !== id){
 							newlist.push(list[2*i]);
 							newlist.push(list[2*i+1]);
@@ -1135,7 +1155,7 @@ class Nicolist{
 		$('#searchQuery').on('focus', (e) => {
 			if (Nicolist.searchHistory.length === 0) return;
 			$('#history').html('');
-			for (var i = 0; i < Nicolist.searchHistory.length; i++) {
+			for (var i = 0; i < Nicolist.searchHistory.length; i+=1) {
 				var item = Nicolist.searchHistory[i];
 				$('<a>', {
 					text: item,
@@ -1163,13 +1183,13 @@ class Nicolist{
 				$('#history').css('display', 'none');
 			}
 		});
-		$('#search').on('click', (e) => {
+		$('#search').on('click', () => {
 			Nicolist.search($('#searchQuery').val()+'');
 		});
 		$('#sgopen').on('click', () => {
 			$('#sggenre').html('');
 			let gs = Object.keys(Nicolist.y);
-			for (let i = 0; i< gs.length; i++){
+			for (let i = 0; i< gs.length; i+=1){
 				let g = gs[i];
 				let div = $('<div>',{
 					'class': 'sggwrapper '+(i != 0 ? 'sgtarget' : '')
@@ -1243,24 +1263,24 @@ class Nicolist{
 					}
 					var _y = Util.copyObj(Nicolist.y);
 					var _tkeys = Object.keys(toload);
-					for (var j = 0; j < _tkeys.length; j++) {
+					for (var j = 0; j < _tkeys.length; j+=1) {
 						var genre = _tkeys[j];
 						var list = toload[genre];
 						if ($.type(list) !== 'array'){
 							Nicolist.message('フォーマットが正しくありません', 'warning', '#loadrawalert');
 							return;
 						}
-						for (var i = 0; i < list.length/2; i++){
+						for (var i = 0; i < list.length/2; i+=1){
 							var id = list[2*i];
 							var title = list[2*i+1];
 							if (!_y.hasOwnProperty(genre)) {
 								_y[genre] = [];
-								genrecount++;
+								genrecount+=1;
 							}
 							if ($.inArray(id, _y[genre]) === -1){
 								_y[genre].push(id);
 								_y[genre].push(title);
-								videocount++;
+								videocount+=1;
 							}
 						}
 					}//j
@@ -1297,7 +1317,7 @@ class Nicolist{
 						this.data = {};
 						var _s = document.cookie.match(/ls_[^=;]+=[^;=]*/g);
 						if (_s !== null){
-							for (var i = 0; i < _s.length; i++) {
+							for (var i = 0; i < _s.length; i+=1) {
 								var _t = _s[i].split(/=/);
 								this.data[unescape(_t[0].substring(3))] = _t[1];
 							}
@@ -1309,7 +1329,7 @@ class Nicolist{
 					setItem = (key, val) =>  {
 						if (key !== null){
 							if (!this.data.hasOwnProperty(key)){
-								this.length++;
+								this.length+=1;
 							}
 							var _d = new Date();
 							_d.setTime(Date.now() + 114514*60*1000);//almost 13 years
@@ -1321,7 +1341,7 @@ class Nicolist{
 						if (key !== null){
 							document.cookie = 'ls_' + escape(key) + '=; expires=Thu, 01 Jan 1970 00:00:00 GMT; path=/';
 							if (this.data.hasOwnProperty(key)){
-								this.length--;
+								this.length-=1;
 								delete this.data[key];
 							}
 						}
@@ -1420,7 +1440,7 @@ class Nicolist{
 				if (typeof ls !== 'object'){
 					throw new Error('JSON syntax error');//wont happen
 				}
-				Nicolist.y = ls;
+				Nicolist.y = Util.copyObj(ls);
 			} catch(e) {
                 console.error(`JSON Systax Error: ${ls} is not a json`);
                 console.error(e);
@@ -1596,7 +1616,7 @@ class Nicolist{
 					if ($('#nicolist_sort').prop('checked')){
 						list = Nicolist.reversePairList(list);
 					}
-					for (var i = 0; i < list.length/2; i++){
+					for (var i = 0; i < list.length/2; i+=1){
 						var id = list[2*i];
 						var title = list[2*i+1];
 	
@@ -1622,6 +1642,8 @@ class Nicolist{
 			'class': 'd-flex flex-row align-items-center'
 		}).append($('<img>', {
 			'src': EMPTY,
+			'width': '135',
+			'height': '144',
 			'class' : 'mt-4 ml-4'
 		})).append($('<div>', {
 			'class': 'ml-4 text-muted'
@@ -1681,7 +1703,7 @@ class Nicolist{
 			list = Nicolist.reversePairList(list);
 		}
 		var startLazyLoad = Math.ceil($(window).height()/68);
-		for (var i = 0; i < list.length/2; i++){
+		for (var i = 0; i < list.length/2; i+=1){
 			var id = list[2*i];
 			var title = list[2*i+1];
 
@@ -1731,23 +1753,21 @@ class Nicolist{
 			'class': 'd-flex flex-row align-items-center'
 		});
 		var favIcon = Nicolist.createFavIcon(id, title);
-		var a = $( "<a>", {
+		var a = MobileUtil.anchorOpt($( "<a>", {
 			"href": Nicolist.getVideoURL(id),
 			'target': '_blank',
 			'data-genre' : genre,
 			'data-id' : id,
 			'data-title' : title,
 			'class': 'rightvideo',
-			'contextmenu': (e) => {
-				Nicolist.showMenu(e.pageX, e.pageY, $(e.currentTarget), 'right');
-				return false;
-			},
-			'click': (e2) => {
-				if ($('#click_action').val() !== 'official'){
-					e2.preventDefault();
-				}
-				Nicolist.openVideo($(e2.currentTarget), 'right');
+		}), (e2) => {
+			if ($('#click_action').val() !== 'official'){
+				e2.preventDefault();
 			}
+			Nicolist.openVideo($(e2.currentTarget), 'right');
+		}, (e) => {
+			Nicolist.showMenu(e.pageX, e.pageY, $(e.currentTarget), 'right');
+			return false;
 		});
 		div.append(favIcon);
 		if (!$('#nicolist_thumb').prop('checked')) {
@@ -1762,13 +1782,13 @@ class Nicolist{
 			var tags = [];
 			var converted_title = title;
 			if (_ma !== null){
-				for (var j = 0; j < _ma.length; j++) {
+				for (var j = 0; j < _ma.length; j+=1) {
 					tags.push(_ma[j]);
 				}
 				converted_title = converted_title.replace(/【[^【】]+】/g, '');
 			}
 			if (_mb !== null){
-				for (var j = 0; j < _mb.length; j++) {
+				for (var j = 0; j < _mb.length; j+=1) {
 					tags.push(_mb[j]);
 				}
 				converted_title = converted_title.replace(/\[[^\[\]]+\]/g, '');
@@ -1779,7 +1799,7 @@ class Nicolist{
 				'class': 'mr-2'
 			}));
 			a.appendTo(div);
-			for (var j = 0; j < tags.length; j++) {
+			for (var j = 0; j < tags.length; j+=1) {
 				div.append($('<span>',{
 					text: tags[j].slice(1, -1),
 					'class': 'titletag ml-1',
@@ -2012,7 +2032,7 @@ class Nicolist{
 	}
 	static has(genre, id){
 		var list = Nicolist.y[genre];
-		for (var i = 0; i < list.length/2; i++){
+		for (var i = 0; i < list.length/2; i+=1){
 			if (list[2*i] === id) {return true};
 		}
 		return false;
@@ -2045,7 +2065,7 @@ class Nicolist{
 			Nicolist.pushPrev();
 			var list = Nicolist.y[genre];
 			var newlist = [];
-			for (var i = 0; i < list.length/2; i++){
+			for (var i = 0; i < list.length/2; i+=1){
 				if (list[2*i] !== id){
 					newlist.push(list[2*i]);
 					newlist.push(list[2*i+1]);
@@ -2200,7 +2220,7 @@ class Nicolist{
 		var rand = Math.random()*sum;//[0,sum)
 		var sum2 = 0;
 		var _tkeys = Object.keys(_temp);
-		for (var i = 0; i < _tkeys.length; i++) {
+		for (var i = 0; i < _tkeys.length; i+=1) {
 			var genre2 = _tkeys[i];
 			if (sum2 < rand && sum2 + _temp[genre2] >= rand){
 				Nicolist.random(Nicolist.y[genre2], genre2);
@@ -2234,22 +2254,20 @@ class Nicolist{
 		  		html: '&times;'
 		  	})).prependTo('#random');
 		}
-		var a = $('<a>', {
+		var a = MobileUtil.anchorOpt($('<a>', {
 			'href': Nicolist.getVideoURL(id),
 			'target': '_blank',
 			'data-genre' : genre,
 			'data-id' : id,
 			'data-title' : title,
-			contextmenu: (e) => {
-				Nicolist.showMenu(e.pageX, e.pageY, $(e.currentTarget), 'random');
-				return false;
-			},
-			'click': (e) => {
-				if ($('#click_action').val() !== 'official'){
-					e.preventDefault();
-				}
-				Nicolist.openVideo($(e.currentTarget), 'random');
+		}), (e) => {
+			if ($('#click_action').val() !== 'official'){
+				e.preventDefault();
 			}
+			Nicolist.openVideo($(e.currentTarget), 'random');
+		}, (e) => {
+			Nicolist.showMenu(e.pageX, e.pageY, $(e.currentTarget), 'random');
+			return false;
 		});
 		
 		var div = $('<div>',{
@@ -2327,7 +2345,7 @@ class Nicolist{
 	}
 	static reversePairList(list){
 		let _list = [];
-		for (let i = list.length/2 - 1; i >= 0; i--) {
+		for (let i = list.length/2 - 1; i >= 0; i-=1) {
 			_list.push(list[2*i]);
 			_list.push(list[2*i+1]);
 		}
@@ -2335,8 +2353,12 @@ class Nicolist{
 	}
 	static $starImg(starred){
 		return (starred ? $('<img>', {
+			'width': '16px',
+			'height': '16px',
 			'src' : STAR_DATA_URL
 		}) : $('<img>', {
+			'width': '16px',
+			'height': '16px',
 			'src' : UNSTAR_DATA_URL
 		})).addClass('favIcon');
 	}
