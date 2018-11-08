@@ -178,7 +178,7 @@ class Nicolist{
 						Nicolist.openVideo($(e2.currentTarget), 'search');
 					}, e => {
 						Nicolist.showMenu(e.pageX, e.pageY, $(e.currentTarget), 'search');
-						return false;
+						e.preventDefault();
 					});
 
 					if ($('#nicolist_thumb_res').prop('checked')){
@@ -1767,7 +1767,7 @@ class Nicolist{
 			Nicolist.openVideo($(e2.currentTarget), 'right');
 		}, (e) => {
 			Nicolist.showMenu(e.pageX, e.pageY, $(e.currentTarget), 'right');
-			return false;
+			e.preventDefault();
 		});
 		div.append(favIcon);
 		if (!$('#nicolist_thumb').prop('checked')) {
@@ -2267,7 +2267,7 @@ class Nicolist{
 			Nicolist.openVideo($(e.currentTarget), 'random');
 		}, (e) => {
 			Nicolist.showMenu(e.pageX, e.pageY, $(e.currentTarget), 'random');
-			return false;
+			e.preventDefault();
 		});
 		
 		var div = $('<div>',{
