@@ -8,10 +8,11 @@
 /// <reference path="../node_modules/@types/sortablejs/index.d.ts"/>
 
 class Nicolist{
+	static readonly debug = false;
+
 	static readonly MESSAGE_TYPES = ['primary', 'secondary', 'success', 'danger', 'warning', 'info', 'light', 'dark'];
 	static readonly SEP_DEF_VAL = ' 　+';
 	static readonly IGN_DEF_VAL = '';
-	static readonly debug = false;
 
 	static y:object = {"とりあえず":[]};
 	static prevy:object = {"とりあえず":[]};
@@ -23,6 +24,18 @@ class Nicolist{
 	static lastId = '';//checkURLValidity()
 	static loadedtn = [];
 	static fileToLoad:File;
+
+	static __timer:number;
+	static __debug_timer_start(){
+		if (Nicolist.debug){
+			Nicolist.__timer = Date.now();
+		}
+	}
+	static __debug_timer_stop(){
+		if (Nicolist.debug){
+			console.log('stopwatch: '+ (Date.now() - Nicolist.__timer));
+		}
+	}
 
 	static loadImg($elem: JQuery){
 		var srcurl = $elem.attr('data-src');
@@ -38,13 +51,14 @@ class Nicolist{
 		}
 	}
 	static loadImgOnScreen(scrollSelecter, wrapperSelecter) {
-		var horizon = $(window).height() + $(scrollSelecter).scrollTop() + 50;
+		var horizon = $(window).height() + $(scrollSelecter).scrollTop() + 100;
 		$(wrapperSelecter).find('img[data-src]:visible').each((i, elem) => {
 			if ($(elem).offset().top < horizon){
 				Nicolist.loadImg($(elem));
 			}
 		});
 	}
+	//50 ~ 150 ms
 	static search(query:string) {
 		let separator = Util.escapeREInsideBracket($('#nicolist_separator').val()+'');
 		let queryArray = [];
@@ -1118,23 +1132,13 @@ class Nicolist{
 		/**
 		 * max search count
 		 */
+		$('#nicolist_deletedtag').on('change', () => {
+			this.refresh('v');
+		});
 		$('#nicolist_msc').on('change', (e) => {
 			var sh2 = Util.int($(e.currentTarget).val());
 			if (!isNaN(sh2) && sh2 > 0){
 				localStorage.setItem('nicolist_msc', sh2+'');
-			}
-		});
-		$('#nicolist_loop').on('change', () => {
-			if ($('#play iframe').length !== 0) {
-				if ($('#nicolist_loop').prop('checked')){
-					$('#pcloop img').attr('src', LOOP_DATA_URL);
-					$('#pcloop').attr('title', 'ループ再生を解除');
-				} else {
-					$('#pcloop img').attr('src', NOT_LOOP_DATA_URL);
-					$('#pcloop').attr('title', 'ループ再生');
-				}
-				Util.registerTooltip($('#pcloop'));
-				NicolistPlayer.refreshController();
 			}
 		});
 		$('#nicolist_cinematic').on('change', () => {
@@ -1534,16 +1538,7 @@ class Nicolist{
 			localStorage.setItem('_nicolistTabCount', (tabs-1)+'');
 		}
 	}
-	/*
-	static __timer:number;
-	static __debug_timer_start(){
-		Nicolist.__timer = Date.now();
-	}
-	static __debug_timer_stop(){
-		console.log('stopwatch: '+ (Date.now() - Nicolist.__timer));
-	}
-	*/
-	// 20~150ms, loadimage complete: 50~250ms
+	// 20 ~ 150 ms, loadimage complete: 50 ~ 250 ms
 	static refresh(whatChanged){
 		if (!Nicolist.y.hasOwnProperty(Nicolist.selectedGenre)){
 			Nicolist.setSelGen('とりあえず');
@@ -1823,6 +1818,14 @@ class Nicolist{
 				text: title
 			}));
 			a.appendTo(div);
+		}
+		if ($('#nicolist_deletedtag').prop('checked')){
+			if ($.inArray(id, NicolistPlayer.deletedVideoArray) !== -1){
+				div.append($('<span>', {
+					text: '再生できない動画',
+					'class': 'titletag ml-1 alert-warning'
+				}));
+			}
 		}
 		return div;
 	}

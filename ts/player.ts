@@ -77,24 +77,70 @@ class NicolistPlayer{
 		$('#pcnext').on('click', (e) => {
 			if ($(e.currentTarget).hasClass('disabled')) {return;}
 			NicolistPlayer.autoplay = true;
-			NicolistPlayer.next();
+			NicolistPlayer.next(true);
 		});
 		$('#pcprev').on('click', (e) => {
 			if ($(e.currentTarget).hasClass('disabled')) {return;}
 			NicolistPlayer.autoplay = true;
-			NicolistPlayer.previous();
+			NicolistPlayer.previous(true);
+		});
+		$('#nicolist_loop1').on('click', (e) => {
+			if ($('#nicolist_loop1').prop('checked')){
+				$('#nicolist_loop').attr('disabled', 'true');
+				$('#pcloop img').attr('src', LOOP_ONE_DATA_URL);
+				$('#pcloop').attr('title', 'ループ再生を解除');
+			} else {
+				$('#nicolist_loop').removeAttr('disabled');
+				if ($('#nicolist_loop').prop('checked')){
+					$('#pcloop img').attr('src', LOOP_DATA_URL);
+					$('#pcloop').attr('title', '一つの動画をループ再生');
+				} else {
+					$('#pcloop img').attr('src', NOT_LOOP_DATA_URL);
+					$('#pcloop').attr('title', 'ループ再生');
+				}
+			}
+		});
+		$('#nicolist_loop').on('change', (e) => {
+			if ($('#play iframe').length !== 0 && $(e.currentTarget).attr('disabled') !== 'true') {
+				if ($('#nicolist_loop').prop('checked')){
+					$('#pcloop img').attr('src', LOOP_DATA_URL);
+					$('#pcloop').attr('title', '一つの動画をループ再生');
+				} else {
+					$('#pcloop img').attr('src', NOT_LOOP_DATA_URL);
+					$('#pcloop').attr('title', 'ループ再生');
+				}
+				Util.registerTooltip($('#pcloop'));
+				NicolistPlayer.refreshController();
+			}
 		});
 		$('#pcloop').on('click', () => {
-			if ($('#nicolist_loop').prop('checked')){
+			if ($('#nicolist_loop1').prop('checked')){
+				// [1] -> [x]
+				$('#nicolist_loop1').prop('checked', false);
+				localStorage.setItem('nicolist_loop1', 'false');
 				$('#nicolist_loop').prop('checked', false);
 				localStorage.setItem('nicolist_loop', 'false');
+
+				$('#nicolist_loop').removeAttr('disabled');
+
 				$('#pcloop img').attr('src', NOT_LOOP_DATA_URL);
 				$('#pcloop').attr('title', 'ループ再生');
+			} else if ($('#nicolist_loop').prop('checked')){
+				// [o] -> [1]
+				$('#nicolist_loop1').prop('checked', true);
+				localStorage.setItem('nicolist_loop1', 'true');
+
+				$('#nicolist_loop').attr('disabled', 'true');
+
+				$('#pcloop img').attr('src', LOOP_ONE_DATA_URL);
+				$('#pcloop').attr('title', 'ループ再生を解除');
 			} else {
+				// [x] -> [o]
 				$('#nicolist_loop').prop('checked', true);
 				localStorage.setItem('nicolist_loop', 'true');
+
 				$('#pcloop img').attr('src', LOOP_DATA_URL);
-				$('#pcloop').attr('title', 'ループ再生を解除');
+				$('#pcloop').attr('title', '一つの動画をループ再生');
 			}
 			$('#pcloop').tooltip('dispose');
 			Util.registerTooltip($('#pcloop'));
@@ -298,15 +344,17 @@ class NicolistPlayer{
 	/**
 	 * play next video 
 	 */
-	static next(){
-		if (NicolistPlayer.hasNext()){
-			NicolistPlayer.playindex++;
-			NicolistPlayer.refreshPlayer();
-		} else {
-			if ($('#nicolist_loop').prop('checked')){
-				NicolistPlayer.playindex = 0;
+	static next(force=false){
+		if (!force && $('#nicolist_loop1').prop('checked')){
+			if ($.inArray(NicolistPlayer.deletedVideoArray[NicolistPlayer.playindex], NicolistPlayer.deletedVideoArray) === -1){
 				NicolistPlayer.refreshPlayer();
 			}
+		} else if (NicolistPlayer.hasNext()){
+			NicolistPlayer.playindex++;
+			NicolistPlayer.refreshPlayer();
+		} else if ($('#nicolist_loop').prop('checked')){
+			NicolistPlayer.playindex = 0;
+			NicolistPlayer.refreshPlayer();
 		}
 	}
 	/**
@@ -326,15 +374,17 @@ class NicolistPlayer{
 	/**
 	 * play previous video
 	 */
-	static previous(){
-		if (NicolistPlayer.hasPrevious()){
-			NicolistPlayer.playindex--;
-			NicolistPlayer.refreshPlayer();
-		} else {
-			if ($('#nicolist_loop').prop('checked')){
-				NicolistPlayer.playindex = NicolistPlayer.playlist.length - 1;
+	static previous(force=false){
+		if (!force && $('#nicolist_loop1').prop('checked')){
+			if ($.inArray(NicolistPlayer.deletedVideoArray[NicolistPlayer.playindex], NicolistPlayer.deletedVideoArray) === -1){
 				NicolistPlayer.refreshPlayer();
 			}
+		} else if (NicolistPlayer.hasPrevious()){
+			NicolistPlayer.playindex--;
+			NicolistPlayer.refreshPlayer();
+		} else if ($('#nicolist_loop').prop('checked')){
+			NicolistPlayer.playindex = NicolistPlayer.playlist.length - 1;
+			NicolistPlayer.refreshPlayer();
 		}
 	}
 	/**
@@ -435,9 +485,12 @@ class NicolistPlayer{
 		$('#pcnext img').attr('src', NEXT_DATA_URL);
 		$('#pcclose img').attr('src', CLOSE_DATA_URL);
 		$('#pcnewtab img').attr('src', JUMP_DATA_URL);
-		if ($('#nicolist_loop').prop('checked')){
-			$('#pcloop img').attr('src', LOOP_DATA_URL);
+		if ($('#nicolist_loop1').prop('checked')){
+			$('#pcloop img').attr('src', LOOP_ONE_DATA_URL);
 			$('#pcloop').attr('title', 'ループ再生を解除');
+		} else if ($('#nicolist_loop').prop('checked')){
+			$('#pcloop img').attr('src', LOOP_DATA_URL);
+			$('#pcloop').attr('title', '一つの動画をループ再生');
 		} else {
 			$('#pcloop img').attr('src', NOT_LOOP_DATA_URL);
 			$('#pcloop').attr('title', 'ループ再生');

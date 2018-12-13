@@ -462,7 +462,7 @@ div.sgdef{
 				</button>
 			</div>
 			<div class="modal-body">
-				<h5 class="mb-3">UI</h5>
+				<h5 class="mb-3">基本設定</h5>
 
 				<div class="mt-2 custom-control custom-checkbox">
 					<input type="checkbox" class="custom-control-input" id="nicolist_del">
@@ -482,6 +482,11 @@ div.sgdef{
 				<div class="mt-2 custom-control custom-checkbox">
 					<input type="checkbox" class="custom-control-input" id="nicolist_taggedtitle">
 					<label class="custom-control-label" for="nicolist_taggedtitle">動画タイトルの【】や [] を消去し、代わりにタグとして表示する</label>
+				</div>
+
+				<div class="mt-2 custom-control custom-checkbox">
+					<input type="checkbox" class="custom-control-input" id="nicolist_deletedtag" checked>
+					<label class="custom-control-label" for="nicolist_deletedtag">一覧を表示するとき、非公開または削除済みなどで再生できなかった動画にタグをつける</label>
 				</div>
 
 				<div class="mt-2 custom-control custom-checkbox mb-2">
@@ -516,7 +521,12 @@ div.sgdef{
 
 				<div class="mt-2 custom-control custom-checkbox">
 					<input type="checkbox" class="custom-control-input" id="nicolist_loop">
-					<label class="custom-control-label" for="nicolist_loop">プレイリストをループして再生</label>
+					<label class="custom-control-label" for="nicolist_loop">プレイリストの最後の動画を再生し終わったあと、プレイリストの最初の動画をもう一度再生</label>
+				</div>
+
+				<div class="mt-2 custom-control custom-checkbox">
+					<input type="checkbox" class="custom-control-input" id="nicolist_loop1">
+					<label class="custom-control-label" for="nicolist_loop1">動画を連続再生せず、一つの動画をループして再生</label>
 				</div>
 
 				<div class="mt-2 custom-control custom-checkbox">
@@ -525,7 +535,7 @@ div.sgdef{
 				</div>
 
 				<div class="mt-3 form-inline ml-1">
-					<label for="click_action">動画リンクをクリックしたときの動作</label>
+					<span>動画リンクをクリックしたときの動作</span>
 					<select class="custom-select form-control ml-2" id="click_action">
 						<option value="official" selected="">新しいタブで公式リンクを開く</option>
 						<option value="thispage">このページで視聴</option>
@@ -672,7 +682,7 @@ div.sgdef{
 <script type="text/javascript" src="./js/Sortable.min.js"></script>
 <!-- Youtube iframe api-->
 <script type="text/javascript" src="https://www.youtube.com/iframe_api"></script>
-<script type="text/javascript" src="./js/nicolist.min.js?times=3"></script>
+<script type="text/javascript" src="./js/nicolist.min.js?times=4"></script>
 <script type="text/javascript">
 	if (typeof $ === 'undefined') {
 		alert('jQueryが読み込まれていません');
